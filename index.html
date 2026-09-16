@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avícola QUÉ POLLO | CRM & Sistema de Información</title>
+  <link rel="icon" type="image/png" href="logo.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              red: '#E30613',
+              'red-hover': '#C50510',
+              'red-light': '#FEF2F2',
+              green: '#00A651',
+              'green-hover': '#008C44',
+              'green-light': '#ECFDF5',
+              yellow: '#FFD200',
+              'yellow-light': '#FEFCE8',
+              gold: '#806B20',
+              dark: '#333333',
+              light: '#F5F5F5'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Supabase JS Client CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- SweetAlert2 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Estilos personalizados corporativos -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-[#F5F5F5] text-[#333333] antialiased min-h-screen flex flex-col">
+
+  <!-- ==========================================
+       HEADER PRINCIPAL SUPERIOR
+       ========================================== -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Marca Oficial -->
+        <div class="flex items-center space-x-3">
+          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-[#333333] hover:bg-gray-100 focus:outline-none" aria-label="Abrir menú">
+            <i data-lucide="menu" class="w-6 h-6"></i>
+          </button>
+          
+          <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchView('dashboard')">
+            <img src="logo.png" alt="QUÉ POLLO!" class="h-11 w-auto object-contain">
+            <div class="hidden sm:block">
+              <div class="flex items-center space-x-2">
+                <span class="font-extrabold text-base tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200">CRM Oficial</span>
+              </div>
+              <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Créditos y Acciones Rápidas -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+
+          <!-- Botón Créditos Académicos UTA -->
+          <button onclick="openModal('modal-uta')" class="flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-50 text-[#333333] hover:bg-gray-100 transition-colors border border-gray-200">
+            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-[#00A651]"></i>
+            <span>UTA • Grupo 4</span>
+          </button>
+
+          <!-- Botón Acción Rápida: Nueva Venta (Rojo Corporativo) -->
+          <button onclick="openSaleModal()" class="flex items-center space-x-1.5 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl btn-primary shadow-xs">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Nueva Venta</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full flex flex-col md:flex-row gap-6 py-6">
+    
+    <!-- ==========================================
+         SIDEBAR DE NAVEGACIÓN
+         ========================================== -->
+    <aside id="sidebar-nav" class="hidden md:block w-64 shrink-0">
+      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-xs sticky top-24 space-y-2">
+        
+        <!-- Logo en Menú Lateral -->
+        <div class="pb-4 pt-1 border-b border-gray-100 flex flex-col items-center text-center">
+          <img src="logo.png" alt="QUÉ POLLO" class="h-16 w-auto object-contain mb-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sistema Comercial CRM</span>
+        </div>
+
+        <div class="px-2 pt-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+          Módulos
+        </div>
+
+        <button onclick="switchView('dashboard')" id="nav-btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-active">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+          <span>Dashboard</span>
+        </button>
+
+        <button onclick="switchView('clientes')" id="nav-btn-clientes" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>1. Clientes</span>
+          <span id="badge-count-clientes" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+        </button>
+
+        <button onclick="switchView('productos')" id="nav-btn-productos" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
+          <i data-lucide="package" class="w-4 h-4"></i>
+          <span>2. Productos</span>
+          <span id="badge-count-productos" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+        </button>
+
+        <button onclick="switchView('ventas')" id="nav-btn-ventas" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>3. Seguimiento</span>
+          <span id="badge-count-ventas" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+        </button>
+
+        <!-- Tarjeta Institucional Inferior -->
+        <div class="pt-4 mt-4 border-t border-gray-100 px-2 text-xs text-gray-400 space-y-1">
+          <div class="flex items-center space-x-1.5 font-bold text-[#333333]">
+            <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+            <span>QUÉ POLLO S.A.</span>
+          </div>
+          <p class="text-[11px] leading-relaxed text-gray-500">BD CRM • Mercadotecnia 7mo B Sistemas de Información UTA</p>
+        </div>
+
+      </div>
+    </aside>
+
+    <!-- MENÚ MÓVIL (DRAWER) -->
+    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs">
+      <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-white p-5 shadow-2xl flex flex-col justify-between">
+        <div class="space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center space-x-2">
+              <img src="logo.png" alt="QUÉ POLLO" class="h-9 w-auto object-contain">
+              <span class="font-bold text-sm text-[#333333]">QUÉ POLLO CRM</span>
+            </div>
+            <button id="close-mobile-menu" class="p-1 rounded-lg text-gray-500 hover:bg-gray-100">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          <nav class="space-y-1">
+            <button onclick="switchView('dashboard'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+              <span>Dashboard</span>
+            </button>
+            <button onclick="switchView('clientes'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+              <i data-lucide="users" class="w-5 h-5"></i>
+              <span>1. Clientes</span>
+            </button>
+            <button onclick="switchView('productos'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+              <i data-lucide="package" class="w-5 h-5"></i>
+              <span>2. Productos</span>
+            </button>
+            <button onclick="switchView('ventas'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+              <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+              <span>3. Seguimiento / Ventas</span>
+            </button>
+            <button onclick="openModal('modal-uta'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-100">
+              <i data-lucide="graduation-cap" class="w-5 h-5 text-[#00A651]"></i>
+              <span>Proyecto UTA</span>
+            </button>
+          </nav>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100 text-xs text-gray-400">
+          Avícola QUÉ POLLO © 2026
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         CONTENEDOR PRINCIPAL DE VISTAS
+         ========================================== -->
+    <main class="flex-1 w-full overflow-hidden">
+
+      <!-- ==========================================
+           VISTA 1: DASHBOARD (EMPRESARIAL Y LIMPIO)
+           ========================================== -->
+      <section id="view-dashboard" class="space-y-6">
+        
+        <!-- Banner de Bienvenida Corporativo -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs relative overflow-hidden">
+          <div class="relative z-10 max-w-2xl space-y-2">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 text-[#E30613] text-xs font-semibold border border-red-100">
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span>Avícola QUÉ POLLO</span>
+              <span>•</span>
+              <span id="dashboard-date-str" class="text-gray-600 font-normal">Hoy</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#333333]">Panel de Control Comercial</h1>
+            <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">
+              Supervisión integral de clientes, catálogo de productos avícolas y trazabilidad de pedidos omnicanal.
+            </p>
+            <div class="pt-3 flex flex-wrap gap-2.5">
+              <button onclick="openSaleModal()" class="px-4 py-2 btn-primary rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Registrar Venta</span>
+              </button>
+              <button onclick="openClientModal()" class="px-4 py-2 btn-secondary rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>Nuevo Cliente</span>
+              </button>
+              <button onclick="openProductModal()" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-[#333333] border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5">
+                <i data-lucide="package-plus" class="w-4 h-4 text-[#00A651]"></i>
+                <span>Nuevo Producto</span>
+              </button>
+            </div>
+          </div>
+          <!-- Logotipo de Marca como Marca de Agua Institucional -->
+          <div class="absolute right-6 top-1/2 -translate-y-1/2 opacity-12 pointer-events-none hidden lg:block">
+            <img src="logo.png" alt="QUÉ POLLO" class="h-44 w-auto object-contain">
+          </div>
+        </div>
+
+        <!-- 4 Tarjetas KPI Corporativas -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- KPI 1: Ingresos Totales (Verde Indicador) -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Ingresos Totales</span>
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#00A651] flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-revenue" class="text-2xl sm:text-3xl font-extrabold text-[#333333] font-mono">$0.00</div>
+              <p class="text-xs text-[#00A651] font-semibold mt-1 flex items-center">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5 mr-1"></i> Facturación comercial
+              </p>
+            </div>
+          </div>
+
+          <!-- KPI 2: Ventas Realizadas (Rojo Icono) -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Ventas Realizadas</span>
+              <div class="w-9 h-9 rounded-xl bg-red-50 text-[#E30613] flex items-center justify-center">
+                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-sales" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
+              <p class="text-xs text-gray-500 font-medium mt-1">Transacciones en seguimiento</p>
+            </div>
+          </div>
+
+          <!-- KPI 3: Clientes en Cartera (Verde Icono) -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Total Clientes</span>
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#00A651] flex items-center justify-center">
+                <i data-lucide="users" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-clients" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
+              <p class="text-xs text-gray-500 font-medium mt-1">Frecuentes y mayoristas</p>
+            </div>
+          </div>
+
+          <!-- KPI 4: Catálogo de Productos (Amarillo/Dorado Icono) -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Productos Activos</span>
+              <div class="w-9 h-9 rounded-xl bg-yellow-50 text-[#806B20] flex items-center justify-center border border-yellow-200">
+                <i data-lucide="package" class="w-5 h-5 text-[#9A6800]"></i>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div id="kpi-total-products" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
+              <p class="text-xs text-gray-500 font-medium mt-1">Variedades avícolas</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Gráficos de Analítica Corporativos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- Gráfico 1: Ventas por Canal -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-[#333333] text-sm">Ventas por Canal</h3>
+                <p class="text-xs text-gray-400">Instagram, WhatsApp, Facebook, Local</p>
+              </div>
+              <i data-lucide="pie-chart" class="w-4 h-4 text-[#E30613]"></i>
+            </div>
+            <div class="h-60 relative flex items-center justify-center">
+              <canvas id="chart-channels"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 2: Estado de Pedidos -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-[#333333] text-sm">Estado de Seguimiento</h3>
+                <p class="text-xs text-gray-400">Completados vs Pendientes</p>
+              </div>
+              <i data-lucide="check-circle-2" class="w-4 h-4 text-[#00A651]"></i>
+            </div>
+            <div class="h-60 relative flex items-center justify-center">
+              <canvas id="chart-status"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico 3: Productos con Mayor Demanda -->
+          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-[#333333] text-sm">Top Productos</h3>
+                <p class="text-xs text-gray-400">Unidades vendidas por ítem</p>
+              </div>
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-[#FFD200]"></i>
+            </div>
+            <div class="h-60 relative flex items-center justify-center">
+              <canvas id="chart-products"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Tabla Rápida: Últimos Movimientos -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-[#333333] text-sm">Últimos Pedidos / Seguimiento</h3>
+              <p class="text-xs text-gray-400">Transacciones comerciales recientes</p>
+            </div>
+            <button onclick="switchView('ventas')" class="text-xs font-semibold text-[#E30613] hover:underline flex items-center">
+              Ver todas <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-3">ID</th>
+                  <th class="px-6 py-3">Cliente</th>
+                  <th class="px-6 py-3">Producto</th>
+                  <th class="px-6 py-3">Fecha</th>
+                  <th class="px-6 py-3">Canal</th>
+                  <th class="px-6 py-3">Total</th>
+                  <th class="px-6 py-3">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-recent-sales-body" class="divide-y divide-gray-100 text-[#333333]">
+                <!-- Se llena con JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================
+           VISTA 2: CLIENTES (TABLA 1)
+           ========================================== -->
+      <section id="view-clientes" class="hidden space-y-6">
+        
+        <!-- Header de Sección -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-2xl font-bold text-[#333333]">1. Cartera de Clientes</h2>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: CLIENTES</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Gestión de contactos, canales de interacción y segmentación</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openClientModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span>+ Registrar Cliente</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="filter-client-search" placeholder="Buscar por nombre, apellido, teléfono, correo o ID..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="filter-client-type" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              <option value="">Todos los Tipos</option>
+              <option value="Frecuente">Frecuente</option>
+              <option value="Mayorista">Mayorista</option>
+              <option value="Ocasional">Ocasional</option>
+              <option value="Nuevo">Nuevo</option>
+            </select>
+            <select id="filter-client-social" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              <option value="">Todas las Redes</option>
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="TikTok">TikTok</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla de Clientes -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
+                <tr>
+                  <th class="px-5 py-3">ID_Cliente</th>
+                  <th class="px-5 py-3">Nombre & Apellido</th>
+                  <th class="px-5 py-3">Teléfono</th>
+                  <th class="px-5 py-3">Correo</th>
+                  <th class="px-5 py-3">Red_Social</th>
+                  <th class="px-5 py-3">Fecha_Registro</th>
+                  <th class="px-5 py-3">Tipo_Cliente</th>
+                  <th class="px-5 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-clientes-body" class="divide-y divide-gray-100 text-[#333333]">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================
+           VISTA 3: PRODUCTOS (TABLA 2)
+           ========================================== -->
+      <section id="view-productos" class="hidden space-y-6">
+        
+        <!-- Header de Sección -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-2xl font-bold text-[#333333]">2. Catálogo de Productos</h2>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: PRODUCTOS</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Control de precios de venta (Precio_V), costo (Precio_C) y categorías dinámicas</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <!-- Botón para Administrar Categorías -->
+            <button onclick="openCategoriesModal()" class="px-3.5 py-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-[#333333] text-xs font-semibold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="tags" class="w-4 h-4 text-[#00A651]"></i>
+              <span>Administrar Categorías</span>
+            </button>
+            <button onclick="openProductModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>+ Nuevo Producto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="filter-product-search" placeholder="Buscar producto por nombre o código..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+          </div>
+          <div class="flex items-center space-x-2">
+            <select id="filter-product-category" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              <option value="">Todas las Categorías</option>
+              <!-- Llenado dinámico desde categorías -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Grid de Tarjetas de Productos -->
+        <div id="products-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Se llena dinámicamente con JS -->
+        </div>
+
+        <!-- Tabla detallada de Productos -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+          <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <span class="text-xs font-bold text-gray-600 uppercase">Vista en Tabla Detallada</span>
+            <span class="text-xs text-gray-400">Precios y rentabilidad comercial</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
+                <tr>
+                  <th class="px-5 py-3">ID_Producto</th>
+                  <th class="px-5 py-3">Nombre</th>
+                  <th class="px-5 py-3">Categoría</th>
+                  <th class="px-5 py-3">Precio_V (Venta)</th>
+                  <th class="px-5 py-3">Precio_C (Costo)</th>
+                  <th class="px-5 py-3">Margen Bruto</th>
+                  <th class="px-5 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-productos-body" class="divide-y divide-gray-100 text-[#333333]">
+                <!-- Se llena con JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================
+           VISTA 4: SEGUIMIENTO / VENTAS (TABLA 3)
+           ========================================== -->
+      <section id="view-ventas" class="hidden space-y-6">
+        
+        <!-- Header de Sección -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-2xl font-bold text-[#333333]">3. Seguimiento y Ventas</h2>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: SEGUIMIENTO / VENTAS</span>
+            </div>
+            <p class="text-xs text-gray-500 mt-0.5">Relaciones foráneas (ID_Cliente + ID_Producto), canales y trazabilidad de entrega</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="openSaleModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+              <span>+ Registrar Venta</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="filter-sales-search" placeholder="Buscar por ID de venta, cliente u observación..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="filter-sales-status" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              <option value="">Todos los Estados</option>
+              <option value="Completado">Completado</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+            <select id="filter-sales-channel" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+              <option value="">Todos los Canales</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Facebook">Facebook</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Local">Local</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla de Ventas / Seguimiento -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">ID_Seguimiento</th>
+                  <th class="px-4 py-3">ID_Cliente (Relación)</th>
+                  <th class="px-4 py-3">ID_Producto (Relación)</th>
+                  <th class="px-4 py-3">Fecha_Compra</th>
+                  <th class="px-4 py-3">Cantidad</th>
+                  <th class="px-4 py-3">Total</th>
+                  <th class="px-4 py-3">Canal</th>
+                  <th class="px-4 py-3">Método_Pago</th>
+                  <th class="px-4 py-3">Estado</th>
+                  <th class="px-4 py-3">Observación</th>
+                  <th class="px-4 py-3 text-right">Comprobante / Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-ventas-body" class="divide-y divide-gray-100 text-[#333333]">
+                <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ==========================================
+       MODALES DE LA APLICACIÓN
+       ========================================== -->
+
+  <!-- MODAL: REGISTRAR / EDITAR CLIENTE -->
+  <div id="modal-client" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 id="modal-client-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Cliente</h3>
+          <p class="text-xs text-gray-500">Tabla 1: CLIENTES</p>
+        </div>
+        <button onclick="closeModal('modal-client')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-client" class="mt-4 space-y-4" onsubmit="handleSaveClient(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Cliente (Único) *</label>
+            <input type="text" id="client-id" required placeholder="C001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Tipo_Cliente *</label>
+            <select id="client-type" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Frecuente">Frecuente</option>
+              <option value="Mayorista">Mayorista</option>
+              <option value="Ocasional">Ocasional</option>
+              <option value="Nuevo">Nuevo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre *</label>
+            <input type="text" id="client-name" required placeholder="Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Apellido *</label>
+            <input type="text" id="client-lastname" required placeholder="Solis" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Teléfono (WhatsApp)</label>
+            <input type="tel" id="client-phone" placeholder="0984149863" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Red_Social</label>
+            <select id="client-social" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Facebook">Facebook</option>
+              <option value="Instagram">Instagram</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="TikTok">TikTok</option>
+              <option value="Ninguna">Ninguna</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Correo Electrónico</label>
+          <input type="email" id="client-email" placeholder="carlosol@gmail.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Fecha_Registro</label>
+          <input type="date" id="client-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-client')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Guardar Cliente
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR / EDITAR PRODUCTO -->
+  <div id="modal-product" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 id="modal-product-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Producto</h3>
+          <p class="text-xs text-gray-500">Tabla 2: PRODUCTOS</p>
+        </div>
+        <button onclick="closeModal('modal-product')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-product" class="mt-4 space-y-4" onsubmit="handleSaveProduct(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Producto *</label>
+            <input type="text" id="product-id" required placeholder="P001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-xs font-semibold text-[#333333]">Categoría *</label>
+              <button type="button" onclick="openAddCategoryModal()" class="text-[11px] font-bold text-[#E30613] hover:underline flex items-center space-x-0.5" title="Crear nueva categoría">
+                <i data-lucide="plus" class="w-3 h-3"></i>
+                <span>+ Nueva</span>
+              </button>
+            </div>
+            <div class="flex items-center space-x-1.5">
+              <select id="product-category" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+                <!-- Dinámico -->
+              </select>
+              <button type="button" onclick="openCategoriesModal()" title="Administrar todas las categorías" class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 shrink-0">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre del Producto *</label>
+          <input type="text" id="product-name" required placeholder="Pollo entero" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Precio_V (Venta $) *</label>
+            <input type="number" step="0.01" min="0" id="product-price-v" required placeholder="8.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold text-[#E30613]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Precio_C (Costo $) *</label>
+            <input type="number" step="0.01" min="0" id="product-price-c" required placeholder="16.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium">
+          </div>
+        </div>
+
+        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-product')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Guardar Producto
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMINISTRAR CATEGORÍAS -->
+  <div id="modal-categories" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 class="text-lg font-bold text-[#333333]">Administrar Categorías</h3>
+          <p class="text-xs text-gray-500">Crea, edita y organiza las categorías del catálogo avícola</p>
+        </div>
+        <button onclick="closeModal('modal-categories')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Botón visible para Agregar Categoría -->
+      <div class="py-3 flex items-center justify-between">
+        <span class="text-xs font-semibold text-gray-600">Categorías registradas:</span>
+        <button onclick="openAddCategoryModal()" class="px-3.5 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>+ Agregar categoría</span>
+        </button>
+      </div>
+
+      <!-- Listado de Categorías -->
+      <div class="flex-1 overflow-y-auto border border-gray-200 rounded-xl">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-gray-50 text-gray-600 uppercase font-semibold border-b border-gray-200">
+            <tr>
+              <th class="px-4 py-3">ID</th>
+              <th class="px-4 py-3">Nombre de Categoría</th>
+              <th class="px-4 py-3">Productos Asociados</th>
+              <th class="px-4 py-3 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="table-categories-body" class="divide-y divide-gray-100">
+            <!-- Llenado dinámico con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-4 mt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
+        <span>* No se permite eliminar categorías con productos asignados.</span>
+        <button type="button" onclick="closeModal('modal-categories')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR / EDITAR CATEGORÍA -->
+  <div id="modal-category-form" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div>
+          <h4 id="category-form-title" class="text-base font-bold text-[#333333]">Agregar categoría</h4>
+          <p class="text-[11px] text-gray-500">Categoría del catálogo</p>
+        </div>
+        <button onclick="closeModal('modal-category-form')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-category" class="mt-4 space-y-4" onsubmit="handleSaveCategory(event)">
+        <input type="hidden" id="category-form-id" value="">
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre de categoría *</label>
+          <input type="text" id="category-form-name" required placeholder="Ej. Cerdo, Pavo, Embutidos..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-2">
+          <button type="button" onclick="closeModal('modal-category-form')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR / EDITAR VENTA (SEGUIMIENTO) -->
+  <div id="modal-sale" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 id="modal-sale-title" class="text-lg font-bold text-[#333333]">Registrar Venta / Seguimiento</h3>
+          <p class="text-xs text-gray-500">Tabla 3: SEGUIMIENTO / VENTAS</p>
+        </div>
+        <button onclick="closeModal('modal-sale')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-sale" class="mt-4 space-y-4" onsubmit="handleSaveSale(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Seguimiento *</label>
+            <input type="text" id="sale-id" required placeholder="S001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Fecha_Compra *</label>
+            <input type="date" id="sale-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          </div>
+        </div>
+
+        <!-- Relación ID_Cliente -->
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Cliente (Relación Clientes) *</label>
+          <select id="sale-client-id" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <!-- Relación ID_Producto -->
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Producto (Relación Productos) *</label>
+          <select id="sale-product-id" required onchange="calculateSaleTotal()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Cantidad *</label>
+            <input type="number" min="1" id="sale-qty" required value="1" oninput="calculateSaleTotal()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Total ($) *</label>
+            <input type="number" step="0.01" min="0" id="sale-total" required placeholder="8.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-extrabold text-[#E30613]">
+            <span class="text-[10px] text-gray-400">Autocalculado o editable con descuento</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Canal *</label>
+            <select id="sale-channel" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Instagram">Instagram</option>
+              <option value="Facebook">Facebook</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Local">Local</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Método_Pago *</label>
+            <select id="sale-payment" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Deuna">Deuna</option>
+              <option value="Tarjeta">Tarjeta</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Estado *</label>
+            <select id="sale-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Completado">Completado</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Observación</label>
+          <textarea id="sale-notes" rows="2" placeholder="Entregado a conformidad" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"></textarea>
+        </div>
+
+        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-sale')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Guardar Venta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RECIBO / COMPROBANTE DE VENTA IMPRIMIBLE CON LOGO OFICIAL -->
+  <div id="modal-receipt" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fade-in relative">
+      <button onclick="closeModal('modal-receipt')" class="no-print absolute top-4 right-4 text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Contenido del Comprobante -->
+      <div id="printable-receipt" class="space-y-4 text-[#333333]">
+        
+        <!-- Encabezado de Empresa con Logotipo Oficial -->
+        <div class="text-center pb-4 border-b border-dashed border-gray-300">
+          <img src="logo.png" alt="QUÉ POLLO!" class="h-16 w-auto mx-auto object-contain mb-2">
+          <h2 class="text-xl font-extrabold tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</h2>
+          <p class="text-xs text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+          <p class="text-[10px] text-gray-400 mt-0.5">Ambato - Ecuador • RUC: 1890000000001</p>
+          <div class="mt-2 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-[#E30613] border border-red-200">
+            COMPROBANTE DE ENTREGA
+          </div>
+        </div>
+
+        <!-- Info Transacción -->
+        <div class="text-xs space-y-1.5 py-2 border-b border-dashed border-gray-200">
+          <div class="flex justify-between">
+            <span class="text-gray-500">N° Seguimiento:</span>
+            <span id="rcpt-id" class="font-bold text-[#333333] font-mono">S001</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Fecha:</span>
+            <span id="rcpt-date" class="font-medium">2026-09-09</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Canal de Venta:</span>
+            <span id="rcpt-channel" class="font-medium">Instagram</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Método de Pago:</span>
+            <span id="rcpt-payment" class="font-medium">Efectivo</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Estado:</span>
+            <span id="rcpt-status" class="font-bold text-[#00A651]">Completado</span>
+          </div>
+        </div>
+
+        <!-- Info Cliente -->
+        <div class="text-xs space-y-1.5 py-2 border-b border-dashed border-gray-200 bg-gray-50 p-2.5 rounded-lg">
+          <div class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Datos del Cliente:</div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Nombre:</span>
+            <span id="rcpt-client-name" class="font-semibold text-[#333333]">Carlos Solis</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Teléfono:</span>
+            <span id="rcpt-client-phone" class="font-medium">0984149863</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-gray-500">Correo:</span>
+            <span id="rcpt-client-email" class="font-medium">carlosol@gmail.com</span>
+          </div>
+        </div>
+
+        <!-- Desglose de Producto -->
+        <div class="py-2 border-b border-dashed border-gray-200">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="text-gray-500 border-b border-gray-100 pb-1">
+                <th class="text-left font-semibold">Producto</th>
+                <th class="text-center font-semibold">Cant.</th>
+                <th class="text-right font-semibold">Total</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr>
+                <td id="rcpt-product-name" class="py-2 font-medium text-[#333333]">Pollo entero</td>
+                <td id="rcpt-product-qty" class="py-2 text-center font-bold">2</td>
+                <td id="rcpt-total" class="py-2 text-right font-extrabold text-[#E30613]">$7.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="text-xs bg-red-50/50 p-2.5 rounded-lg border border-red-100">
+          <span class="text-gray-500 text-[10px] block uppercase font-bold">Observación:</span>
+          <p id="rcpt-obs" class="text-[#333333] italic mt-0.5">Entregado a conformidad</p>
+        </div>
+
+        <!-- Pie de Ticket y Agradecimiento -->
+        <div class="text-center pt-2 text-[10px] text-gray-400 space-y-1">
+          <p class="font-bold text-[#E30613]">¡Gracias por preferir Avícola QUÉ POLLO!</p>
+          <p>Proyecto de Sistemas de Información • UTA 7mo B Mercadotecnia</p>
+        </div>
+
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="no-print mt-5 pt-4 border-t border-gray-100 flex items-center justify-end space-x-2">
+        <button onclick="closeModal('modal-receipt')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+          Cerrar
+        </button>
+        <button onclick="window.print()" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-md">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Imprimir Comprobante</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: HISTORIAL DE COMPRAS POR CLIENTE -->
+  <div id="modal-client-history" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 id="history-client-name" class="text-lg font-bold text-[#333333]">Historial del Cliente</h3>
+          <p id="history-client-details" class="text-xs text-gray-500">C001 • Carlos Solis</p>
+        </div>
+        <button onclick="closeModal('modal-client-history')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-4 max-h-72 overflow-y-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+            <tr>
+              <th class="px-3 py-2">ID Venta</th>
+              <th class="px-3 py-2">Producto</th>
+              <th class="px-3 py-2">Fecha</th>
+              <th class="px-3 py-2">Total</th>
+              <th class="px-3 py-2">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body" class="divide-y divide-gray-100">
+            <!-- Llenado con JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div class="text-xs">
+          <span class="text-gray-500">Total Acumulado:</span>
+          <span id="history-total-spent" class="font-extrabold text-[#E30613] ml-1 text-sm">$0.00</span>
+        </div>
+        <button onclick="closeModal('modal-client-history')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-gray-700">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: INFORMACIÓN DEL PROYECTO ACADÉMICO UTA -->
+  <div id="modal-uta" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div class="flex items-center space-x-2">
+          <div class="w-9 h-9 rounded-xl bg-red-50 text-[#E30613] border border-red-100 flex items-center justify-center font-bold">
+            UTA
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-[#333333]">UNIVERSIDAD TÉCNICA DE AMBATO</h3>
+            <p class="text-xs text-gray-500">Facultad de Ciencias Administrativas</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-uta')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-4 text-xs">
+        <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+          <div class="font-bold text-[#333333]">Módulo: Sistemas de Información</div>
+          <div class="text-gray-600">Carrera: Mercadotecnia | Curso: 7mo "B"</div>
+          <div class="text-[#E30613] font-semibold mt-1">Actividad: ACT - BD CRM (Avícola QUÉ POLLO)</div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-[#333333] uppercase tracking-wider text-[11px] mb-2">Integrantes del GRUPO 4:</h4>
+          <ul class="space-y-1.5 text-gray-700">
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span><strong>Flores Salomé</strong></span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+              <span><strong>Solis Fabian</strong></span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span><strong>Quinapanta Rebeca</strong></span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+              <span><strong>Naranjo Domenica</strong></span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span><strong>Pico Daniela</strong></span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="p-3 bg-red-50/50 rounded-xl border border-red-100 text-[#333333]">
+          <strong class="text-[#E30613]">Base de Datos Implementada:</strong>
+          <p class="mt-0.5 text-gray-600">1. Tabla CLIENTES • 2. Tabla PRODUCTOS (con Categorías Dinámicas) • 3. Tabla SEGUIMIENTO / VENTAS</p>
+        </div>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-gray-100 flex justify-end">
+        <button onclick="closeModal('modal-uta')" class="px-4 py-2 rounded-xl btn-primary font-semibold text-xs shadow-xs">
+          Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="bg-white border-t border-gray-200 py-6 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+      <div class="flex items-center space-x-2">
+        <span class="font-bold text-[#333333]">Avícola QUÉ POLLO</span>
+        <span>•</span>
+        <span>CRM Comercial & Seguimiento</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <button onclick="openModal('modal-uta')" class="hover:text-[#E30613] transition-colors">
+          Créditos Académicos UTA Grupo 4
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts de la Aplicación -->
+  <script src="supabase-client.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>

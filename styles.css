@@ -1,0 +1,260 @@
+/* ==========================================================
+   ESTILOS PERSONALIZADOS - CRM AVÍCOLA "QUÉ POLLO"
+   Identidad Gráfica Corporativa:
+   - Rojo Principal:   #E30613
+   - Verde Principal:  #00A651
+   - Amarillo Acento:  #FFD200
+   - Dorado/Mostaza:   #806B20
+   - Blanco:           #FFFFFF
+   - Gris Muy Claro:   #F5F5F5
+   - Gris Oscuro:      #333333
+   ========================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+:root {
+  --font-primary: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --color-brand-red: #E30613;
+  --color-brand-red-hover: #C50510;
+  --color-brand-red-light: #FEF2F2;
+  --color-brand-green: #00A651;
+  --color-brand-green-hover: #008C44;
+  --color-brand-green-light: #ECFDF5;
+  --color-brand-yellow: #FFD200;
+  --color-brand-yellow-light: #FEFCE8;
+  --color-brand-gold: #806B20;
+  --color-bg-base: #F5F5F5;
+  --color-card-bg: #FFFFFF;
+  --color-text-main: #333333;
+  --color-text-muted: #6B7280;
+  --color-border: #E5E7EB;
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tipografía de títulos */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-text-main);
+}
+
+/* ==========================================================
+   BOTONES CORPORATIVOS
+   ========================================================== */
+.btn-primary {
+  background-color: var(--color-brand-red);
+  color: #FFFFFF;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-brand-red-hover);
+  box-shadow: 0 4px 12px rgba(227, 6, 19, 0.25);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background-color: #FFFFFF;
+  color: var(--color-brand-red);
+  border: 1.5px solid var(--color-brand-red);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-brand-red-light);
+}
+
+.btn-success {
+  background-color: var(--color-brand-green);
+  color: #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.btn-success:hover {
+  background-color: var(--color-brand-green-hover);
+  box-shadow: 0 4px 12px rgba(0, 166, 81, 0.25);
+}
+
+.btn-warning {
+  background-color: var(--color-brand-yellow);
+  color: var(--color-text-main);
+  transition: all 0.2s ease;
+}
+
+.btn-warning:hover {
+  background-color: #E6BD00;
+}
+
+.btn-danger-outline {
+  background-color: #FFFFFF;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  transition: all 0.2s ease;
+}
+
+.btn-danger-outline:hover {
+  background-color: #FEF2F2;
+}
+
+/* ==========================================================
+   NAVEGACIÓN LATERAL ACTIVA
+   ========================================================== */
+.nav-link-active {
+  background-color: var(--color-brand-red-light) !important;
+  color: var(--color-brand-red) !important;
+  font-weight: 600 !important;
+  border-left: 3.5px solid var(--color-brand-red) !important;
+}
+
+.nav-link-inactive {
+  color: #4B5563;
+  border-left: 3.5px solid transparent;
+}
+
+.nav-link-inactive:hover {
+  background-color: #F9FAFB;
+  color: var(--color-text-main);
+}
+
+/* ==========================================
+   INPUTS Y CAMPOS DE FORMULARIO
+   ========================================== */
+input:focus, select:focus, textarea:focus {
+  border-color: var(--color-brand-red) !important;
+  box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.12) !important;
+  outline: none !important;
+}
+
+/* ==========================================
+   BADGES DE ESTADO
+   ========================================== */
+.badge-completado {
+  background-color: var(--color-brand-green-light);
+  color: var(--color-brand-green);
+  border: 1px solid #A7F3D0;
+}
+
+.badge-pendiente {
+  background-color: var(--color-brand-yellow-light);
+  color: #9A6800;
+  border: 1px solid #FDE68A;
+}
+
+.badge-cancelado {
+  background-color: var(--color-brand-red-light);
+  color: var(--color-brand-red);
+  border: 1px solid #FECACA;
+}
+
+/* Badges de Canal */
+.badge-instagram {
+  background-color: #FDF2F8;
+  color: #BE185D;
+  border: 1px solid #FBCFE8;
+}
+
+.badge-facebook {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.badge-whatsapp {
+  background-color: var(--color-brand-green-light);
+  color: var(--color-brand-green);
+  border: 1px solid #BBF7D0;
+}
+
+.badge-local {
+  background-color: #F3F4F6;
+  color: var(--color-text-main);
+  border: 1px solid #E5E7EB;
+}
+
+/* ==========================================
+   EFECTOS DE TARJETA Y SCROLLBAR
+   ========================================== */
+.card-hover-effect {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover-effect:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.07);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+  background-color: rgba(51, 51, 51, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* ==========================================================
+   ESTILOS DE IMPRESIÓN (RECIBO CORPORATIVO)
+   ========================================================== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
