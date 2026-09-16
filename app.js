@@ -9,6 +9,8 @@
 
 let state = {
   currentView: 'dashboard',
+  currentUser: null,
+  users: [],
   categories: [],
   clients: [],
   products: [],
@@ -21,7 +23,8 @@ let state = {
   editingCategoryId: null,
   editingClientId: null,
   editingProductId: null,
-  editingSaleId: null
+  editingSaleId: null,
+  editingUserId: null
 };
 
 // Notificaciones Toast con estilo corporativo
@@ -42,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initDateBanner();
   await loadAllData();
   setupEventListeners();
-  switchView('dashboard');
+  checkAuthSession();
 });
 
 // Inicializar fecha actual en el banner
@@ -62,6 +65,7 @@ async function loadAllData() {
     state.clients = await window.dataService.getClients();
     state.products = await window.dataService.getProducts();
     state.sales = await window.dataService.getSales();
+    state.users = await window.dataService.getUsers();
     populateCategoryDropdowns();
     updateNavigationBadges();
   } catch (err) {
@@ -74,10 +78,12 @@ function updateNavigationBadges() {
   const cBadge = document.getElementById('badge-count-clientes');
   const pBadge = document.getElementById('badge-count-productos');
   const sBadge = document.getElementById('badge-count-ventas');
+  const uBadge = document.getElementById('badge-count-usuarios');
 
   if (cBadge) cBadge.textContent = state.clients.length;
   if (pBadge) pBadge.textContent = state.products.length;
   if (sBadge) sBadge.textContent = state.sales.length;
+  if (uBadge) uBadge.textContent = state.users.length;
 }
 
 // Poblar los selectores desplegables de categorías dinámicamente
@@ -138,6 +144,12 @@ function setupEventListeners() {
   if (saleSearch) saleSearch.addEventListener('input', renderSalesTable);
   if (saleStatus) saleStatus.addEventListener('change', renderSalesTable);
   if (saleChannel) saleChannel.addEventListener('change', renderSalesTable);
+
+  // Filtros Usuarios
+  const userSearch = document.getElementById('filter-user-search');
+  const userRole = document.getElementById('filter-user-role');
+  if (userSearch) userSearch.addEventListener('input', renderUsuariosTable);
+  if (userRole) userRole.addEventListener('change', renderUsuariosTable);
 }
 
 function openMobileMenu() {
@@ -156,7 +168,7 @@ function closeMobileMenu() {
 function switchView(viewName) {
   state.currentView = viewName;
 
-  const views = ['dashboard', 'clientes', 'productos', 'ventas'];
+  const views = ['dashboard', 'clientes', 'productos', 'ventas', 'usuarios'];
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.add('hidden');
@@ -185,6 +197,8 @@ function switchView(viewName) {
     renderProducts();
   } else if (viewName === 'ventas') {
     renderSalesTable();
+  } else if (viewName === 'usuarios') {
+    renderUsuariosTable();
   }
 
   if (window.lucide) {
@@ -1289,3 +1303,395 @@ function closeModal(id) {
   const el = document.getElementById(id);
   if (el) el.classList.add('hidden');
 }
+
+// ==========================================
+// CONTROLADOR DE AUTENTICACIÓN (LOGIN & SESIÓN)
+// ==========================================
+function checkAuthSession() {
+  const saved = localStorage.getItem('qp_current_user') || sessionStorage.getItem('qp_current_user');
+  if (saved) {
+    try {
+      state.currentUser = JSON.parse(saved);
+      updateAuthUI(true);
+      switchView('dashboard');
+    } catch {
+      updateAuthUI(false);
+    }
+  } else {
+    updateAuthUI(false);
+  }
+}
+
+function updateAuthUI(isAuthenticated) {
+  const loginEl = document.getElementById('login-screen');
+  const appEl = document.getElementById('app-container');
+
+  if (isAuthenticated && state.currentUser) {
+    if (loginEl) loginEl.classList.add('hidden');
+    if (appEl) appEl.classList.remove('hidden');
+
+    const nameEl = document.getElementById('header-user-name');
+    const roleEl = document.getElementById('header-user-role');
+    if (nameEl) nameEl.textContent = state.currentUser.nombre || state.currentUser.usuario;
+    if (roleEl) {
+      roleEl.textContent = state.currentUser.rol || 'Usuario';
+      roleEl.className = state.currentUser.rol === 'Administrador'
+        ? 'text-[10px] font-bold text-[#E30613]'
+        : 'text-[10px] font-semibold text-[#00A651]';
+    }
+
+    // Restricciones según Rol
+    const navUserBtn = document.getElementById('nav-btn-usuarios');
+    if (navUserBtn) {
+      if (state.currentUser.rol === 'Vendedor') {
+        navUserBtn.classList.add('hidden');
+      } else {
+        navUserBtn.classList.remove('hidden');
+      }
+    }
+  } else {
+    if (loginEl) loginEl.classList.remove('hidden');
+    if (appEl) appEl.classList.add('hidden');
+  }
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function handleLoginSubmit(e) {
+  if (e) e.preventDefault();
+
+  const userInput = document.getElementById('login-username').value.trim();
+  const passInput = document.getElementById('login-password').value.trim();
+  const remember = document.getElementById('login-remember')?.checked;
+
+  if (!userInput || !passInput) {
+    Toast.fire({ icon: 'warning', title: 'Por favor complete todos los campos' });
+    return;
+  }
+
+  const found = state.users.find(u =>
+    u.usuario.toLowerCase() === userInput.toLowerCase() ||
+    (u.correo && u.correo.toLowerCase() === userInput.toLowerCase())
+  );
+
+  if (!found || found.password !== passInput) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Acceso Denegado',
+      text: 'Usuario o contraseña incorrectos. Por favor verifique sus datos.',
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  if (found.estado && found.estado === 'Inactivo') {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Cuenta Inactiva',
+      text: 'Esta cuenta se encuentra temporalmente desactivada. Contacte al administrador.',
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  state.currentUser = found;
+  const storage = remember ? localStorage : sessionStorage;
+  storage.setItem('qp_current_user', JSON.stringify(found));
+
+  Toast.fire({
+    icon: 'success',
+    title: `¡Bienvenido(a), ${found.nombre}!`
+  });
+
+  updateAuthUI(true);
+  switchView('dashboard');
+}
+
+function handleLogout() {
+  Swal.fire({
+    title: '¿Cerrar Sesión?',
+    text: 'Volverás a la pantalla principal de acceso comercial.',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Sí, salir',
+    cancelButtonText: 'Cancelar'
+  }).then((res) => {
+    if (res.isConfirmed) {
+      localStorage.removeItem('qp_current_user');
+      sessionStorage.removeItem('qp_current_user');
+      state.currentUser = null;
+      const form = document.getElementById('form-login');
+      if (form) form.reset();
+      updateAuthUI(false);
+      Toast.fire({ icon: 'info', title: 'Sesión finalizada correctamente' });
+    }
+  });
+}
+
+function fillQuickLogin(user, pass) {
+  const userInput = document.getElementById('login-username');
+  const passInput = document.getElementById('login-password');
+  if (userInput) userInput.value = user;
+  if (passInput) passInput.value = pass;
+  handleLoginSubmit(null);
+}
+
+function togglePasswordVisibility(inputId, eyeIconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(eyeIconId);
+  if (!input) return;
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (icon) icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    if (icon) icon.setAttribute('data-lucide', 'eye');
+  }
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// ==========================================
+// MÓDULO 4: GESTIÓN DE USUARIOS Y CREDENCIALES
+// ==========================================
+function renderUsuariosTable() {
+  const tbody = document.getElementById('table-usuarios-body');
+  if (!tbody) return;
+
+  const search = (document.getElementById('filter-user-search')?.value || '').toLowerCase();
+  const roleFilter = document.getElementById('filter-user-role')?.value || '';
+
+  const filtered = state.users.filter(u => {
+    const matchSearch = (u.nombre || '').toLowerCase().includes(search) ||
+                        (u.usuario || '').toLowerCase().includes(search) ||
+                        (u.id_usuario || '').toLowerCase().includes(search);
+    const matchRole = !roleFilter || u.rol === roleFilter;
+    return matchSearch && matchRole;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="px-6 py-8 text-center text-gray-400">
+          <i data-lucide="shield-alert" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
+          No se encontraron usuarios que coincidan con la búsqueda.
+        </td>
+      </tr>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(u => {
+    const isCurrentUser = state.currentUser && state.currentUser.id_usuario === u.id_usuario;
+    const roleBadge = u.rol === 'Administrador'
+      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">👑 ${u.rol}</span>`
+      : (u.rol === 'Supervisor'
+        ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-50 text-[#806B20] border border-yellow-200">🔍 ${u.rol}</span>`
+        : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651] border border-emerald-200">💼 ${u.rol}</span>`);
+
+    const statusBadge = u.estado === 'Activo'
+      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651]">🟢 Activo</span>`
+      : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-[#E30613]">🔴 Inactivo</span>`;
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors">
+        <td class="px-4 py-3 font-mono font-bold text-xs text-gray-700">
+          <span class="bg-gray-100 px-2 py-0.5 rounded-md">${u.id_usuario}</span>
+        </td>
+        <td class="px-4 py-3">
+          <div class="font-bold text-[#333333] flex items-center space-x-1.5">
+            <span>${u.nombre}</span>
+            ${isCurrentUser ? '<span class="text-[10px] bg-red-100 text-[#E30613] px-1.5 py-0.2 rounded font-bold">Tú</span>' : ''}
+          </div>
+        </td>
+        <td class="px-4 py-3 text-gray-600 font-medium">
+          <span class="font-mono text-xs">@${u.usuario}</span>
+        </td>
+        <td class="px-4 py-3">${roleBadge}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center space-x-2">
+            <span class="font-mono text-xs text-gray-500 tracking-widest">••••••••</span>
+            <button onclick="showPasswordAlert('${u.usuario}', '${u.password}')" title="Ver contraseña" class="p-1 rounded-lg text-gray-400 hover:text-[#E30613] hover:bg-red-50 transition-colors">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="inline-flex items-center space-x-1">
+            <button onclick="editUser('${u.id_usuario}')" title="Editar y cambiar contraseña" class="p-1.5 rounded-lg text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 transition-colors">
+              <i data-lucide="pencil" class="w-4 h-4"></i>
+            </button>
+            ${!isCurrentUser ? `
+              <button onclick="deleteUser('${u.id_usuario}')" title="Eliminar usuario" class="p-1.5 rounded-lg text-gray-500 hover:text-[#E30613] hover:bg-red-50 transition-colors">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            ` : `
+              <span class="w-7"></span>
+            `}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function showPasswordAlert(usuario, password) {
+  Swal.fire({
+    title: `Credencial de Acceso`,
+    html: `
+      <div class="space-y-3 text-left">
+        <p class="text-xs text-gray-500">Usuario: <strong class="text-gray-800">@${usuario}</strong></p>
+        <div>
+          <label class="text-[11px] font-bold text-gray-400 uppercase">Contraseña actual:</label>
+          <div class="mt-1 p-3 bg-red-50 border border-red-100 rounded-xl text-center font-mono font-bold text-xl text-[#E30613] tracking-widest">
+            ${password}
+          </div>
+        </div>
+      </div>
+    `,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Aceptar'
+  });
+}
+
+function openUserModal(userId = null) {
+  state.editingUserId = userId;
+  const title = document.getElementById('modal-user-title');
+  const form = document.getElementById('form-user');
+  form.reset();
+
+  if (userId) {
+    const u = state.users.find(x => x.id_usuario === userId);
+    if (!u) return;
+
+    if (title) title.textContent = 'Editar Usuario y Contraseña';
+    document.getElementById('user-id').value = u.id_usuario;
+    document.getElementById('user-id').readOnly = true;
+    document.getElementById('user-name').value = u.nombre;
+    document.getElementById('user-username').value = u.usuario;
+    document.getElementById('user-password').value = u.password;
+    document.getElementById('user-role').value = u.rol || 'Vendedor';
+    document.getElementById('user-status').value = u.estado || 'Activo';
+  } else {
+    if (title) title.textContent = 'Registrar Nuevo Usuario';
+    document.getElementById('user-id').readOnly = false;
+    
+    // Auto-generar ID siguiente
+    const nextNum = state.users.length + 1;
+    document.getElementById('user-id').value = `U00${nextNum}`;
+    document.getElementById('user-role').value = 'Vendedor';
+    document.getElementById('user-status').value = 'Activo';
+  }
+
+  openModal('modal-user');
+}
+
+async function handleSaveUser(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('user-id').value.trim().toUpperCase();
+  const nombre = document.getElementById('user-name').value.trim();
+  const usuario = document.getElementById('user-username').value.trim().toLowerCase();
+  const password = document.getElementById('user-password').value.trim();
+  const rol = document.getElementById('user-role').value;
+  const estado = document.getElementById('user-status').value;
+
+  if (!id || !nombre || !usuario || !password) {
+    Toast.fire({ icon: 'warning', title: 'Complete todos los campos obligatorios' });
+    return;
+  }
+
+  // Validar unicidad de nombre de usuario
+  const duplicate = state.users.find(u => u.usuario.toLowerCase() === usuario && u.id_usuario !== id);
+  if (duplicate) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Usuario ya existente',
+      text: `El nombre de usuario "@${usuario}" ya está en uso por otro miembro del equipo.`,
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  const userData = {
+    id_usuario: id,
+    nombre,
+    usuario,
+    password,
+    rol,
+    estado
+  };
+
+  try {
+    await window.dataService.saveUser(userData);
+    await loadAllData();
+    renderUsuariosTable();
+    closeModal('modal-user');
+
+    // Si el usuario editado es el mismo con sesión activa, actualizar la sesión
+    if (state.currentUser && state.currentUser.id_usuario === id) {
+      state.currentUser = userData;
+      if (localStorage.getItem('qp_current_user')) {
+        localStorage.setItem('qp_current_user', JSON.stringify(userData));
+      } else {
+        sessionStorage.setItem('qp_current_user', JSON.stringify(userData));
+      }
+      updateAuthUI(true);
+    }
+
+    Toast.fire({
+      icon: 'success',
+      title: state.editingUserId ? 'Usuario actualizado con éxito' : 'Nuevo usuario registrado con éxito'
+    });
+  } catch (err) {
+    console.error('Error guardando usuario:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo guardar el usuario', confirmButtonColor: '#E30613' });
+  }
+}
+
+function editUser(id) {
+  openUserModal(id);
+}
+
+async function deleteUser(id) {
+  if (state.currentUser && state.currentUser.id_usuario === id) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Acción no permitida',
+      text: 'No puedes eliminar la cuenta con la que tienes la sesión iniciada en este momento.',
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  const u = state.users.find(x => x.id_usuario === id);
+  const result = await Swal.fire({
+    title: '¿Eliminar cuenta de usuario?',
+    html: `Se eliminará el acceso de <strong>${u ? u.nombre : id}</strong> (@${u ? u.usuario : ''}).`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await window.dataService.deleteUser(id);
+      await loadAllData();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: 'Usuario eliminado del sistema' });
+    } catch (err) {
+      console.error('Error eliminando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+

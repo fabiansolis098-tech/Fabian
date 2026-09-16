@@ -50,49 +50,157 @@
 <body class="bg-[#F5F5F5] text-[#333333] antialiased min-h-screen flex flex-col">
 
   <!-- ==========================================
-       HEADER PRINCIPAL SUPERIOR
+       APARTADO PRINCIPAL: PANTALLA DE INICIO DE SESIÓN (LOGIN)
        ========================================== -->
-  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-red-50/40 relative">
+    <!-- Efectos visuales de fondo -->
+    <div class="absolute top-0 left-0 w-96 h-96 bg-red-100/50 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-green-100/40 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
+
+    <div class="relative z-10 w-full max-w-md">
+      <!-- Tarjeta Principal de Login -->
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-200/80 p-6 sm:p-8 space-y-6">
         
-        <!-- Logo & Marca Oficial -->
-        <div class="flex items-center space-x-3">
-          <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-[#333333] hover:bg-gray-100 focus:outline-none" aria-label="Abrir menú">
-            <i data-lucide="menu" class="w-6 h-6"></i>
-          </button>
-          
-          <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchView('dashboard')">
-            <img src="logo.png" alt="QUÉ POLLO!" class="h-11 w-auto object-contain">
-            <div class="hidden sm:block">
-              <div class="flex items-center space-x-2">
-                <span class="font-extrabold text-base tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</span>
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200">CRM Oficial</span>
-              </div>
-              <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+        <!-- Logo y Marca -->
+        <div class="flex flex-col items-center text-center space-y-2">
+          <img src="logo.png" alt="QUÉ POLLO!" class="h-20 w-auto object-contain hover:scale-105 transition-transform">
+          <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-red-50 border border-red-100">
+            <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#E30613]">Portal de Acceso Comercial</span>
+          </div>
+          <h1 class="text-2xl font-black text-[#333333] tracking-tight">Iniciar Sesión</h1>
+          <p class="text-xs text-gray-500 max-w-xs">Ingresa tu usuario y contraseña para acceder al sistema CRM de Avícola QUÉ POLLO</p>
+        </div>
+
+        <!-- Formulario de Login -->
+        <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-[#333333] mb-1.5" for="login-username">Usuario o Correo *</label>
+            <div class="relative">
+              <i data-lucide="user" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+              <input type="text" id="login-username" required placeholder="Ej: admin o vendedor" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:border-[#E30613] focus:ring-2 focus:ring-red-100 transition-all">
             </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-bold text-[#333333]" for="login-password">Contraseña *</label>
+            </div>
+            <div class="relative">
+              <i data-lucide="lock" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+              <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-11 py-2.5 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-2 focus:ring-red-100 transition-all">
+              <button type="button" onclick="togglePasswordVisibility('login-password', 'login-password-eye')" class="absolute right-3.5 top-3 text-gray-400 hover:text-gray-600 focus:outline-none" title="Mostrar/Ocultar contraseña">
+                <i id="login-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-xs pt-1">
+            <label class="flex items-center space-x-2 text-gray-600 cursor-pointer">
+              <input type="checkbox" id="login-remember" checked class="rounded text-[#E30613] focus:ring-red-200">
+              <span>Recordar sesión</span>
+            </label>
+          </div>
+
+          <button type="submit" id="btn-login-submit" class="w-full py-3 rounded-xl btn-primary font-bold text-sm shadow-md flex items-center justify-center space-x-2">
+            <span>Ingresar al Sistema</span>
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <!-- Accesos Rápidos de Prueba (Demo / Docente UTA) -->
+        <div class="pt-4 border-t border-gray-100 space-y-2">
+          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">Acceso rápido para evaluación:</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="fillQuickLogin('admin', '123')" class="p-2.5 rounded-xl border border-red-100 bg-red-50/60 hover:bg-red-50 text-left transition-colors flex items-center space-x-2 group">
+              <div class="w-7 h-7 rounded-lg bg-[#E30613] text-white flex items-center justify-center font-bold text-xs shrink-0">👑</div>
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-[#333333] truncate">Administrador</p>
+                <p class="text-[10px] text-gray-500 font-mono truncate">admin / 123</p>
+              </div>
+            </button>
+
+            <button type="button" onclick="fillQuickLogin('vendedor', '123')" class="p-2.5 rounded-xl border border-green-100 bg-green-50/60 hover:bg-green-50 text-left transition-colors flex items-center space-x-2 group">
+              <div class="w-7 h-7 rounded-lg bg-[#00A651] text-white flex items-center justify-center font-bold text-xs shrink-0">💼</div>
+              <div class="min-w-0">
+                <p class="text-xs font-bold text-[#333333] truncate">Vendedor</p>
+                <p class="text-[10px] text-gray-500 font-mono truncate">vendedor / 123</p>
+              </div>
+            </button>
           </div>
         </div>
 
-        <!-- Créditos y Acciones Rápidas -->
-        <div class="flex items-center space-x-2 sm:space-x-3">
-
-          <!-- Botón Créditos Académicos UTA -->
-          <button onclick="openModal('modal-uta')" class="flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-50 text-[#333333] hover:bg-gray-100 transition-colors border border-gray-200">
-            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-[#00A651]"></i>
-            <span>UTA • Grupo 4</span>
-          </button>
-
-          <!-- Botón Acción Rápida: Nueva Venta (Rojo Corporativo) -->
-          <button onclick="openSaleModal()" class="flex items-center space-x-1.5 text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl btn-primary shadow-xs">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-            <span>Nueva Venta</span>
-          </button>
-
+        <!-- Créditos Académicos UTA -->
+        <div class="pt-2 text-center text-[11px] text-gray-400 space-y-1">
+          <p class="font-semibold text-gray-500">Universidad Técnica de Ambato • Grupo 4</p>
+          <p>Facultad de Ciencias Administrativas • Mercadotecnia 7mo B</p>
         </div>
+
       </div>
     </div>
-  </header>
+  </div>
+
+  <!-- ==========================================
+       CONTENEDOR DE LA APLICACIÓN CRM (PROTEGIDO)
+       ========================================== -->
+  <div id="app-container" class="hidden min-h-screen flex flex-col">
+
+    <!-- ==========================================
+         HEADER PRINCIPAL SUPERIOR
+         ========================================== -->
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          
+          <!-- Logo & Marca Oficial -->
+          <div class="flex items-center space-x-3">
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-[#333333] hover:bg-gray-100 focus:outline-none" aria-label="Abrir menú">
+              <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            
+            <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchView('dashboard')">
+              <img src="logo.png" alt="QUÉ POLLO!" class="h-11 w-auto object-contain">
+              <div class="hidden sm:block">
+                <div class="flex items-center space-x-2">
+                  <span class="font-extrabold text-base tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200">CRM Oficial</span>
+                </div>
+                <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Créditos, Acciones Rápidas y Usuario Activo -->
+          <div class="flex items-center space-x-2 sm:space-x-3">
+
+            <!-- Botón Créditos Académicos UTA -->
+            <button onclick="openModal('modal-uta')" class="hidden sm:flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-50 text-[#333333] hover:bg-gray-100 transition-colors border border-gray-200">
+              <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-[#00A651]"></i>
+              <span>UTA • Grupo 4</span>
+            </button>
+
+            <!-- Botón Acción Rápida: Nueva Venta (Rojo Corporativo) -->
+            <button onclick="openSaleModal()" class="flex items-center space-x-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl btn-primary shadow-xs">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Nueva Venta</span>
+            </button>
+
+            <!-- Perfil del Usuario Activo + Botón Cerrar Sesión -->
+            <div class="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-gray-200">
+              <div class="hidden md:flex flex-col text-right">
+                <span id="header-user-name" class="text-xs font-bold text-[#333333] leading-tight">Admin</span>
+                <span id="header-user-role" class="text-[10px] font-semibold text-[#00A651]">Administrador</span>
+              </div>
+              <button onclick="handleLogout()" title="Cerrar Sesión" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-50 text-[#E30613] hover:bg-red-100 transition-colors border border-red-200">
+                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Salir</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </header>
 
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full flex flex-col md:flex-row gap-6 py-6">
     
@@ -133,6 +241,13 @@
           <i data-lucide="shopping-cart" class="w-4 h-4"></i>
           <span>3. Seguimiento</span>
           <span id="badge-count-ventas" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+        </button>
+
+        <!-- Módulo 4: Usuarios y Accesos -->
+        <button onclick="switchView('usuarios')" id="nav-btn-usuarios" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
+          <i data-lucide="shield-check" class="w-4 h-4 text-[#00A651]"></i>
+          <span>4. Usuarios</span>
+          <span id="badge-count-usuarios" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
         </button>
 
         <!-- Tarjeta Institucional Inferior -->
@@ -178,6 +293,10 @@
               <i data-lucide="shopping-cart" class="w-5 h-5"></i>
               <span>3. Seguimiento / Ventas</span>
             </button>
+            <button onclick="switchView('usuarios'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+              <i data-lucide="shield-check" class="w-5 h-5 text-[#00A651]"></i>
+              <span>4. Usuarios y Accesos</span>
+            </button>
             <button onclick="openModal('modal-uta'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-100">
               <i data-lucide="graduation-cap" class="w-5 h-5 text-[#00A651]"></i>
               <span>Proyecto UTA</span>
@@ -185,8 +304,12 @@
           </nav>
         </div>
 
-        <div class="pt-4 border-t border-gray-100 text-xs text-gray-400">
-          Avícola QUÉ POLLO © 2026
+        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+          <span class="text-xs text-gray-400">Avícola QUÉ POLLO © 2026</span>
+          <button onclick="handleLogout(); closeMobileMenu();" class="text-xs font-bold text-[#E30613] hover:underline flex items-center space-x-1">
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>Salir</span>
+          </button>
         </div>
       </div>
     </div>
@@ -589,6 +712,64 @@
               </thead>
               <tbody id="table-ventas-body" class="divide-y divide-gray-100 text-[#333333]">
                 <!-- Se llena dinámicamente -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ==========================================
+           VISTA 4: USUARIOS Y ACCESOS (GESTIÓN DE CREDENCIALES)
+           ========================================== -->
+      <section id="view-usuarios" class="space-y-6 hidden">
+        
+        <div class="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 text-[#E30613] text-xs font-semibold border border-red-100">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#00A651]"></i>
+              <span>Seguridad & Control de Acceso</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-[#333333]">Gestión de Usuarios y Contraseñas</h2>
+            <p class="text-gray-600 text-xs sm:text-sm">Administración de cuentas comerciales, roles del personal y contraseñas de acceso al sistema.</p>
+          </div>
+          <button onclick="openUserModal()" class="px-4 py-2.5 rounded-xl btn-primary text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-xs shrink-0 self-start sm:self-center">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>+ Nuevo Usuario</span>
+          </button>
+        </div>
+
+        <!-- Filtros y Búsqueda de Usuarios -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+            <input type="text" id="filter-user-search" placeholder="Buscar por nombre, usuario o rol..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+          </div>
+          <select id="filter-user-role" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+            <option value="">Todos los Roles</option>
+            <option value="Administrador">Administrador</option>
+            <option value="Vendedor">Vendedor</option>
+            <option value="Supervisor">Supervisor</option>
+          </select>
+        </div>
+
+        <!-- Tabla de Usuarios -->
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3">ID_Usuario</th>
+                  <th class="px-4 py-3">Nombre Completo</th>
+                  <th class="px-4 py-3">Usuario (Login)</th>
+                  <th class="px-4 py-3">Rol del Sistema</th>
+                  <th class="px-4 py-3">Contraseña</th>
+                  <th class="px-4 py-3">Estado</th>
+                  <th class="px-4 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="table-usuarios-body" class="divide-y divide-gray-100 text-[#333333]">
+                <!-- Se llena dinámicamente con JavaScript -->
               </tbody>
             </table>
           </div>
@@ -1080,6 +1261,78 @@
     </div>
   </div>
 
+  <!-- MODAL: REGISTRAR / EDITAR USUARIO Y CONTRASEÑA -->
+  <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div>
+          <h3 id="modal-user-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Usuario</h3>
+          <p class="text-xs text-gray-500">Credenciales de Acceso y Permisos</p>
+        </div>
+        <button onclick="closeModal('modal-user')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-user" class="mt-4 space-y-4" onsubmit="handleSaveUser(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Usuario *</label>
+            <input type="text" id="user-id" required placeholder="U001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Rol del Sistema *</label>
+            <select id="user-role" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="Administrador">👑 Administrador</option>
+              <option value="Vendedor">💼 Vendedor</option>
+              <option value="Supervisor">🔍 Supervisor</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre Completo *</label>
+          <input type="text" id="user-name" required placeholder="Ej. Juan Pérez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre de Usuario (Login) *</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-2.5 text-gray-400 text-xs font-bold">@</span>
+            <input type="text" id="user-username" required placeholder="juanperez" class="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-sm font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Contraseña de Acceso *</label>
+          <div class="relative">
+            <input type="password" id="user-password" required placeholder="Mínimo 3 caracteres" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm">
+            <button type="button" onclick="togglePasswordVisibility('user-password', 'user-password-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+              <i id="user-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Estado de la Cuenta *</label>
+          <select id="user-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <option value="Activo">🟢 Activo (Permite ingreso)</option>
+            <option value="Inactivo">🔴 Inactivo (Bloqueado)</option>
+          </select>
+        </div>
+
+        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Guardar Usuario
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- MODAL: INFORMACIÓN DEL PROYECTO ACADÉMICO UTA -->
   <div id="modal-uta" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
@@ -1133,7 +1386,7 @@
 
         <div class="p-3 bg-red-50/50 rounded-xl border border-red-100 text-[#333333]">
           <strong class="text-[#E30613]">Base de Datos Implementada:</strong>
-          <p class="mt-0.5 text-gray-600">1. Tabla CLIENTES • 2. Tabla PRODUCTOS (con Categorías Dinámicas) • 3. Tabla SEGUIMIENTO / VENTAS</p>
+          <p class="mt-0.5 text-gray-600">1. CLIENTES • 2. PRODUCTOS (con Categorías) • 3. SEGUIMIENTO / VENTAS • 4. USUARIOS Y ACCESOS</p>
         </div>
       </div>
 
@@ -1162,6 +1415,8 @@
       </div>
     </div>
   </footer>
+
+  </div> <!-- Fin #app-container -->
 
   <!-- Scripts de la Aplicación -->
   <script src="supabase-client.js"></script>

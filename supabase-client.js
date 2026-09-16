@@ -178,6 +178,32 @@ const INITIAL_SEED = {
       estado: 'Pendiente',
       observacion: 'Coordinando entrega para la tarde'
     }
+  ],
+  usuarios: [
+    {
+      id_usuario: 'U001',
+      nombre: 'Fabian Solis',
+      usuario: 'admin',
+      password: '123',
+      rol: 'Administrador',
+      estado: 'Activo'
+    },
+    {
+      id_usuario: 'U002',
+      nombre: 'Salomé Flores',
+      usuario: 'vendedor',
+      password: '123',
+      rol: 'Vendedor',
+      estado: 'Activo'
+    },
+    {
+      id_usuario: 'U003',
+      nombre: 'Docente UTA / Evaluador',
+      usuario: 'uta',
+      password: 'uta',
+      rol: 'Administrador',
+      estado: 'Activo'
+    }
   ]
 };
 
@@ -203,6 +229,9 @@ class DataService {
     if (!localStorage.getItem('qp_ventas')) {
       localStorage.setItem('qp_ventas', JSON.stringify(INITIAL_SEED.ventas));
     }
+    if (!localStorage.getItem('qp_usuarios')) {
+      localStorage.setItem('qp_usuarios', JSON.stringify(INITIAL_SEED.usuarios));
+    }
     const defaultUrl = 'https://qgkaqlyfbjjbkqjernjs.supabase.co';
     const defaultKey = 'sb_publishable_-aJAjB_cVDr-nj2AmCdj-w_GAuJ4Cwb';
     if (!localStorage.getItem('qp_sb_url')) {
@@ -219,6 +248,7 @@ class DataService {
     localStorage.setItem('qp_clientes', JSON.stringify(INITIAL_SEED.clientes));
     localStorage.setItem('qp_productos', JSON.stringify(INITIAL_SEED.productos));
     localStorage.setItem('qp_ventas', JSON.stringify(INITIAL_SEED.ventas));
+    localStorage.setItem('qp_usuarios', JSON.stringify(INITIAL_SEED.usuarios));
   }
 
   // Inicializar cliente de Supabase
@@ -327,7 +357,20 @@ class DataService {
       if (errV) throw new Error(`Error sincronizando ventas: ${errV.message}`);
     }
 
-    return { success: true, count: { categories: localCats.length, clients: localClients.length, products: localProducts.length, sales: localSales.length } };
+    // 4. Usuarios
+    const localUsers = this.getLocal('qp_usuarios');
+    if (localUsers.length > 0) {
+      try {
+        const { error: errU } = await this.supabase
+          .from('usuarios')
+          .upsert(localUsers, { onConflict: 'id_usuario' });
+        if (errU) console.warn(`Aviso sincronizando usuarios: ${errU.message}`);
+      } catch (e) {
+        console.warn('Tabla usuarios no disponible aún en Supabase');
+      }
+    }
+
+    return { success: true, count: { categories: localCats.length, clients: localClients.length, products: localProducts.length, sales: localSales.length, users: localUsers.length } };
   }
 
   // Helpers LocalStorage
@@ -577,6 +620,68 @@ class DataService {
         await this.supabase.from('seguimiento_ventas').delete().eq('id_seguimiento', id_seguimiento);
       } catch (err) {
         console.error('Error eliminando venta en Supabase:', err);
+      }
+    }
+    return true;
+  }
+
+  // ==========================================
+  // MÉTODOS CRUD: USUARIOS Y CREDENCIALES
+  // ==========================================
+  async getUsers() {
+    if (this.isCloudActive && this.supabase) {
+      try {
+        const { data, error } = await this.supabase
+          .from('usuarios')
+          .select('*')
+          .order('id_usuario', { ascending: true });
+        if (!error && data && data.length > 0) {
+          this.setLocal('qp_usuarios', data);
+          return data;
+        }
+      } catch (e) {
+        console.warn('Fallback a local para getUsers:', e);
+      }
+    }
+    let localUsers = this.getLocal('qp_usuarios');
+    if (!localUsers || localUsers.length === 0) {
+      this.setLocal('qp_usuarios', INITIAL_SEED.usuarios);
+      return INITIAL_SEED.usuarios;
+    }
+    return localUsers;
+  }
+
+  async saveUser(userData) {
+    const users = this.getLocal('qp_usuarios');
+    const index = users.findIndex(u => u.id_usuario === userData.id_usuario);
+
+    if (index >= 0) {
+      users[index] = { ...users[index], ...userData };
+    } else {
+      users.push(userData);
+    }
+    this.setLocal('qp_usuarios', users);
+
+    if (this.isCloudActive && this.supabase) {
+      try {
+        await this.supabase.from('usuarios').upsert(userData, { onConflict: 'id_usuario' });
+      } catch (err) {
+        console.warn('Aviso guardando usuario en Supabase (usando respaldo local):', err);
+      }
+    }
+    return userData;
+  }
+
+  async deleteUser(id_usuario) {
+    let users = this.getLocal('qp_usuarios');
+    users = users.filter(u => u.id_usuario !== id_usuario);
+    this.setLocal('qp_usuarios', users);
+
+    if (this.isCloudActive && this.supabase) {
+      try {
+        await this.supabase.from('usuarios').delete().eq('id_usuario', id_usuario);
+      } catch (err) {
+        console.warn('Aviso eliminando usuario en Supabase:', err);
       }
     }
     return true;
