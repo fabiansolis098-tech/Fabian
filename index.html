@@ -44,8 +44,13 @@
   <!-- SweetAlert2 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+  <!-- Anti-cache meta tags -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
   <!-- Estilos personalizados corporativos -->
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3.0">
 </head>
 <body class="bg-[#F5F5F5] text-[#333333] antialiased min-h-screen flex flex-col">
 
@@ -1627,9 +1632,9 @@
 
   </div> <!-- Fin #app-container -->
 
-  <!-- Scripts de la Aplicación -->
-  <script src="supabase-client.js"></script>
-  <script src="app.js"></script>
+  <!-- Scripts de la Aplicación con Cache-Buster -->
+  <script src="supabase-client.js?v=3.0"></script>
+  <script src="app.js?v=3.0"></script>
 
 </body>
 </html>
