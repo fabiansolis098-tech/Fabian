@@ -69,16 +69,16 @@
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#E30613]">Portal de Acceso Comercial</span>
           </div>
           <h1 class="text-2xl font-black text-[#333333] tracking-tight">Iniciar Sesión</h1>
-          <p class="text-xs text-gray-500 max-w-xs">Ingresa tu usuario y contraseña para acceder al sistema CRM de Avícola QUÉ POLLO</p>
+          <p class="text-xs text-gray-500 max-w-xs">Ingresa con tu correo y contraseña para acceder al CRM de Avícola QUÉ POLLO</p>
         </div>
 
         <!-- Formulario de Login -->
         <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-[#333333] mb-1.5" for="login-username">Usuario o Correo *</label>
+            <label class="block text-xs font-bold text-[#333333] mb-1.5" for="login-email">Correo Electrónico *</label>
             <div class="relative">
-              <i data-lucide="user" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-              <input type="text" id="login-username" required placeholder="Ej: admin o vendedor" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:border-[#E30613] focus:ring-2 focus:ring-red-100 transition-all">
+              <i data-lucide="mail" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
+              <input type="email" id="login-email" required placeholder="tu.correo@ejemplo.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium focus:border-[#E30613] focus:ring-2 focus:ring-red-100 transition-all">
             </div>
           </div>
 
@@ -100,35 +100,24 @@
               <input type="checkbox" id="login-remember" checked class="rounded text-[#E30613] focus:ring-red-200">
               <span>Recordar sesión</span>
             </label>
+            <button type="button" onclick="openModal('modal-forgot-password')" class="text-xs text-gray-500 hover:text-[#E30613] transition-colors">
+              ¿Olvidaste tu contraseña?
+            </button>
           </div>
 
           <button type="submit" id="btn-login-submit" class="w-full py-3 rounded-xl btn-primary font-bold text-sm shadow-md flex items-center justify-center space-x-2">
             <span>Ingresar al Sistema</span>
             <i data-lucide="arrow-right" class="w-4 h-4"></i>
           </button>
-        </form>
 
-        <!-- Accesos Rápidos de Prueba (Demo / Docente UTA) -->
-        <div class="pt-4 border-t border-gray-100 space-y-2">
-          <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider text-center">Acceso rápido para evaluación:</p>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="fillQuickLogin('admin', '123')" class="p-2.5 rounded-xl border border-red-100 bg-red-50/60 hover:bg-red-50 text-left transition-colors flex items-center space-x-2 group">
-              <div class="w-7 h-7 rounded-lg bg-[#E30613] text-white flex items-center justify-center font-bold text-xs shrink-0">👑</div>
-              <div class="min-w-0">
-                <p class="text-xs font-bold text-[#333333] truncate">Administrador</p>
-                <p class="text-[10px] text-gray-500 font-mono truncate">admin / 123</p>
-              </div>
-            </button>
-
-            <button type="button" onclick="fillQuickLogin('vendedor', '123')" class="p-2.5 rounded-xl border border-green-100 bg-green-50/60 hover:bg-green-50 text-left transition-colors flex items-center space-x-2 group">
-              <div class="w-7 h-7 rounded-lg bg-[#00A651] text-white flex items-center justify-center font-bold text-xs shrink-0">💼</div>
-              <div class="min-w-0">
-                <p class="text-xs font-bold text-[#333333] truncate">Vendedor</p>
-                <p class="text-[10px] text-gray-500 font-mono truncate">vendedor / 123</p>
-              </div>
+          <!-- Enlace para Crear Cuenta -->
+          <div class="pt-3 border-t border-gray-100 text-center text-xs text-gray-600">
+            ¿No tienes una cuenta de acceso?
+            <button type="button" onclick="openModal('modal-register')" class="font-bold text-[#E30613] hover:underline ml-1">
+              Crear una cuenta
             </button>
           </div>
-        </div>
+        </form>
 
         <!-- Créditos Académicos UTA -->
         <div class="pt-2 text-center text-[11px] text-gray-400 space-y-1">
@@ -136,6 +125,84 @@
           <p>Facultad de Ciencias Administrativas • Mercadotecnia 7mo B</p>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PANTALLA: SOLICITUD PENDIENTE DE APROBACIÓN
+       ========================================== -->
+  <div id="pending-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-amber-50/40 relative">
+    <div class="relative z-10 w-full max-w-md">
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-200/80 p-8 text-center space-y-5">
+        <div class="w-16 h-16 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto border border-amber-200">
+          <i data-lucide="clock" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wider">Solicitud en Revisión</span>
+          <h2 class="text-2xl font-black text-[#333333]">Solicitud Pendiente</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Tu cuenta ha sido creada correctamente, pero <strong class="text-gray-800">todavía necesita la aprobación de un administrador</strong> para acceder al CRM de Avícola QUÉ POLLO.
+        </p>
+        <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-left text-xs space-y-2">
+          <div class="flex justify-between items-center"><span class="text-gray-400">Usuario:</span> <span id="pending-user-name" class="font-bold text-gray-800">-</span></div>
+          <div class="flex justify-between items-center"><span class="text-gray-400">Correo:</span> <span id="pending-user-email" class="font-mono text-gray-700">-</span></div>
+          <div class="flex justify-between items-center"><span class="text-gray-400">Estado:</span> <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">🟡 PENDIENTE</span></div>
+        </div>
+        <p class="text-xs text-gray-400">El administrador revisará tu solicitud para habilitar tu acceso al sistema comercial.</p>
+        <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center justify-center space-x-1.5 transition-colors">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PANTALLA: SOLICITUD RECHAZADA
+       ========================================== -->
+  <div id="rejected-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-red-50/40 relative">
+    <div class="relative z-10 w-full max-w-md">
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-200/80 p-8 text-center space-y-5">
+        <div class="w-16 h-16 bg-red-50 text-[#E30613] rounded-2xl flex items-center justify-center mx-auto border border-red-200">
+          <i data-lucide="shield-x" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200 uppercase tracking-wider">Acceso No Autorizado</span>
+          <h2 class="text-2xl font-black text-[#333333]">Solicitud Rechazada</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Tu solicitud de acceso al CRM de <strong class="text-gray-800">Avícola QUÉ POLLO</strong> ha sido rechazada por la administración.
+        </p>
+        <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center justify-center space-x-1.5 shadow-xs">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Volver al Inicio</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PANTALLA: CUENTA DESACTIVADA
+       ========================================== -->
+  <div id="disabled-screen" class="hidden min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200/40 relative">
+    <div class="relative z-10 w-full max-w-md">
+      <div class="bg-white rounded-3xl shadow-xl border border-gray-200/80 p-8 text-center space-y-5">
+        <div class="w-16 h-16 bg-gray-100 text-gray-600 rounded-2xl flex items-center justify-center mx-auto border border-gray-300">
+          <i data-lucide="lock" class="w-8 h-8"></i>
+        </div>
+        <div class="space-y-1">
+          <span class="text-[11px] px-2.5 py-0.5 rounded-full font-bold bg-gray-100 text-gray-700 border border-gray-200 uppercase tracking-wider">Cuenta Suspendida</span>
+          <h2 class="text-2xl font-black text-[#333333]">Cuenta Desactivada</h2>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Tu cuenta de acceso comercial se encuentra temporalmente desactivada. Si consideras que es un error, por favor contacta con el administrador.
+        </p>
+        <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center justify-center space-x-1.5">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          <span>Cerrar Sesión</span>
+        </button>
       </div>
     </div>
   </div>
@@ -293,7 +360,7 @@
               <i data-lucide="shopping-cart" class="w-5 h-5"></i>
               <span>3. Seguimiento / Ventas</span>
             </button>
-            <button onclick="switchView('usuarios'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
+            <button onclick="switchView('usuarios'); closeMobileMenu();" id="mobile-nav-btn-usuarios" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
               <i data-lucide="shield-check" class="w-5 h-5 text-[#00A651]"></i>
               <span>4. Usuarios y Accesos</span>
             </button>
@@ -720,7 +787,7 @@
       </section>
 
       <!-- ==========================================
-           VISTA 4: USUARIOS Y ACCESOS (GESTIÓN DE CREDENCIALES)
+           VISTA 4: USUARIOS Y PANEL DE APROBACIÓN (ADMINISTRACIÓN)
            ========================================== -->
       <section id="view-usuarios" class="space-y-6 hidden">
         
@@ -728,44 +795,71 @@
           <div class="space-y-1">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 text-[#E30613] text-xs font-semibold border border-red-100">
               <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#00A651]"></i>
-              <span>Seguridad & Control de Acceso</span>
+              <span>Control de Acceso & Supabase Auth</span>
             </div>
-            <h2 class="text-2xl font-extrabold text-[#333333]">Gestión de Usuarios y Contraseñas</h2>
-            <p class="text-gray-600 text-xs sm:text-sm">Administración de cuentas comerciales, roles del personal y contraseñas de acceso al sistema.</p>
+            <h2 class="text-2xl font-extrabold text-[#333333]">Gestión y Aprobación de Usuarios</h2>
+            <p class="text-gray-600 text-xs sm:text-sm">Revisa solicitudes de registro, aprueba o rechaza accesos y administra los roles comerciales.</p>
           </div>
           <button onclick="openUserModal()" class="px-4 py-2.5 rounded-xl btn-primary text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-xs shrink-0 self-start sm:self-center">
             <i data-lucide="user-plus" class="w-4 h-4"></i>
-            <span>+ Nuevo Usuario</span>
+            <span>+ Crear Usuario</span>
           </button>
         </div>
 
-        <!-- Filtros y Búsqueda de Usuarios -->
+        <!-- Pestañas de Filtrado por Estado -->
+        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
+          <button onclick="setProfilesFilter('TODOS')" id="tab-filter-todos" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#333333] text-white shadow-xs">
+            <span>Todos</span>
+            <span id="badge-tab-todos" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono">0</span>
+          </button>
+
+          <button onclick="setProfilesFilter('PENDIENTE')" id="tab-filter-pendiente" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
+            <span>🟡 Pendientes</span>
+            <span id="badge-tab-pendiente" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-200 text-amber-900 font-mono font-bold">0</span>
+          </button>
+
+          <button onclick="setProfilesFilter('APROBADO')" id="tab-filter-aprobado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
+            <span>🟢 Aprobados</span>
+            <span id="badge-tab-aprobado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
+          </button>
+
+          <button onclick="setProfilesFilter('RECHAZADO')" id="tab-filter-rechazado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
+            <span>🔴 Rechazados</span>
+            <span id="badge-tab-rechazado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
+          </button>
+
+          <button onclick="setProfilesFilter('DESACTIVADO')" id="tab-filter-desactivado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
+            <span>⚪ Desactivados</span>
+            <span id="badge-tab-desactivado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
+          </button>
+        </div>
+
+        <!-- Barra de Búsqueda y Rol -->
         <div class="flex flex-col sm:flex-row gap-3">
           <div class="flex-1 relative">
             <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input type="text" id="filter-user-search" placeholder="Buscar por nombre, usuario o rol..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+            <input type="text" id="filter-user-search" placeholder="Buscar por nombre, apellido, correo o teléfono..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
           </div>
           <select id="filter-user-role" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
             <option value="">Todos los Roles</option>
-            <option value="Administrador">Administrador</option>
-            <option value="Vendedor">Vendedor</option>
-            <option value="Supervisor">Supervisor</option>
+            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+            <option value="USUARIO">USUARIO</option>
           </select>
         </div>
 
-        <!-- Tabla de Usuarios -->
+        <!-- Tabla de Perfiles y Solicitudes -->
         <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm">
               <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
                 <tr>
-                  <th class="px-4 py-3">ID_Usuario</th>
-                  <th class="px-4 py-3">Nombre Completo</th>
-                  <th class="px-4 py-3">Usuario (Login)</th>
-                  <th class="px-4 py-3">Rol del Sistema</th>
-                  <th class="px-4 py-3">Contraseña</th>
-                  <th class="px-4 py-3">Estado</th>
-                  <th class="px-4 py-3 text-right">Acciones</th>
+                  <th class="px-4 py-3">Usuario / Nombre</th>
+                  <th class="px-4 py-3">Correo & Teléfono</th>
+                  <th class="px-4 py-3">Rol</th>
+                  <th class="px-4 py-3">Estado de Acceso</th>
+                  <th class="px-4 py-3">Fecha Registro</th>
+                  <th class="px-4 py-3">Aprobación / Info</th>
+                  <th class="px-4 py-3 text-right">Acciones Administrativas</th>
                 </tr>
               </thead>
               <tbody id="table-usuarios-body" class="divide-y divide-gray-100 text-[#333333]">
@@ -1261,64 +1355,175 @@
     </div>
   </div>
 
-  <!-- MODAL: REGISTRAR / EDITAR USUARIO Y CONTRASEÑA -->
+  <!-- MODAL: REGISTRARSE / CREAR CUENTA (PÚBLICO) -->
+  <div id="modal-register" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-10 h-10 rounded-2xl bg-red-50 text-[#E30613] flex items-center justify-center">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-[#333333]">Crear una Cuenta</h3>
+            <p class="text-xs text-gray-500">Solicitud de acceso al CRM Avícola QUÉ POLLO</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-register')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-register" class="mt-4 space-y-3.5" onsubmit="handleRegisterSubmit(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-[#333333] mb-1">Nombre *</label>
+            <input type="text" id="reg-name" required placeholder="Ej: Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#333333] mb-1">Apellido *</label>
+            <input type="text" id="reg-lastname" required placeholder="Ej: Mendoza" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#333333] mb-1">Correo Electrónico *</label>
+          <div class="relative">
+            <i data-lucide="mail" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+            <input type="email" id="reg-email" required placeholder="carlos.mendoza@gmail.com" class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#333333] mb-1">Teléfono (WhatsApp) *</label>
+          <div class="relative">
+            <i data-lucide="phone" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
+            <input type="tel" id="reg-phone" required placeholder="0987654321" class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#333333] mb-1">Contraseña (Mínimo 6 caracteres) *</label>
+          <div class="relative">
+            <input type="password" id="reg-password" minlength="6" required placeholder="••••••••" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+            <button type="button" onclick="togglePasswordVisibility('reg-password', 'reg-pass-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+              <i id="reg-pass-eye" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-[#333333] mb-1">Confirmar Contraseña *</label>
+          <div class="relative">
+            <input type="password" id="reg-confirm-password" minlength="6" required placeholder="••••••••" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
+            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', 'reg-conf-pass-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+              <i id="reg-conf-pass-eye" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
+          <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+          <span>Al registrarte, tu cuenta quedará en <strong>PENDIENTE DE APROBACIÓN</strong> hasta que un administrador verifique tu identidad y autorice el acceso.</span>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-register')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" id="btn-register-submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Crear Cuenta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RECUPERAR CONTRASEÑA -->
+  <div id="modal-forgot-password" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-[#333333]">Recuperar Contraseña</h3>
+        <button onclick="closeModal('modal-forgot-password')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-forgot-password" class="mt-4 space-y-4" onsubmit="handleForgotPasswordSubmit(event)">
+        <p class="text-xs text-gray-500 leading-relaxed">
+          Ingresa el correo electrónico asociado a tu cuenta para recibir un enlace de restablecimiento de contraseña vía Supabase Auth.
+        </p>
+
+        <div>
+          <label class="block text-xs font-bold text-[#333333] mb-1">Correo Electrónico *</label>
+          <input type="email" id="forgot-email" required placeholder="tu.correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-forgot-password')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
+            Enviar Enlace
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR / EDITAR PERFIL DE USUARIO (ADMINISTRADOR) -->
   <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
       <div class="flex items-center justify-between pb-4 border-b border-gray-100">
         <div>
-          <h3 id="modal-user-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Usuario</h3>
-          <p class="text-xs text-gray-500">Credenciales de Acceso y Permisos</p>
+          <h3 id="modal-user-title" class="text-lg font-bold text-[#333333]">Administrar Usuario</h3>
+          <p class="text-xs text-gray-500">Gestión de Perfil, Rol y Estado</p>
         </div>
         <button onclick="closeModal('modal-user')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="form-user" class="mt-4 space-y-4" onsubmit="handleSaveUser(event)">
+      <form id="form-user" class="mt-4 space-y-3.5" onsubmit="handleSaveUser(event)">
+        <input type="hidden" id="user-profile-id">
+
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Usuario *</label>
-            <input type="text" id="user-id" required placeholder="U001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre *</label>
+            <input type="text" id="user-name" required placeholder="Ej: Juan" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
           </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Apellido *</label>
+            <input type="text" id="user-lastname" required placeholder="Ej: Pérez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Correo Electrónico *</label>
+          <input type="email" id="user-email" required placeholder="juan.perez@quepollo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#333333] mb-1">Teléfono</label>
+          <input type="tel" id="user-phone" placeholder="0987654321" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-[#333333] mb-1">Rol del Sistema *</label>
             <select id="user-role" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="Administrador">👑 Administrador</option>
-              <option value="Vendedor">💼 Vendedor</option>
-              <option value="Supervisor">🔍 Supervisor</option>
+              <option value="USUARIO">💼 USUARIO</option>
+              <option value="ADMINISTRADOR">👑 ADMINISTRADOR</option>
             </select>
           </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre Completo *</label>
-          <input type="text" id="user-name" required placeholder="Ej. Juan Pérez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre de Usuario (Login) *</label>
-          <div class="relative">
-            <span class="absolute left-3.5 top-2.5 text-gray-400 text-xs font-bold">@</span>
-            <input type="text" id="user-username" required placeholder="juanperez" class="w-full pl-8 pr-3 py-2 rounded-xl border border-gray-200 text-sm font-medium">
+          <div>
+            <label class="block text-xs font-semibold text-[#333333] mb-1">Estado de Acceso *</label>
+            <select id="user-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+              <option value="APROBADO">🟢 APROBADO</option>
+              <option value="PENDIENTE">🟡 PENDIENTE</option>
+              <option value="RECHAZADO">🔴 RECHAZADO</option>
+              <option value="DESACTIVADO">⚪ DESACTIVADO</option>
+            </select>
           </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Contraseña de Acceso *</label>
-          <div class="relative">
-            <input type="password" id="user-password" required placeholder="Mínimo 3 caracteres" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm">
-            <button type="button" onclick="togglePasswordVisibility('user-password', 'user-password-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <i id="user-password-eye" data-lucide="eye" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Estado de la Cuenta *</label>
-          <select id="user-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-            <option value="Activo">🟢 Activo (Permite ingreso)</option>
-            <option value="Inactivo">🔴 Inactivo (Bloqueado)</option>
-          </select>
         </div>
 
         <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
@@ -1326,7 +1531,7 @@
             Cancelar
           </button>
           <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar Usuario
+            Guardar Cambios
           </button>
         </div>
       </form>
@@ -1363,22 +1568,26 @@
           <ul class="space-y-1.5 text-gray-700">
             <li class="flex items-center space-x-2">
               <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span><strong>Toaza Veronica</strong></span>
+            </li>
+            <li class="flex items-center space-x-2">
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
               <span><strong>Flores Salomé</strong></span>
             </li>
             <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
               <span><strong>Solis Fabian</strong></span>
             </li>
             <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
               <span><strong>Quinapanta Rebeca</strong></span>
             </li>
             <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
+              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
               <span><strong>Naranjo Domenica</strong></span>
             </li>
             <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
+              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
               <span><strong>Pico Daniela</strong></span>
             </li>
           </ul>

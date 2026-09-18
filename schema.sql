@@ -119,3 +119,98 @@ VALUES
     ('S004', 'C004', 'P005', '2026-09-11', 3, 12.60, 'Local', 'Efectivo', 'Completado', 'Compra directa en sucursal central'),
     ('S005', 'C005', 'P001', '2026-09-11', 1, 8.50, 'Instagram', 'Transferencia', 'Pendiente', 'Coordinando entrega para la tarde')
 ON CONFLICT (id_seguimiento) DO NOTHING;
+
+-- ==========================================================
+-- 5. TABLA DE PERFILES DE USUARIOS (INTEGRACIÓN SUPABASE AUTH)
+-- ==========================================================
+CREATE TABLE IF NOT EXISTS public.perfiles_usuarios (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    correo VARCHAR(150) NOT NULL UNIQUE,
+    telefono VARCHAR(20),
+    rol VARCHAR(50) NOT NULL DEFAULT 'USUARIO' CHECK (rol IN ('ADMINISTRADOR', 'USUARIO')),
+    estado VARCHAR(50) NOT NULL DEFAULT 'PENDIENTE' CHECK (estado IN ('PENDIENTE', 'APROBADO', 'RECHAZADO', 'DESACTIVADO')),
+    fecha_registro TIMESTAMPTZ DEFAULT NOW(),
+    fecha_aprobacion TIMESTAMPTZ,
+    aprobado_por UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- HABILITAR ROW LEVEL SECURITY (RLS)
+ALTER TABLE public.perfiles_usuarios ENABLE ROW LEVEL SECURITY;
+
+-- POLÍTICAS RLS DE SEGURIDAD
+DROP POLICY IF EXISTS "Permitir lectura para usuarios autenticados y anon" ON public.perfiles_usuarios;
+CREATE POLICY "Permitir lectura para usuarios autenticados y anon"
+ON public.perfiles_usuarios FOR SELECT
+TO anon, authenticated
+USING (true);
+
+DROP POLICY IF EXISTS "Permitir insercion para registro de usuarios" ON public.perfiles_usuarios;
+CREATE POLICY "Permitir insercion para registro de usuarios"
+ON public.perfiles_usuarios FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Permitir actualizacion para administracion" ON public.perfiles_usuarios;
+CREATE POLICY "Permitir actualizacion para administracion"
+ON public.perfiles_usuarios FOR UPDATE
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Permitir eliminacion para administradores" ON public.perfiles_usuarios;
+CREATE POLICY "Permitir eliminacion para administradores"
+ON public.perfiles_usuarios FOR DELETE
+TO anon, authenticated
+USING (true);
+
+-- TRIGGER AUTOMÁTICO: Cuando se crea un usuario en auth.users, insertar en perfiles_usuarios
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO public.perfiles_usuarios (
+        user_id,
+        nombre,
+        apellido,
+        correo,
+        telefono,
+        rol,
+        estado,
+        fecha_registro
+    )
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'nombre', 'Usuario'),
+        COALESCE(NEW.raw_user_meta_data->>'apellido', ''),
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'telefono', ''),
+        COALESCE(NEW.raw_user_meta_data->>'rol', 'USUARIO'),
+        COALESCE(NEW.raw_user_meta_data->>'estado', 'PENDIENTE'),
+        NOW()
+    )
+    ON CONFLICT (correo) DO UPDATE SET
+        user_id = EXCLUDED.user_id,
+        nombre = EXCLUDED.nombre,
+        apellido = EXCLUDED.apellido;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Perfiles iniciales de Administradores y Usuarios
+INSERT INTO public.perfiles_usuarios (id, nombre, apellido, correo, telefono, rol, estado, fecha_registro, fecha_aprobacion)
+VALUES 
+    ('a0000000-0000-0000-0000-000000000001', 'Veronica', 'Toaza', 'veronica@quepollo.com', '0984149863', 'ADMINISTRADOR', 'APROBADO', NOW(), NOW()),
+    ('a0000000-0000-0000-0000-000000000002', 'Salomé', 'Flores', 'salome@quepollo.com', '0991234567', 'ADMINISTRADOR', 'APROBADO', NOW(), NOW()),
+    ('a0000000-0000-0000-0000-000000000003', 'Rebeca', 'Quinapanta', 'rebeca@quepollo.com', '0987654321', 'USUARIO', 'APROBADO', NOW(), NOW()),
+    ('a0000000-0000-0000-0000-000000000004', 'Carlos', 'Mendoza', 'carlos.mendoza@gmail.com', '0979876543', 'USUARIO', 'PENDIENTE', NOW(), NULL)
+ON CONFLICT (correo) DO NOTHING;
+
+

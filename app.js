@@ -10,6 +10,8 @@
 let state = {
   currentView: 'dashboard',
   currentUser: null,
+  userProfiles: [],
+  currentProfileFilter: 'TODOS',
   users: [],
   categories: [],
   clients: [],
@@ -65,7 +67,8 @@ async function loadAllData() {
     state.clients = await window.dataService.getClients();
     state.products = await window.dataService.getProducts();
     state.sales = await window.dataService.getSales();
-    state.users = await window.dataService.getUsers();
+    state.userProfiles = await window.dataService.getUserProfiles();
+    state.users = state.userProfiles; // Compatibilidad interna
     populateCategoryDropdowns();
     updateNavigationBadges();
   } catch (err) {
@@ -83,7 +86,7 @@ function updateNavigationBadges() {
   if (cBadge) cBadge.textContent = state.clients.length;
   if (pBadge) pBadge.textContent = state.products.length;
   if (sBadge) sBadge.textContent = state.sales.length;
-  if (uBadge) uBadge.textContent = state.users.length;
+  if (uBadge) uBadge.textContent = state.userProfiles.length;
 }
 
 // Poblar los selectores desplegables de categorías dinámicamente
@@ -166,6 +169,12 @@ function closeMobileMenu() {
 // CAMBIO DE VISTAS (SPA ROUTING)
 // ==========================================
 function switchView(viewName) {
+  // Protección de Rol para Usuarios
+  if (viewName === 'usuarios' && state.currentUser && state.currentUser.rol !== 'ADMINISTRADOR') {
+    Toast.fire({ icon: 'warning', title: 'Módulo reservado para Administradores' });
+    viewName = 'dashboard';
+  }
+
   state.currentView = viewName;
 
   const views = ['dashboard', 'clientes', 'productos', 'ventas', 'usuarios'];
@@ -1305,108 +1314,306 @@ function closeModal(id) {
 }
 
 // ==========================================
-// CONTROLADOR DE AUTENTICACIÓN (LOGIN & SESIÓN)
+// CONTROLADOR DE AUTENTICACIÓN (SUPABASE AUTH & GATEKEEPER)
 // ==========================================
-function checkAuthSession() {
-  const saved = localStorage.getItem('qp_current_user') || sessionStorage.getItem('qp_current_user');
-  if (saved) {
-    try {
-      state.currentUser = JSON.parse(saved);
-      updateAuthUI(true);
-      switchView('dashboard');
-    } catch {
-      updateAuthUI(false);
-    }
-  } else {
-    updateAuthUI(false);
-  }
-}
 
-function updateAuthUI(isAuthenticated) {
+// Alternar entre las pantallas de la aplicación (Gatekeeper)
+function showGatekeeperScreen(screenName) {
   const loginEl = document.getElementById('login-screen');
+  const pendingEl = document.getElementById('pending-screen');
+  const rejectedEl = document.getElementById('rejected-screen');
+  const disabledEl = document.getElementById('disabled-screen');
   const appEl = document.getElementById('app-container');
 
-  if (isAuthenticated && state.currentUser) {
-    if (loginEl) loginEl.classList.add('hidden');
-    if (appEl) appEl.classList.remove('hidden');
+  if (loginEl) loginEl.classList.add('hidden');
+  if (pendingEl) pendingEl.classList.add('hidden');
+  if (rejectedEl) rejectedEl.classList.add('hidden');
+  if (disabledEl) disabledEl.classList.add('hidden');
+  if (appEl) appEl.classList.add('hidden');
 
-    const nameEl = document.getElementById('header-user-name');
-    const roleEl = document.getElementById('header-user-role');
-    if (nameEl) nameEl.textContent = state.currentUser.nombre || state.currentUser.usuario;
-    if (roleEl) {
-      roleEl.textContent = state.currentUser.rol || 'Usuario';
-      roleEl.className = state.currentUser.rol === 'Administrador'
-        ? 'text-[10px] font-bold text-[#E30613]'
-        : 'text-[10px] font-semibold text-[#00A651]';
-    }
-
-    // Restricciones según Rol
-    const navUserBtn = document.getElementById('nav-btn-usuarios');
-    if (navUserBtn) {
-      if (state.currentUser.rol === 'Vendedor') {
-        navUserBtn.classList.add('hidden');
-      } else {
-        navUserBtn.classList.remove('hidden');
-      }
-    }
-  } else {
-    if (loginEl) loginEl.classList.remove('hidden');
-    if (appEl) appEl.classList.add('hidden');
-  }
+  if (screenName === 'login' && loginEl) loginEl.classList.remove('hidden');
+  if (screenName === 'pending' && pendingEl) pendingEl.classList.remove('hidden');
+  if (screenName === 'rejected' && rejectedEl) rejectedEl.classList.remove('hidden');
+  if (screenName === 'disabled' && disabledEl) disabledEl.classList.remove('hidden');
+  if (screenName === 'app' && appEl) appEl.classList.remove('hidden');
 
   if (window.lucide) window.lucide.createIcons();
 }
 
-function handleLoginSubmit(e) {
-  if (e) e.preventDefault();
+// Verificar sesión activa al inicio
+async function checkAuthSession() {
+  const saved = localStorage.getItem('qp_current_profile') || 
+                sessionStorage.getItem('qp_current_profile') ||
+                localStorage.getItem('qp_current_user') || 
+                sessionStorage.getItem('qp_current_user');
 
-  const userInput = document.getElementById('login-username').value.trim();
-  const passInput = document.getElementById('login-password').value.trim();
-  const remember = document.getElementById('login-remember')?.checked;
+  if (saved) {
+    try {
+      const user = JSON.parse(saved);
+      // Intentar refrescar el perfil con los datos más recientes
+      const freshProfile = await window.dataService.getUserProfileByEmail(user.correo);
+      state.currentUser = freshProfile || user;
+      evaluateUserAccess(state.currentUser);
+    } catch (e) {
+      console.warn('Error verificando sesión guardada:', e);
+      showGatekeeperScreen('login');
+    }
+  } else {
+    showGatekeeperScreen('login');
+  }
+}
 
-  if (!userInput || !passInput) {
-    Toast.fire({ icon: 'warning', title: 'Por favor complete todos los campos' });
+// Evaluar permisos y enrutar según el estado de aprobación
+function evaluateUserAccess(user) {
+  if (!user) {
+    showGatekeeperScreen('login');
     return;
   }
 
-  const found = state.users.find(u =>
-    u.usuario.toLowerCase() === userInput.toLowerCase() ||
-    (u.correo && u.correo.toLowerCase() === userInput.toLowerCase())
-  );
+  const estado = (user.estado || 'PENDIENTE').toUpperCase();
 
-  if (!found || found.password !== passInput) {
+  if (estado === 'PENDIENTE') {
+    const nameEl = document.getElementById('pending-user-name');
+    const emailEl = document.getElementById('pending-user-email');
+    if (nameEl) nameEl.textContent = `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.correo;
+    if (emailEl) emailEl.textContent = user.correo || '-';
+    showGatekeeperScreen('pending');
+    return;
+  }
+
+  if (estado === 'RECHAZADO') {
+    showGatekeeperScreen('rejected');
+    return;
+  }
+
+  if (estado === 'DESACTIVADO') {
+    showGatekeeperScreen('disabled');
+    return;
+  }
+
+  if (estado === 'APROBADO') {
+    showGatekeeperScreen('app');
+
+    // Actualizar nombre y rol en la cabecera
+    const nameEl = document.getElementById('header-user-name');
+    const roleEl = document.getElementById('header-user-role');
+    const fullName = `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.correo;
+    if (nameEl) nameEl.textContent = fullName;
+    if (roleEl) {
+      roleEl.textContent = user.rol === 'ADMINISTRADOR' ? 'Administrador' : 'Usuario Operativo';
+      roleEl.className = user.rol === 'ADMINISTRADOR'
+        ? 'text-[10px] font-bold text-[#E30613]'
+        : 'text-[10px] font-semibold text-[#00A651]';
+    }
+
+    // Control de Acceso Basado en Roles (RBAC) para el módulo de usuarios
+    const navUserBtn = document.getElementById('nav-btn-usuarios');
+    const mobileNavUserBtn = document.getElementById('mobile-nav-btn-usuarios');
+
+    if (user.rol !== 'ADMINISTRADOR') {
+      if (navUserBtn) navUserBtn.classList.add('hidden');
+      if (mobileNavUserBtn) mobileNavUserBtn.classList.add('hidden');
+      if (state.currentView === 'usuarios') {
+        state.currentView = 'dashboard';
+      }
+    } else {
+      if (navUserBtn) navUserBtn.classList.remove('hidden');
+      if (mobileNavUserBtn) mobileNavUserBtn.classList.remove('hidden');
+    }
+
+    switchView(state.currentView || 'dashboard');
+  }
+}
+
+// Iniciar sesión
+async function handleLoginSubmit(e) {
+  if (e) e.preventDefault();
+
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-password');
+  const remember = document.getElementById('login-remember')?.checked;
+
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passInput ? passInput.value.trim() : '';
+
+  if (!email || !password) {
+    Toast.fire({ icon: 'warning', title: 'Por favor ingresa tu correo y contraseña' });
+    return;
+  }
+
+  const btnSubmit = document.getElementById('btn-login-submit');
+  const originalBtnText = btnSubmit ? btnSubmit.innerHTML : '';
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block mr-2"></i> Verificando...`;
+  }
+
+  try {
+    const result = await window.dataService.signInUser({ email, password });
+    
+    state.currentUser = result.profile;
+    const storage = remember ? localStorage : sessionStorage;
+    storage.setItem('qp_current_profile', JSON.stringify(result.profile));
+    storage.setItem('qp_current_user', JSON.stringify(result.profile));
+
+    evaluateUserAccess(result.profile);
+
+    if (result.profile.estado === 'APROBADO') {
+      Toast.fire({
+        icon: 'success',
+        title: `¡Bienvenido(a), ${result.profile.nombre || result.profile.correo}!`
+      });
+    }
+  } catch (err) {
+    console.error('Error de autenticación:', err);
     Swal.fire({
       icon: 'error',
       title: 'Acceso Denegado',
-      text: 'Usuario o contraseña incorrectos. Por favor verifique sus datos.',
+      text: err.message || 'Credenciales inválidas. Por favor verifica tu correo y contraseña.',
       confirmButtonColor: '#E30613'
     });
-    return;
+  } finally {
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = originalBtnText;
+      if (window.lucide) window.lucide.createIcons();
+    }
   }
-
-  if (found.estado && found.estado === 'Inactivo') {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Cuenta Inactiva',
-      text: 'Esta cuenta se encuentra temporalmente desactivada. Contacte al administrador.',
-      confirmButtonColor: '#E30613'
-    });
-    return;
-  }
-
-  state.currentUser = found;
-  const storage = remember ? localStorage : sessionStorage;
-  storage.setItem('qp_current_user', JSON.stringify(found));
-
-  Toast.fire({
-    icon: 'success',
-    title: `¡Bienvenido(a), ${found.nombre}!`
-  });
-
-  updateAuthUI(true);
-  switchView('dashboard');
 }
 
+// Registro de cuenta nueva (Público)
+async function handleRegisterSubmit(e) {
+  if (e) e.preventDefault();
+
+  const nombre = document.getElementById('reg-name')?.value.trim();
+  const apellido = document.getElementById('reg-lastname')?.value.trim();
+  const email = document.getElementById('reg-email')?.value.trim().toLowerCase();
+  const telefono = document.getElementById('reg-phone')?.value.trim();
+  const password = document.getElementById('reg-password')?.value.trim();
+  const confirmPass = document.getElementById('reg-confirm-password')?.value.trim();
+
+  if (!nombre || !apellido || !email || !telefono || !password) {
+    Toast.fire({ icon: 'warning', title: 'Por favor completa todos los campos requeridos' });
+    return;
+  }
+
+  if (password !== confirmPass) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Las contraseñas no coinciden',
+      text: 'Por favor asegúrate de escribir la misma contraseña en ambos campos.',
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  if (password.length < 6) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Contraseña muy corta',
+      text: 'La contraseña debe tener al menos 6 caracteres por seguridad.',
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  const btnSubmit = document.getElementById('btn-register-submit');
+  const originalText = btnSubmit ? btnSubmit.innerHTML : '';
+  if (btnSubmit) {
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-1 inline-block"></i> Registrando...`;
+  }
+
+  try {
+    const result = await window.dataService.signUpUser({
+      email,
+      password,
+      nombre,
+      apellido,
+      telefono
+    });
+
+    closeModal('modal-register');
+    const regForm = document.getElementById('form-register');
+    if (regForm) regForm.reset();
+
+    // Actualizar perfiles locales
+    state.userProfiles = await window.dataService.getUserProfiles();
+    state.users = state.userProfiles;
+    updateNavigationBadges();
+
+    // Mostrar modal informativo
+    await Swal.fire({
+      icon: 'info',
+      title: '¡Solicitud Registrada con Éxito!',
+      html: `
+        <div class="space-y-3 text-left text-xs text-gray-600">
+          <p>Tu cuenta ha sido creada para: <strong class="text-gray-900">${nombre} ${apellido}</strong> (${email}).</p>
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
+            <strong>Estado actual: PENDIENTE DE APROBACIÓN</strong>
+            <p class="mt-1">Un administrador revisará y habilitará tu acceso al CRM de Avícola QUÉ POLLO.</p>
+          </div>
+        </div>
+      `,
+      confirmButtonColor: '#E30613',
+      confirmButtonText: 'Entendido'
+    });
+
+    // Colocar al usuario en la pantalla de pendiente
+    state.currentUser = result.profile;
+    sessionStorage.setItem('qp_current_profile', JSON.stringify(result.profile));
+    sessionStorage.setItem('qp_current_user', JSON.stringify(result.profile));
+    evaluateUserAccess(result.profile);
+
+  } catch (err) {
+    console.error('Error al registrar usuario:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error de Registro',
+      text: err.message || 'No se pudo completar el registro. Intenta nuevamente.',
+      confirmButtonColor: '#E30613'
+    });
+  } finally {
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = originalText;
+    }
+  }
+}
+
+// Recuperar contraseña
+async function handleForgotPasswordSubmit(e) {
+  if (e) e.preventDefault();
+
+  const email = document.getElementById('forgot-email')?.value.trim();
+  if (!email) {
+    Toast.fire({ icon: 'warning', title: 'Ingresa tu correo electrónico' });
+    return;
+  }
+
+  try {
+    const res = await window.dataService.resetPassword(email);
+    closeModal('modal-forgot-password');
+    const form = document.getElementById('form-forgot-password');
+    if (form) form.reset();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Solicitud Enviada',
+      text: res.message || 'Revisa tu bandeja de entrada para restablecer tu contraseña con Supabase Auth.',
+      confirmButtonColor: '#E30613'
+    });
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: err.message || 'No se pudo procesar la solicitud de recuperación.',
+      confirmButtonColor: '#E30613'
+    });
+  }
+}
+
+// Cerrar sesión
 function handleLogout() {
   Swal.fire({
     title: '¿Cerrar Sesión?',
@@ -1417,27 +1624,25 @@ function handleLogout() {
     cancelButtonColor: '#6B7280',
     confirmButtonText: 'Sí, salir',
     cancelButtonText: 'Cancelar'
-  }).then((res) => {
+  }).then(async (res) => {
     if (res.isConfirmed) {
+      await window.dataService.signOutUser();
+      localStorage.removeItem('qp_current_profile');
+      sessionStorage.removeItem('qp_current_profile');
       localStorage.removeItem('qp_current_user');
       sessionStorage.removeItem('qp_current_user');
       state.currentUser = null;
+
       const form = document.getElementById('form-login');
       if (form) form.reset();
-      updateAuthUI(false);
+
+      showGatekeeperScreen('login');
       Toast.fire({ icon: 'info', title: 'Sesión finalizada correctamente' });
     }
   });
 }
 
-function fillQuickLogin(user, pass) {
-  const userInput = document.getElementById('login-username');
-  const passInput = document.getElementById('login-password');
-  if (userInput) userInput.value = user;
-  if (passInput) passInput.value = pass;
-  handleLoginSubmit(null);
-}
-
+// Alternar visibilidad de contraseña
 function togglePasswordVisibility(inputId, eyeIconId) {
   const input = document.getElementById(inputId);
   const icon = document.getElementById(eyeIconId);
@@ -1454,29 +1659,75 @@ function togglePasswordVisibility(inputId, eyeIconId) {
 }
 
 // ==========================================
-// MÓDULO 4: GESTIÓN DE USUARIOS Y CREDENCIALES
+// MÓDULO 4: GESTIÓN DE PERFILES Y APROBACIONES
 // ==========================================
+
+// Cambiar filtro de pestaña de estados (TODOS, PENDIENTE, APROBADO, RECHAZADO, DESACTIVADO)
+function setProfilesFilter(status) {
+  state.currentProfileFilter = status;
+
+  const tabs = ['todos', 'pendiente', 'aprobado', 'rechazado', 'desactivado'];
+  tabs.forEach(t => {
+    const tabBtn = document.getElementById(`tab-filter-${t}`);
+    if (tabBtn) {
+      if (t === status.toLowerCase()) {
+        tabBtn.className = 'tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#333333] text-white shadow-xs';
+      } else {
+        tabBtn.className = 'tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200';
+      }
+    }
+  });
+
+  renderUsuariosTable();
+}
+
+// Renderizar tabla de usuarios y perfiles
 function renderUsuariosTable() {
   const tbody = document.getElementById('table-usuarios-body');
   if (!tbody) return;
 
+  // Actualizar contadores de las pestañas
+  const allProfiles = state.userProfiles || [];
+  const countTodos = allProfiles.length;
+  const countPendiente = allProfiles.filter(p => p.estado === 'PENDIENTE').length;
+  const countAprobado = allProfiles.filter(p => p.estado === 'APROBADO').length;
+  const countRechazado = allProfiles.filter(p => p.estado === 'RECHAZADO').length;
+  const countDesactivado = allProfiles.filter(p => p.estado === 'DESACTIVADO').length;
+
+  const bTodos = document.getElementById('badge-tab-todos');
+  const bPendiente = document.getElementById('badge-tab-pendiente');
+  const bAprobado = document.getElementById('badge-tab-aprobado');
+  const bRechazado = document.getElementById('badge-tab-rechazado');
+  const bDesactivado = document.getElementById('badge-tab-desactivado');
+
+  if (bTodos) bTodos.textContent = countTodos;
+  if (bPendiente) bPendiente.textContent = countPendiente;
+  if (bAprobado) bAprobado.textContent = countAprobado;
+  if (bRechazado) bRechazado.textContent = countRechazado;
+  if (bDesactivado) bDesactivado.textContent = countDesactivado;
+
+  // Filtros aplicados
   const search = (document.getElementById('filter-user-search')?.value || '').toLowerCase();
   const roleFilter = document.getElementById('filter-user-role')?.value || '';
+  const statusFilter = state.currentProfileFilter || 'TODOS';
 
-  const filtered = state.users.filter(u => {
-    const matchSearch = (u.nombre || '').toLowerCase().includes(search) ||
-                        (u.usuario || '').toLowerCase().includes(search) ||
-                        (u.id_usuario || '').toLowerCase().includes(search);
-    const matchRole = !roleFilter || u.rol === roleFilter;
-    return matchSearch && matchRole;
+  const filtered = allProfiles.filter(p => {
+    const fullName = `${p.nombre || ''} ${p.apellido || ''}`.toLowerCase();
+    const email = (p.correo || '').toLowerCase();
+    const phone = (p.telefono || '').toLowerCase();
+    const matchSearch = !search || fullName.includes(search) || email.includes(search) || phone.includes(search);
+    const matchRole = !roleFilter || (p.rol || '').toUpperCase() === roleFilter.toUpperCase();
+    const matchStatus = statusFilter === 'TODOS' || (p.estado || '').toUpperCase() === statusFilter.toUpperCase();
+    return matchSearch && matchRole && matchStatus;
   });
 
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="7" class="px-6 py-8 text-center text-gray-400">
-          <i data-lucide="shield-alert" class="w-8 h-8 mx-auto mb-2 text-gray-300"></i>
-          No se encontraron usuarios que coincidan con la búsqueda.
+        <td colspan="7" class="px-6 py-10 text-center text-gray-400">
+          <i data-lucide="shield-alert" class="w-9 h-9 mx-auto mb-2 text-gray-300"></i>
+          <p class="font-semibold text-gray-500">No se encontraron solicitudes o usuarios</p>
+          <p class="text-xs text-gray-400 mt-1">Intenta ajustando el filtro de búsqueda o el estado seleccionado.</p>
         </td>
       </tr>
     `;
@@ -1484,49 +1735,123 @@ function renderUsuariosTable() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(u => {
-    const isCurrentUser = state.currentUser && state.currentUser.id_usuario === u.id_usuario;
-    const roleBadge = u.rol === 'Administrador'
-      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">👑 ${u.rol}</span>`
-      : (u.rol === 'Supervisor'
-        ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-50 text-[#806B20] border border-yellow-200">🔍 ${u.rol}</span>`
-        : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651] border border-emerald-200">💼 ${u.rol}</span>`);
+  tbody.innerHTML = filtered.map(p => {
+    const isCurrentUser = state.currentUser && (state.currentUser.correo === p.correo || state.currentUser.id === p.id);
+    const profileId = p.id || p.user_id || p.correo;
+    const fullName = `${p.nombre || ''} ${p.apellido || ''}`.trim() || 'Sin Nombre';
 
-    const statusBadge = u.estado === 'Activo'
-      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651]">🟢 Activo</span>`
-      : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-[#E30613]">🔴 Inactivo</span>`;
+    // Badge de Rol
+    const roleBadge = p.rol === 'ADMINISTRADOR'
+      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">👑 ADMINISTRADOR</span>`
+      : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651] border border-emerald-200">💼 USUARIO</span>`;
+
+    // Badge de Estado
+    let statusBadge = '';
+    if (p.estado === 'PENDIENTE') {
+      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">🟡 PENDIENTE</span>`;
+    } else if (p.estado === 'APROBADO') {
+      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-[#00A651] border border-emerald-200">🟢 APROBADO</span>`;
+    } else if (p.estado === 'RECHAZADO') {
+      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">🔴 RECHAZADO</span>`;
+    } else {
+      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">⚪ DESACTIVADO</span>`;
+    }
+
+    // Botones de Acción según estado
+    let stateActionButtons = '';
+    if (p.estado === 'PENDIENTE') {
+      stateActionButtons = `
+        <button onclick="handleApproveUser('${profileId}')" title="Aprobar Solicitud" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Aprobar</span>
+        </button>
+        <button onclick="handleRejectUser('${profileId}')" title="Rechazar Solicitud" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 hover:bg-red-100 text-[#E30613] border border-red-200 flex items-center space-x-1 transition-colors">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          <span>Rechazar</span>
+        </button>
+      `;
+    } else if (p.estado === 'APROBADO') {
+      stateActionButtons = `
+        ${!isCurrentUser ? `
+          <button onclick="handleDeactivateUser('${profileId}')" title="Desactivar Cuenta" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors">
+            <i data-lucide="power-off" class="w-4 h-4"></i>
+          </button>
+        ` : ''}
+        <button onclick="handleChangeRolePrompt('${profileId}')" title="Cambiar Rol (Administrador / Usuario)" class="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+        </button>
+      `;
+    } else if (p.estado === 'RECHAZADO') {
+      stateActionButtons = `
+        <button onclick="handleApproveUser('${profileId}')" title="Aprobar y Conceder Acceso" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
+          <i data-lucide="check" class="w-3.5 h-3.5"></i>
+          <span>Aprobar</span>
+        </button>
+      `;
+    } else if (p.estado === 'DESACTIVADO') {
+      stateActionButtons = `
+        <button onclick="handleReactivateUser('${profileId}')" title="Reactivar Cuenta" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
+          <i data-lucide="power" class="w-3.5 h-3.5"></i>
+          <span>Reactivar</span>
+        </button>
+      `;
+    }
+
+    // Teléfono WhatsApp
+    const phoneClean = (p.telefono || '').replace(/\D/g, '');
+    const waLink = phoneClean ? `https://wa.me/593${phoneClean.startsWith('0') ? phoneClean.slice(1) : phoneClean}` : null;
 
     return `
-      <tr class="hover:bg-gray-50/80 transition-colors">
-        <td class="px-4 py-3 font-mono font-bold text-xs text-gray-700">
-          <span class="bg-gray-100 px-2 py-0.5 rounded-md">${u.id_usuario}</span>
-        </td>
+      <tr class="hover:bg-gray-50/80 transition-colors ${p.estado === 'PENDIENTE' ? 'bg-amber-50/30' : ''}">
         <td class="px-4 py-3">
-          <div class="font-bold text-[#333333] flex items-center space-x-1.5">
-            <span>${u.nombre}</span>
-            ${isCurrentUser ? '<span class="text-[10px] bg-red-100 text-[#E30613] px-1.5 py-0.2 rounded font-bold">Tú</span>' : ''}
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-full bg-red-50 text-[#E30613] font-bold text-xs flex items-center justify-center border border-red-100 shrink-0">
+              ${fullName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <div class="font-bold text-[#333333] flex items-center space-x-1.5">
+                <span>${fullName}</span>
+                ${isCurrentUser ? '<span class="text-[10px] bg-red-100 text-[#E30613] px-1.5 py-0.2 rounded font-bold">Tú</span>' : ''}
+              </div>
+              <span class="text-[11px] text-gray-400 font-mono">ID: ${(p.user_id || p.id || '').slice(0, 8)}...</span>
+            </div>
           </div>
         </td>
-        <td class="px-4 py-3 text-gray-600 font-medium">
-          <span class="font-mono text-xs">@${u.usuario}</span>
+        <td class="px-4 py-3">
+          <div class="space-y-0.5">
+            <div class="text-xs font-medium text-gray-700 flex items-center space-x-1">
+              <i data-lucide="mail" class="w-3 h-3 text-gray-400"></i>
+              <span class="font-mono">${p.correo}</span>
+            </div>
+            ${p.telefono ? `
+              <div class="text-xs text-gray-500 flex items-center space-x-1">
+                <i data-lucide="phone" class="w-3 h-3 text-[#00A651]"></i>
+                ${waLink ? `<a href="${waLink}" target="_blank" class="hover:underline text-[#00A651] font-medium">${p.telefono}</a>` : `<span>${p.telefono}</span>`}
+              </div>
+            ` : ''}
+          </div>
         </td>
         <td class="px-4 py-3">${roleBadge}</td>
-        <td class="px-4 py-3">
-          <div class="flex items-center space-x-2">
-            <span class="font-mono text-xs text-gray-500 tracking-widest">••••••••</span>
-            <button onclick="showPasswordAlert('${u.usuario}', '${u.password}')" title="Ver contraseña" class="p-1 rounded-lg text-gray-400 hover:text-[#E30613] hover:bg-red-50 transition-colors">
-              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </td>
         <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-xs text-gray-500 font-mono">
+          ${p.fecha_registro || '-'}
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-500">
+          ${p.aprobado_por ? `
+            <div>
+              <span class="font-semibold text-gray-700">${p.aprobado_por}</span>
+              <p class="text-[10px] text-gray-400 font-mono">${p.fecha_aprobacion || ''}</p>
+            </div>
+          ` : `<span class="text-gray-400 italic">Pendiente de revisión</span>`}
+        </td>
         <td class="px-4 py-3 text-right">
-          <div class="inline-flex items-center space-x-1">
-            <button onclick="editUser('${u.id_usuario}')" title="Editar y cambiar contraseña" class="p-1.5 rounded-lg text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 transition-colors">
+          <div class="inline-flex items-center space-x-1.5">
+            ${stateActionButtons}
+            <button onclick="openUserModal('${profileId}')" title="Editar Perfil" class="p-1.5 rounded-lg text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 transition-colors">
               <i data-lucide="pencil" class="w-4 h-4"></i>
             </button>
             ${!isCurrentUser ? `
-              <button onclick="deleteUser('${u.id_usuario}')" title="Eliminar usuario" class="p-1.5 rounded-lg text-gray-500 hover:text-[#E30613] hover:bg-red-50 transition-colors">
+              <button onclick="handleDeleteUser('${profileId}')" title="Eliminar Perfil" class="p-1.5 rounded-lg text-gray-500 hover:text-[#E30613] hover:bg-red-50 transition-colors">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             ` : `
@@ -1541,139 +1866,151 @@ function renderUsuariosTable() {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function showPasswordAlert(usuario, password) {
-  Swal.fire({
-    title: `Credencial de Acceso`,
-    html: `
-      <div class="space-y-3 text-left">
-        <p class="text-xs text-gray-500">Usuario: <strong class="text-gray-800">@${usuario}</strong></p>
-        <div>
-          <label class="text-[11px] font-bold text-gray-400 uppercase">Contraseña actual:</label>
-          <div class="mt-1 p-3 bg-red-50 border border-red-100 rounded-xl text-center font-mono font-bold text-xl text-[#E30613] tracking-widest">
-            ${password}
-          </div>
-        </div>
-      </div>
-    `,
-    confirmButtonColor: '#E30613',
-    confirmButtonText: 'Aceptar'
-  });
-}
-
-function openUserModal(userId = null) {
-  state.editingUserId = userId;
-  const title = document.getElementById('modal-user-title');
-  const form = document.getElementById('form-user');
-  form.reset();
-
-  if (userId) {
-    const u = state.users.find(x => x.id_usuario === userId);
-    if (!u) return;
-
-    if (title) title.textContent = 'Editar Usuario y Contraseña';
-    document.getElementById('user-id').value = u.id_usuario;
-    document.getElementById('user-id').readOnly = true;
-    document.getElementById('user-name').value = u.nombre;
-    document.getElementById('user-username').value = u.usuario;
-    document.getElementById('user-password').value = u.password;
-    document.getElementById('user-role').value = u.rol || 'Vendedor';
-    document.getElementById('user-status').value = u.estado || 'Activo';
-  } else {
-    if (title) title.textContent = 'Registrar Nuevo Usuario';
-    document.getElementById('user-id').readOnly = false;
-    
-    // Auto-generar ID siguiente
-    const nextNum = state.users.length + 1;
-    document.getElementById('user-id').value = `U00${nextNum}`;
-    document.getElementById('user-role').value = 'Vendedor';
-    document.getElementById('user-status').value = 'Activo';
-  }
-
-  openModal('modal-user');
-}
-
-async function handleSaveUser(e) {
-  e.preventDefault();
-
-  const id = document.getElementById('user-id').value.trim().toUpperCase();
-  const nombre = document.getElementById('user-name').value.trim();
-  const usuario = document.getElementById('user-username').value.trim().toLowerCase();
-  const password = document.getElementById('user-password').value.trim();
-  const rol = document.getElementById('user-role').value;
-  const estado = document.getElementById('user-status').value;
-
-  if (!id || !nombre || !usuario || !password) {
-    Toast.fire({ icon: 'warning', title: 'Complete todos los campos obligatorios' });
-    return;
-  }
-
-  // Validar unicidad de nombre de usuario
-  const duplicate = state.users.find(u => u.usuario.toLowerCase() === usuario && u.id_usuario !== id);
-  if (duplicate) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Usuario ya existente',
-      text: `El nombre de usuario "@${usuario}" ya está en uso por otro miembro del equipo.`,
-      confirmButtonColor: '#E30613'
-    });
-    return;
-  }
-
-  const userData = {
-    id_usuario: id,
-    nombre,
-    usuario,
-    password,
-    rol,
-    estado
-  };
-
+// Aprobar Usuario (ADMINISTRADOR)
+async function handleApproveUser(profileId) {
   try {
-    await window.dataService.saveUser(userData);
-    await loadAllData();
+    const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
+    await window.dataService.approveUser(profileId, adminName);
+    state.userProfiles = await window.dataService.getUserProfiles();
+    state.users = state.userProfiles;
+    updateNavigationBadges();
     renderUsuariosTable();
-    closeModal('modal-user');
-
-    // Si el usuario editado es el mismo con sesión activa, actualizar la sesión
-    if (state.currentUser && state.currentUser.id_usuario === id) {
-      state.currentUser = userData;
-      if (localStorage.getItem('qp_current_user')) {
-        localStorage.setItem('qp_current_user', JSON.stringify(userData));
-      } else {
-        sessionStorage.setItem('qp_current_user', JSON.stringify(userData));
-      }
-      updateAuthUI(true);
-    }
 
     Toast.fire({
       icon: 'success',
-      title: state.editingUserId ? 'Usuario actualizado con éxito' : 'Nuevo usuario registrado con éxito'
+      title: '¡Usuario Aprobado! Ya tiene acceso al sistema comercial'
     });
   } catch (err) {
-    console.error('Error guardando usuario:', err);
-    Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo guardar el usuario', confirmButtonColor: '#E30613' });
+    console.error('Error aprobando usuario:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
 }
 
-function editUser(id) {
-  openUserModal(id);
+// Rechazar Usuario (ADMINISTRADOR)
+async function handleRejectUser(profileId) {
+  const result = await Swal.fire({
+    title: '¿Rechazar Solicitud?',
+    text: 'El usuario no podrá acceder al CRM de Avícola QUÉ POLLO.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Sí, rechazar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
+      await window.dataService.rejectUser(profileId, adminName);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.users = state.userProfiles;
+      updateNavigationBadges();
+      renderUsuariosTable();
+
+      Toast.fire({ icon: 'info', title: 'Solicitud rechazada' });
+    } catch (err) {
+      console.error('Error rechazando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
 }
 
-async function deleteUser(id) {
-  if (state.currentUser && state.currentUser.id_usuario === id) {
+// Desactivar Usuario (ADMINISTRADOR)
+async function handleDeactivateUser(profileId) {
+  const result = await Swal.fire({
+    title: '¿Desactivar Cuenta?',
+    text: 'El usuario será suspendido temporalmente y no podrá operar en el sistema.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: 'Sí, desactivar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await window.dataService.deactivateUser(profileId);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.users = state.userProfiles;
+      updateNavigationBadges();
+      renderUsuariosTable();
+
+      Toast.fire({ icon: 'warning', title: 'Cuenta desactivada temporalmente' });
+    } catch (err) {
+      console.error('Error desactivando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+// Reactivar Usuario (ADMINISTRADOR)
+async function handleReactivateUser(profileId) {
+  try {
+    const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
+    await window.dataService.reactivateUser(profileId, adminName);
+    state.userProfiles = await window.dataService.getUserProfiles();
+    state.users = state.userProfiles;
+    updateNavigationBadges();
+    renderUsuariosTable();
+
+    Toast.fire({ icon: 'success', title: 'Cuenta reactivada exitosamente' });
+  } catch (err) {
+    console.error('Error reactivando usuario:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+// Cambiar Rol de Usuario
+async function handleChangeRolePrompt(profileId) {
+  const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
+  if (!p) return;
+
+  const currentRole = p.rol || 'USUARIO';
+  const newRole = currentRole === 'ADMINISTRADOR' ? 'USUARIO' : 'ADMINISTRADOR';
+
+  const result = await Swal.fire({
+    title: '¿Cambiar Rol de Acceso?',
+    html: `Cambiar el rol de <strong>${p.nombre || p.correo}</strong> de <span class="font-bold">${currentRole}</span> a <span class="font-bold text-[#E30613]">${newRole}</span>.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    cancelButtonColor: '#6B7280',
+    confirmButtonText: `Sí, cambiar a ${newRole}`,
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await window.dataService.changeUserRole(profileId, newRole);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.users = state.userProfiles;
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: `Rol cambiado a ${newRole}` });
+    } catch (err) {
+      console.error('Error cambiando rol:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+// Eliminar Usuario Permanentemente
+async function handleDeleteUser(profileId) {
+  const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
+  if (state.currentUser && (state.currentUser.correo === p?.correo || state.currentUser.id === profileId)) {
     Swal.fire({
       icon: 'error',
       title: 'Acción no permitida',
-      text: 'No puedes eliminar la cuenta con la que tienes la sesión iniciada en este momento.',
+      text: 'No puedes eliminar tu propia cuenta mientras estás conectado.',
       confirmButtonColor: '#E30613'
     });
     return;
   }
 
-  const u = state.users.find(x => x.id_usuario === id);
   const result = await Swal.fire({
-    title: '¿Eliminar cuenta de usuario?',
-    html: `Se eliminará el acceso de <strong>${u ? u.nombre : id}</strong> (@${u ? u.usuario : ''}).`,
+    title: '¿Eliminar Usuario Definitivamente?',
+    html: `Se eliminará el perfil y acceso de <strong>${p ? (p.nombre + ' ' + (p.apellido || '')) : profileId}</strong> (${p?.correo || ''}).`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#E30613',
@@ -1684,8 +2021,10 @@ async function deleteUser(id) {
 
   if (result.isConfirmed) {
     try {
-      await window.dataService.deleteUser(id);
-      await loadAllData();
+      await window.dataService.deleteUserProfile(profileId);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.users = state.userProfiles;
+      updateNavigationBadges();
       renderUsuariosTable();
       Toast.fire({ icon: 'success', title: 'Usuario eliminado del sistema' });
     } catch (err) {
@@ -1694,4 +2033,104 @@ async function deleteUser(id) {
     }
   }
 }
+
+// Abrir Modal de Creación / Edición de Usuario (Admin)
+function openUserModal(profileId = null) {
+  state.editingUserId = profileId;
+  const title = document.getElementById('modal-user-title');
+  const form = document.getElementById('form-user');
+  if (form) form.reset();
+
+  const idInput = document.getElementById('user-profile-id');
+  const emailInput = document.getElementById('user-email');
+
+  if (profileId) {
+    const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
+    if (!p) return;
+
+    if (title) title.textContent = 'Editar Perfil de Usuario';
+    if (idInput) idInput.value = p.id || p.user_id || '';
+    if (emailInput) {
+      emailInput.value = p.correo || '';
+      emailInput.readOnly = true;
+    }
+    document.getElementById('user-name').value = p.nombre || '';
+    document.getElementById('user-lastname').value = p.apellido || '';
+    document.getElementById('user-phone').value = p.telefono || '';
+    document.getElementById('user-role').value = p.rol || 'USUARIO';
+    document.getElementById('user-status').value = p.estado || 'APROBADO';
+  } else {
+    if (title) title.textContent = 'Crear Nuevo Perfil de Usuario';
+    if (idInput) idInput.value = '';
+    if (emailInput) {
+      emailInput.value = '';
+      emailInput.readOnly = false;
+    }
+    document.getElementById('user-role').value = 'USUARIO';
+    document.getElementById('user-status').value = 'APROBADO';
+  }
+
+  openModal('modal-user');
+}
+
+// Guardar Perfil de Usuario desde Modal (Admin)
+async function handleSaveUser(e) {
+  if (e) e.preventDefault();
+
+  const profileId = document.getElementById('user-profile-id')?.value;
+  const nombre = document.getElementById('user-name')?.value.trim();
+  const apellido = document.getElementById('user-lastname')?.value.trim();
+  const correo = document.getElementById('user-email')?.value.trim().toLowerCase();
+  const telefono = document.getElementById('user-phone')?.value.trim();
+  const rol = document.getElementById('user-role')?.value;
+  const estado = document.getElementById('user-status')?.value;
+
+  if (!nombre || !apellido || !correo) {
+    Toast.fire({ icon: 'warning', title: 'Completa todos los campos obligatorios' });
+    return;
+  }
+
+  const profileData = {
+    id: profileId || `usr-${Date.now()}`,
+    user_id: profileId || `usr-${Date.now()}`,
+    nombre,
+    apellido,
+    correo,
+    telefono,
+    rol,
+    estado,
+    fecha_registro: new Date().toISOString().split('T')[0],
+    fecha_aprobacion: estado === 'APROBADO' ? new Date().toISOString().split('T')[0] : null,
+    aprobado_por: estado === 'APROBADO' ? (`${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim()) : null
+  };
+
+  try {
+    await window.dataService.saveUserProfile(profileData);
+    state.userProfiles = await window.dataService.getUserProfiles();
+    state.users = state.userProfiles;
+    updateNavigationBadges();
+    renderUsuariosTable();
+    closeModal('modal-user');
+
+    // Si el usuario editado es la sesión activa actual, actualizar
+    if (state.currentUser && (state.currentUser.correo === correo || state.currentUser.id === profileId)) {
+      state.currentUser = { ...state.currentUser, ...profileData };
+      if (localStorage.getItem('qp_current_profile')) {
+        localStorage.setItem('qp_current_profile', JSON.stringify(state.currentUser));
+      } else {
+        sessionStorage.setItem('qp_current_profile', JSON.stringify(state.currentUser));
+      }
+      evaluateUserAccess(state.currentUser);
+    }
+
+    Toast.fire({
+      icon: 'success',
+      title: profileId ? 'Perfil actualizado correctamente' : 'Usuario creado y registrado con éxito'
+    });
+  } catch (err) {
+    console.error('Error guardando perfil:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo guardar el usuario', confirmButtonColor: '#E30613' });
+  }
+}
+
 
