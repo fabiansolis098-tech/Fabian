@@ -1180,6 +1180,30 @@ class DataService {
     return true;
   }
 
+  // Aliases universales de autenticación para app.js
+  async loginWithCredentials(email, password) {
+    return this.signInUser({ email, password });
+  }
+
+  async registerNewUser(data) {
+    const res = await this.signUpUser({
+      email: data.correo || data.email,
+      password: data.password,
+      nombre: data.nombre,
+      apellido: data.apellido,
+      telefono: data.telefono
+    });
+    return res.profile || res;
+  }
+
+  async logout() {
+    return this.signOutUser();
+  }
+
+  async requestPasswordReset(email) {
+    return this.resetPassword(email);
+  }
+
   async resetPassword(email) {
     const cleanEmail = (email || '').trim().toLowerCase();
     if (this.isCloudActive && this.supabase) {

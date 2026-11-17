@@ -2946,7 +2946,15 @@ async function handleLoginSubmit(e) {
   }
 
   try {
-    const res = await window.dataService.loginWithCredentials(email, password);
+    let res;
+    if (typeof window.dataService.loginWithCredentials === 'function') {
+      res = await window.dataService.loginWithCredentials(email, password);
+    } else if (typeof window.dataService.signInUser === 'function') {
+      res = await window.dataService.signInUser({ email, password });
+    } else {
+      throw new Error('Servicio de autenticación no disponible');
+    }
+
     state.currentUser = res.profile;
 
     if (remember) {
@@ -2989,13 +2997,27 @@ async function handleRegisterSubmit(e) {
   }
 
   try {
-    const regResult = await window.dataService.registerNewUser({
-      nombre,
-      apellido,
-      correo,
-      telefono,
-      password
-    });
+    let regResult;
+    if (typeof window.dataService.registerNewUser === 'function') {
+      regResult = await window.dataService.registerNewUser({
+        nombre,
+        apellido,
+        correo,
+        telefono,
+        password
+      });
+    } else if (typeof window.dataService.signUpUser === 'function') {
+      const up = await window.dataService.signUpUser({
+        email: correo,
+        password,
+        nombre,
+        apellido,
+        telefono
+      });
+      regResult = up.profile || up;
+    } else {
+      throw new Error('Servicio de registro no disponible');
+    }
 
     closeModal('modal-register');
     state.currentUser = regResult;
@@ -3022,7 +3044,11 @@ async function handleForgotPasswordSubmit(e) {
   if (!email) return;
 
   try {
-    await window.dataService.requestPasswordReset(email);
+    if (typeof window.dataService.requestPasswordReset === 'function') {
+      await window.dataService.requestPasswordReset(email);
+    } else if (typeof window.dataService.resetPassword === 'function') {
+      await window.dataService.resetPassword(email);
+    }
     closeModal('modal-forgot-password');
     Swal.fire({
       icon: 'success',
@@ -3042,7 +3068,11 @@ function handleLogout() {
   state.currentUser = null;
 
   if (window.dataService) {
-    window.dataService.logout();
+    if (typeof window.dataService.logout === 'function') {
+      window.dataService.logout();
+    } else if (typeof window.dataService.signOutUser === 'function') {
+      window.dataService.signOutUser();
+    }
   }
 
   showGatekeeperScreen('gatekeeper-auth');
