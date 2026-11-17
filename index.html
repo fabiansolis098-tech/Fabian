@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Avícola QUÉ POLLO | CRM & Sistema de Información</title>
+  <title>Avícola QUÉ POLLO | CRM & Sistema de Información Comercial</title>
   <link rel="icon" type="image/png" href="logo.png">
 
   <!-- Tailwind CSS CDN -->
@@ -50,20 +50,18 @@
   <meta http-equiv="Expires" content="0">
 
   <!-- Estilos personalizados corporativos -->
-  <link rel="stylesheet" href="styles.css?v=3.0">
+  <link rel="stylesheet" href="styles.css?v=3.5">
 </head>
 <body class="bg-[#F5F5F5] text-[#333333] antialiased min-h-screen flex flex-col">
 
   <!-- ==========================================
-       APARTADO PRINCIPAL: PANTALLA DE INICIO DE SESIÓN (LOGIN)
+       PANTALLA DE INICIO DE SESIÓN (LOGIN)
        ========================================== -->
   <div id="login-screen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 via-gray-100 to-red-50/40 relative">
-    <!-- Efectos visuales de fondo -->
     <div class="absolute top-0 left-0 w-96 h-96 bg-red-100/50 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
     <div class="absolute bottom-0 right-0 w-96 h-96 bg-green-100/40 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
 
     <div class="relative z-10 w-full max-w-md">
-      <!-- Tarjeta Principal de Login -->
       <div class="bg-white rounded-3xl shadow-xl border border-gray-200/80 p-6 sm:p-8 space-y-6">
         
         <!-- Logo y Marca -->
@@ -74,7 +72,7 @@
             <span class="text-[11px] font-extrabold uppercase tracking-wider text-[#E30613]">Portal de Acceso Comercial</span>
           </div>
           <h1 class="text-2xl font-black text-[#333333] tracking-tight">Iniciar Sesión</h1>
-          <p class="text-xs text-gray-500 max-w-xs">Ingresa con tu correo y contraseña para acceder al CRM de Avícola QUÉ POLLO</p>
+          <p class="text-xs text-gray-500 max-w-xs">Ingresa con tu correo y contraseña autorizada para acceder al CRM de Avícola QUÉ POLLO</p>
         </div>
 
         <!-- Formulario de Login -->
@@ -148,14 +146,14 @@
           <h2 class="text-2xl font-black text-[#333333]">Solicitud Pendiente</h2>
         </div>
         <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Tu cuenta ha sido creada correctamente, pero <strong class="text-gray-800">todavía necesita la aprobación de un administrador</strong> para acceder al CRM de Avícola QUÉ POLLO.
+          Tu cuenta ha sido creada correctamente, pero <strong class="text-gray-800">requiere la aprobación de un administrador</strong> para ingresar al CRM de Avícola QUÉ POLLO.
         </p>
         <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-left text-xs space-y-2">
           <div class="flex justify-between items-center"><span class="text-gray-400">Usuario:</span> <span id="pending-user-name" class="font-bold text-gray-800">-</span></div>
           <div class="flex justify-between items-center"><span class="text-gray-400">Correo:</span> <span id="pending-user-email" class="font-mono text-gray-700">-</span></div>
-          <div class="flex justify-between items-center"><span class="text-gray-400">Estado:</span> <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">🟡 PENDIENTE</span></div>
+          <div class="flex justify-between items-center"><span class="text-gray-400">Estado:</span> <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px]">🟡 PENDIENTE DE APROBACIÓN</span></div>
         </div>
-        <p class="text-xs text-gray-400">El administrador revisará tu solicitud para habilitar tu acceso al sistema comercial.</p>
+        <p class="text-xs text-gray-400">Las administradoras (Veronica Toaza o Salomé Flores) revisarán tu solicitud para conceder el acceso.</p>
         <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center justify-center space-x-1.5 transition-colors">
           <i data-lucide="log-out" class="w-4 h-4"></i>
           <span>Cerrar Sesión</span>
@@ -178,7 +176,7 @@
           <h2 class="text-2xl font-black text-[#333333]">Solicitud Rechazada</h2>
         </div>
         <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Tu solicitud de acceso al CRM de <strong class="text-gray-800">Avícola QUÉ POLLO</strong> ha sido rechazada por la administración.
+          Tu solicitud de acceso al CRM de <strong class="text-gray-800">Avícola QUÉ POLLO</strong> no ha sido aprobada por la administración.
         </p>
         <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl btn-primary text-xs font-bold flex items-center justify-center space-x-1.5 shadow-xs">
           <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -202,7 +200,7 @@
           <h2 class="text-2xl font-black text-[#333333]">Cuenta Desactivada</h2>
         </div>
         <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">
-          Tu cuenta de acceso comercial se encuentra temporalmente desactivada. Si consideras que es un error, por favor contacta con el administrador.
+          Tu cuenta de acceso comercial se encuentra temporalmente desactivada. Contacta a la administración para reactivarla.
         </p>
         <button onclick="handleLogout()" class="w-full py-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center justify-center space-x-1.5">
           <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -217,9 +215,7 @@
        ========================================== -->
   <div id="app-container" class="hidden min-h-screen flex flex-col">
 
-    <!-- ==========================================
-         HEADER PRINCIPAL SUPERIOR
-         ========================================== -->
+    <!-- HEADER SUPERIOR -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -235,33 +231,33 @@
               <div class="hidden sm:block">
                 <div class="flex items-center space-x-2">
                   <span class="font-extrabold text-base tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</span>
-                  <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200">CRM Oficial</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-red-50 text-[#E30613] border border-red-200">CRM Integral 2.0</span>
                 </div>
-                <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+                <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor • Ambato - Ecuador</p>
               </div>
             </div>
           </div>
 
-          <!-- Créditos, Acciones Rápidas y Usuario Activo -->
+          <!-- Acciones Rápidas y Usuario Activo -->
           <div class="flex items-center space-x-2 sm:space-x-3">
 
-            <!-- Botón Créditos Académicos UTA -->
-            <button onclick="openModal('modal-uta')" class="hidden sm:flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-50 text-[#333333] hover:bg-gray-100 transition-colors border border-gray-200">
+            <!-- Botón Proyecto Académico UTA -->
+            <button onclick="openModal('modal-uta')" class="hidden lg:flex items-center space-x-1.5 text-xs font-semibold px-3 py-1.5 rounded-full bg-gray-50 text-[#333333] hover:bg-gray-100 transition-colors border border-gray-200">
               <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-[#00A651]"></i>
               <span>UTA • Grupo 4</span>
             </button>
 
-            <!-- Botón Acción Rápida: Nueva Venta (Rojo Corporativo) -->
-            <button onclick="openSaleModal()" class="flex items-center space-x-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl btn-primary shadow-xs">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              <span class="hidden sm:inline">Nueva Venta</span>
+            <!-- Botón Acción Rápida: Nuevo Pedido -->
+            <button onclick="openOrderModal()" class="flex items-center space-x-1.5 text-xs sm:text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl btn-primary shadow-xs">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              <span class="hidden sm:inline">Nuevo Pedido</span>
             </button>
 
-            <!-- Perfil del Usuario Activo + Botón Cerrar Sesión -->
+            <!-- Perfil Activo + Cerrar Sesión -->
             <div class="flex items-center space-x-2 sm:space-x-3 pl-2 sm:pl-3 border-l border-gray-200">
               <div class="hidden md:flex flex-col text-right">
                 <span id="header-user-name" class="text-xs font-bold text-[#333333] leading-tight">Admin</span>
-                <span id="header-user-role" class="text-[10px] font-semibold text-[#00A651]">Administrador</span>
+                <span id="header-user-role" class="text-[10px] font-semibold text-[#00A651]">Administradora</span>
               </div>
               <button onclick="handleLogout()" title="Cerrar Sesión" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-red-50 text-[#E30613] hover:bg-red-100 transition-colors border border-red-200">
                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
@@ -274,690 +270,1108 @@
       </div>
     </header>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full flex flex-col md:flex-row gap-6 py-6">
-    
-    <!-- ==========================================
-         SIDEBAR DE NAVEGACIÓN
-         ========================================== -->
-    <aside id="sidebar-nav" class="hidden md:block w-64 shrink-0">
-      <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-xs sticky top-24 space-y-2">
-        
-        <!-- Logo en Menú Lateral -->
-        <div class="pb-4 pt-1 border-b border-gray-100 flex flex-col items-center text-center">
-          <img src="logo.png" alt="QUÉ POLLO" class="h-16 w-auto object-contain mb-1.5">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sistema Comercial CRM</span>
-        </div>
-
-        <div class="px-2 pt-2 text-[11px] font-bold uppercase tracking-wider text-gray-400">
-          Módulos
-        </div>
-
-        <button onclick="switchView('dashboard')" id="nav-btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-active">
-          <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-          <span>Dashboard</span>
-        </button>
-
-        <button onclick="switchView('clientes')" id="nav-btn-clientes" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>1. Clientes</span>
-          <span id="badge-count-clientes" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
-        </button>
-
-        <button onclick="switchView('productos')" id="nav-btn-productos" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
-          <i data-lucide="package" class="w-4 h-4"></i>
-          <span>2. Productos</span>
-          <span id="badge-count-productos" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
-        </button>
-
-        <button onclick="switchView('ventas')" id="nav-btn-ventas" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
-          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-          <span>3. Seguimiento</span>
-          <span id="badge-count-ventas" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
-        </button>
-
-        <!-- Módulo 4: Usuarios y Accesos -->
-        <button onclick="switchView('usuarios')" id="nav-btn-usuarios" class="nav-link w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-colors nav-link-inactive">
-          <i data-lucide="shield-check" class="w-4 h-4 text-[#00A651]"></i>
-          <span>4. Usuarios</span>
-          <span id="badge-count-usuarios" class="ml-auto text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
-        </button>
-
-        <!-- Tarjeta Institucional Inferior -->
-        <div class="pt-4 mt-4 border-t border-gray-100 px-2 text-xs text-gray-400 space-y-1">
-          <div class="flex items-center space-x-1.5 font-bold text-[#333333]">
-            <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
-            <span>QUÉ POLLO S.A.</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-1 w-full flex flex-col md:flex-row gap-6 py-6">
+      
+      <!-- ==========================================
+           SIDEBAR DE NAVEGACIÓN CATEGORIZADA
+           ========================================== -->
+      <aside id="sidebar-nav" class="hidden md:block w-64 shrink-0">
+        <div class="bg-white rounded-2xl p-4 border border-gray-200 shadow-xs sticky top-24 space-y-4 max-h-[85vh] overflow-y-auto">
+          
+          <!-- Marca en Menú Lateral -->
+          <div class="pb-3 border-b border-gray-100 flex flex-col items-center text-center">
+            <img src="logo.png" alt="QUÉ POLLO" class="h-12 w-auto object-contain mb-1">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Sistema Comercial & CRM</span>
           </div>
-          <p class="text-[11px] leading-relaxed text-gray-500">BD CRM • Mercadotecnia 7mo B Sistemas de Información UTA</p>
-        </div>
 
-      </div>
-    </aside>
-
-    <!-- MENÚ MÓVIL (DRAWER) -->
-    <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs">
-      <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-white p-5 shadow-2xl flex flex-col justify-between">
-        <div class="space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-            <div class="flex items-center space-x-2">
-              <img src="logo.png" alt="QUÉ POLLO" class="h-9 w-auto object-contain">
-              <span class="font-bold text-sm text-[#333333]">QUÉ POLLO CRM</span>
-            </div>
-            <button id="close-mobile-menu" class="p-1 rounded-lg text-gray-500 hover:bg-gray-100">
-              <i data-lucide="x" class="w-5 h-5"></i>
+          <!-- SECCIÓN: PRINCIPAL -->
+          <div>
+            <div class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Principal</div>
+            <button onclick="switchView('dashboard')" id="nav-btn-dashboard" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-active">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+              <span>Dashboard Ejecutivo</span>
             </button>
           </div>
 
-          <nav class="space-y-1">
-            <button onclick="switchView('dashboard'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
-              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-              <span>Dashboard</span>
-            </button>
-            <button onclick="switchView('clientes'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
-              <i data-lucide="users" class="w-5 h-5"></i>
+          <!-- SECCIÓN: COMERCIAL -->
+          <div class="space-y-1">
+            <div class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Gestión Comercial</div>
+            
+            <button onclick="switchView('clientes')" id="nav-btn-clientes" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="users" class="w-4 h-4"></i>
               <span>1. Clientes</span>
+              <span id="badge-count-clientes" class="ml-auto text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
             </button>
-            <button onclick="switchView('productos'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
-              <i data-lucide="package" class="w-5 h-5"></i>
-              <span>2. Productos</span>
-            </button>
-            <button onclick="switchView('ventas'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
-              <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-              <span>3. Seguimiento / Ventas</span>
-            </button>
-            <button onclick="switchView('usuarios'); closeMobileMenu();" id="mobile-nav-btn-usuarios" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-red-50 hover:text-[#E30613]">
-              <i data-lucide="shield-check" class="w-5 h-5 text-[#00A651]"></i>
-              <span>4. Usuarios y Accesos</span>
-            </button>
-            <button onclick="openModal('modal-uta'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-gray-700 hover:bg-gray-100">
-              <i data-lucide="graduation-cap" class="w-5 h-5 text-[#00A651]"></i>
-              <span>Proyecto UTA</span>
-            </button>
-          </nav>
-        </div>
 
-        <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
-          <span class="text-xs text-gray-400">Avícola QUÉ POLLO © 2026</span>
-          <button onclick="handleLogout(); closeMobileMenu();" class="text-xs font-bold text-[#E30613] hover:underline flex items-center space-x-1">
-            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-            <span>Salir</span>
-          </button>
+            <button onclick="switchView('productos')" id="nav-btn-productos" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="package" class="w-4 h-4"></i>
+              <span>2. Inventario & Stock</span>
+              <span id="badge-count-productos" class="ml-auto text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full font-semibold">0</span>
+            </button>
+
+            <button onclick="switchView('pedidos')" id="nav-btn-pedidos" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-[#E30613]"></i>
+              <span>3. Pedidos</span>
+              <span id="badge-count-pedidos" class="ml-auto text-[10px] bg-red-50 text-[#E30613] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+
+            <button onclick="switchView('facturas')" id="nav-btn-facturas" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="file-text" class="w-4 h-4 text-[#00A651]"></i>
+              <span>4. Facturación SRI</span>
+              <span id="badge-count-facturas" class="ml-auto text-[10px] bg-emerald-50 text-[#00A651] px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+          </div>
+
+          <!-- SECCIÓN: MARKETING Y RELACIÓN CON CLIENTES -->
+          <div class="space-y-1">
+            <div class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Marketing & Clientes</div>
+
+            <button onclick="switchView('seguimiento')" id="nav-btn-seguimiento" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="phone-call" class="w-4 h-4"></i>
+              <span>5. Seguimiento CRM</span>
+            </button>
+
+            <button onclick="switchView('marketing')" id="nav-btn-marketing" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="megaphone" class="w-4 h-4 text-[#E30613]"></i>
+              <span>6. Marketing & Banners</span>
+            </button>
+
+            <button onclick="switchView('whatsapp')" id="nav-btn-whatsapp" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="message-circle" class="w-4 h-4 text-[#00A651]"></i>
+              <span>7. WhatsApp Center</span>
+            </button>
+
+            <button onclick="switchView('fidelizacion')" id="nav-btn-fidelizacion" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="award" class="w-4 h-4 text-[#806B20]"></i>
+              <span>8. PolloPuntos</span>
+            </button>
+          </div>
+
+          <!-- SECCIÓN: ANÁLISIS Y SISTEMA -->
+          <div class="space-y-1">
+            <div class="px-2 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">Reportes & Control</div>
+
+            <button onclick="switchView('reportes')" id="nav-btn-reportes" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+              <span>9. Reportes Excel/PDF</span>
+            </button>
+
+            <button onclick="switchView('usuarios')" id="nav-btn-usuarios" class="nav-link w-full flex items-center space-x-3 px-3 py-2 rounded-xl font-medium text-xs transition-colors nav-link-inactive">
+              <i data-lucide="shield-check" class="w-4 h-4 text-[#00A651]"></i>
+              <span>10. Usuarios & Accesos</span>
+              <span id="badge-count-usuarios" class="ml-auto text-[10px] bg-amber-50 text-amber-800 px-2 py-0.5 rounded-full font-bold">0</span>
+            </button>
+          </div>
+
+        </div>
+      </aside>
+
+      <!-- DRAWER MENÚ MÓVIL -->
+      <div id="mobile-menu" class="hidden md:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-xs">
+        <div class="fixed inset-y-0 left-0 max-w-xs w-full bg-white p-5 shadow-2xl flex flex-col justify-between overflow-y-auto">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+              <div class="flex items-center space-x-2">
+                <img src="logo.png" alt="QUÉ POLLO" class="h-8 w-auto object-contain">
+                <span class="font-bold text-sm text-[#333333]">QUÉ POLLO CRM</span>
+              </div>
+              <button id="close-mobile-menu" class="p-1 rounded-lg text-gray-500 hover:bg-gray-100">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <nav class="space-y-1 text-xs">
+              <button onclick="switchView('dashboard'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>Dashboard</span>
+              </button>
+              <button onclick="switchView('clientes'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="users" class="w-4 h-4"></i><span>1. Clientes</span>
+              </button>
+              <button onclick="switchView('productos'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="package" class="w-4 h-4"></i><span>2. Inventario</span>
+              </button>
+              <button onclick="switchView('pedidos'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="shopping-bag" class="w-4 h-4 text-[#E30613]"></i><span>3. Pedidos</span>
+              </button>
+              <button onclick="switchView('facturas'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="file-text" class="w-4 h-4 text-[#00A651]"></i><span>4. Facturación SRI</span>
+              </button>
+              <button onclick="switchView('seguimiento'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="phone-call" class="w-4 h-4"></i><span>5. Seguimiento CRM</span>
+              </button>
+              <button onclick="switchView('marketing'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="megaphone" class="w-4 h-4 text-[#E30613]"></i><span>6. Marketing & Banners</span>
+              </button>
+              <button onclick="switchView('whatsapp'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="message-circle" class="w-4 h-4 text-[#00A651]"></i><span>7. WhatsApp Center</span>
+              </button>
+              <button onclick="switchView('fidelizacion'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="award" class="w-4 h-4 text-[#806B20]"></i><span>8. PolloPuntos</span>
+              </button>
+              <button onclick="switchView('reportes'); closeMobileMenu();" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i><span>9. Reportes</span>
+              </button>
+              <button onclick="switchView('usuarios'); closeMobileMenu();" id="mobile-nav-btn-usuarios" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-red-50">
+                <i data-lucide="shield-check" class="w-4 h-4 text-[#00A651]"></i><span>10. Usuarios</span>
+              </button>
+            </nav>
+          </div>
+
+          <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-xs">
+            <span class="text-gray-400">QUÉ POLLO © 2026</span>
+            <button onclick="handleLogout(); closeMobileMenu();" class="font-bold text-[#E30613] hover:underline flex items-center space-x-1">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i><span>Salir</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- ==========================================
-         CONTENEDOR PRINCIPAL DE VISTAS
-         ========================================== -->
-    <main class="flex-1 w-full overflow-hidden">
 
       <!-- ==========================================
-           VISTA 1: DASHBOARD (EMPRESARIAL Y LIMPIO)
+           CONTENEDOR PRINCIPAL DE VISTAS (SPA)
            ========================================== -->
-      <section id="view-dashboard" class="space-y-6">
-        
-        <!-- Banner de Bienvenida Corporativo -->
-        <div class="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs relative overflow-hidden">
-          <div class="relative z-10 max-w-2xl space-y-2">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 text-[#E30613] text-xs font-semibold border border-red-100">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
-              <span>Avícola QUÉ POLLO</span>
-              <span>•</span>
-              <span id="dashboard-date-str" class="text-gray-600 font-normal">Hoy</span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#333333]">Panel de Control Comercial</h1>
-            <p class="text-gray-600 text-xs sm:text-sm leading-relaxed">
-              Supervisión integral de clientes, catálogo de productos avícolas y trazabilidad de pedidos omnicanal.
-            </p>
-            <div class="pt-3 flex flex-wrap gap-2.5">
-              <button onclick="openSaleModal()" class="px-4 py-2 btn-primary rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 shadow-xs">
-                <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>Registrar Venta</span>
-              </button>
-              <button onclick="openClientModal()" class="px-4 py-2 btn-secondary rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5">
-                <i data-lucide="user-plus" class="w-4 h-4"></i>
-                <span>Nuevo Cliente</span>
-              </button>
-              <button onclick="openProductModal()" class="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-[#333333] border border-gray-200 rounded-xl text-xs sm:text-sm font-semibold flex items-center space-x-1.5">
-                <i data-lucide="package-plus" class="w-4 h-4 text-[#00A651]"></i>
-                <span>Nuevo Producto</span>
-              </button>
-            </div>
-          </div>
-          <!-- Logotipo de Marca como Marca de Agua Institucional -->
-          <div class="absolute right-6 top-1/2 -translate-y-1/2 opacity-12 pointer-events-none hidden lg:block">
-            <img src="logo.png" alt="QUÉ POLLO" class="h-44 w-auto object-contain">
-          </div>
-        </div>
+      <main class="flex-1 min-w-0">
 
-        <!-- 4 Tarjetas KPI Corporativas -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- ==========================================
+             VISTA 1: DASHBOARD EJECUTIVO & KPIs
+             ========================================== -->
+        <section id="view-dashboard" class="space-y-6">
           
-          <!-- KPI 1: Ingresos Totales (Verde Indicador) -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Ingresos Totales</span>
-              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#00A651] flex items-center justify-center">
-                <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+          <!-- Banner de Bienvenida y Filtro de Periodos -->
+          <div class="bg-gradient-to-r from-red-600 via-red-500 to-amber-500 rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider bg-white/20 px-3 py-1 rounded-full">Panel de Control General</span>
+                <h2 class="text-2xl font-black mt-1">Avícola QUÉ POLLO • Ambato</h2>
+                <p id="dashboard-date-str" class="text-xs text-white/90 font-medium mt-0.5">Cargando fecha...</p>
               </div>
-            </div>
-            <div class="mt-3">
-              <div id="kpi-total-revenue" class="text-2xl sm:text-3xl font-extrabold text-[#333333] font-mono">$0.00</div>
-              <p class="text-xs text-[#00A651] font-semibold mt-1 flex items-center">
-                <i data-lucide="trending-up" class="w-3.5 h-3.5 mr-1"></i> Facturación comercial
-              </p>
+
+              <!-- Selector de Periodo Temporal -->
+              <div class="bg-black/20 backdrop-blur-md p-2 rounded-2xl flex flex-wrap items-center gap-1.5 text-xs">
+                <button onclick="setDashboardPeriod('hoy')" id="btn-period-hoy" class="px-3 py-1.5 rounded-xl font-bold bg-white text-[#E30613]">Hoy</button>
+                <button onclick="setDashboardPeriod('semana')" id="btn-period-semana" class="px-3 py-1.5 rounded-xl font-semibold hover:bg-white/20">Semana</button>
+                <button onclick="setDashboardPeriod('mes')" id="btn-period-mes" class="px-3 py-1.5 rounded-xl font-semibold hover:bg-white/20">Mes</button>
+                <button onclick="setDashboardPeriod('anio')" id="btn-period-anio" class="px-3 py-1.5 rounded-xl font-semibold hover:bg-white/20">Año</button>
+              </div>
             </div>
           </div>
 
-          <!-- KPI 2: Ventas Realizadas (Rojo Icono) -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Ventas Realizadas</span>
-              <div class="w-9 h-9 rounded-xl bg-red-50 text-[#E30613] flex items-center justify-center">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          <!-- Cuadrícula de 16 Indicadores Clave (KPIs) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4">
+            
+            <!-- Clientes -->
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+              <span class="text-[10px] font-bold uppercase text-gray-400">Total Clientes</span>
+              <div class="flex items-baseline justify-between mt-1">
+                <span id="kpi-total-clients" class="text-xl sm:text-2xl font-black text-[#333333]">0</span>
+                <i data-lucide="users" class="w-4 h-4 text-gray-400"></i>
+              </div>
+              <div class="mt-2 text-[11px] text-gray-500 flex justify-between">
+                <span>Nuevos: <b id="kpi-new-clients">0</b></span>
+                <span>Frecuentes: <b id="kpi-freq-clients">0</b></span>
               </div>
             </div>
-            <div class="mt-3">
-              <div id="kpi-total-sales" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
-              <p class="text-xs text-gray-500 font-medium mt-1">Transacciones en seguimiento</p>
+
+            <!-- Inventario -->
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+              <span class="text-[10px] font-bold uppercase text-gray-400">Stock & Productos</span>
+              <div class="flex items-baseline justify-between mt-1">
+                <span id="kpi-total-products" class="text-xl sm:text-2xl font-black text-[#00A651]">0</span>
+                <i data-lucide="package" class="w-4 h-4 text-[#00A651]"></i>
+              </div>
+              <div class="mt-2 text-[11px] text-gray-500 flex justify-between">
+                <span class="text-emerald-700">Disp: <b id="kpi-avail-products">0</b></span>
+                <span class="text-red-600">Bajo Stock: <b id="kpi-low-stock-products">0</b></span>
+              </div>
+            </div>
+
+            <!-- Pedidos -->
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+              <span class="text-[10px] font-bold uppercase text-gray-400">Pedidos Activos</span>
+              <div class="flex items-baseline justify-between mt-1">
+                <span id="kpi-pending-orders" class="text-xl sm:text-2xl font-black text-amber-600">0</span>
+                <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+              </div>
+              <div class="mt-2 text-[11px] text-gray-500 flex justify-between">
+                <span>Completados: <b id="kpi-completed-orders">0</b></span>
+                <span>Total: <b id="kpi-total-orders">0</b></span>
+              </div>
+            </div>
+
+            <!-- Ingresos Totales -->
+            <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs">
+              <span class="text-[10px] font-bold uppercase text-gray-400">Ventas Facturadas</span>
+              <div class="flex items-baseline justify-between mt-1">
+                <span id="kpi-total-revenue" class="text-xl sm:text-2xl font-black text-[#E30613]">$0.00</span>
+                <i data-lucide="dollar-sign" class="w-4 h-4 text-[#E30613]"></i>
+              </div>
+              <div class="mt-2 text-[11px] text-gray-500 flex justify-between">
+                <span>Mes: <b id="kpi-month-revenue">$0.00</b></span>
+                <span>Facturas: <b id="kpi-invoices-count">0</b></span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Gráficos Interactivos (Chart.js) -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+              <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="trending-up" class="w-4 h-4 text-[#E30613]"></i>
+                  <h3 class="text-sm font-bold text-[#333333]">Evolución de Ventas e Ingresos</h3>
+                </div>
+                <span class="text-[11px] text-gray-400 font-mono">Dólares ($)</span>
+              </div>
+              <div class="pt-4 h-64">
+                <canvas id="chart-sales-timeline"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">
+              <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="pie-chart" class="w-4 h-4 text-[#00A651]"></i>
+                  <h3 class="text-sm font-bold text-[#333333]">Top Productos más Vendidos</h3>
+                </div>
+                <span class="text-[11px] text-gray-400 font-mono">Unidades</span>
+              </div>
+              <div class="pt-4 h-64 flex items-center justify-center">
+                <canvas id="chart-top-products"></canvas>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Tabla de Últimas Operaciones -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="history" class="w-4 h-4 text-gray-400"></i>
+                <h3 class="text-sm font-bold text-[#333333]">Últimos Pedidos y Facturas Emitidas</h3>
+              </div>
+              <button onclick="switchView('pedidos')" class="text-xs font-bold text-[#E30613] hover:underline">Ver todos los pedidos →</button>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Código</th>
+                    <th class="px-4 py-3">Cliente</th>
+                    <th class="px-4 py-3">Fecha</th>
+                    <th class="px-4 py-3">Total ($)</th>
+                    <th class="px-4 py-3">Estado</th>
+                    <th class="px-4 py-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-orders-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <!-- KPI 3: Clientes en Cartera (Verde Icono) -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Total Clientes</span>
-              <div class="w-9 h-9 rounded-xl bg-emerald-50 text-[#00A651] flex items-center justify-center">
+        </section>
+
+        <!-- ==========================================
+             VISTA 2: GESTIÓN DE CLIENTES (SRI & VALIDACIÓN)
+             ========================================== -->
+        <section id="view-clientes" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Directorio de Clientes</h2>
+              <p class="text-xs text-gray-500">Administración de clientes con validación legal de Cédula y RUC según normativa del SRI Ecuador.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="exportClientsCSV()" class="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Exportar Excel</span>
+              </button>
+              <button onclick="openClientModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="user-plus" class="w-4 h-4"></i>
+                <span>+ Nuevo Cliente</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtros de Clientes -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="relative sm:col-span-1">
+              <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-2.5"></i>
+              <input type="text" id="filter-client-search" placeholder="Buscar por nombre, cédula, RUC o teléfono..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-xs focus:border-[#E30613]">
+            </div>
+            <div>
+              <select id="filter-client-type" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                <option value="">Todos los Tipos (Nuevo, Frecuente, Mayorista...)</option>
+                <option value="Nuevo">Nuevo</option>
+                <option value="Frecuente">Frecuente</option>
+                <option value="Potencial">Potencial</option>
+                <option value="Mayorista">Mayorista</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </div>
+            <div>
+              <select id="filter-client-status" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                <option value="">Todos los Estados (Activo, Bloqueado)</option>
+                <option value="Activo">🟢 Solo Activos</option>
+                <option value="Bloqueado">🔴 Solo Bloqueados</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabla de Clientes -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Código</th>
+                    <th class="px-4 py-3">Cliente / Nombre</th>
+                    <th class="px-4 py-3">Identificación (Cédula/RUC)</th>
+                    <th class="px-4 py-3">Teléfono WhatsApp</th>
+                    <th class="px-4 py-3">Ubicación (Ambato/Sector)</th>
+                    <th class="px-4 py-3">Tipo / Estado</th>
+                    <th class="px-4 py-3">PolloPuntos</th>
+                    <th class="px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="table-clientes-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 3: PRODUCTOS E INVENTARIO (KARDEX)
+             ========================================== -->
+        <section id="view-productos" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Productos e Inventario</h2>
+              <p class="text-xs text-gray-500">Control de catálogo avícola, control de existencias en tiempo real y registro de Kardex.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button onclick="openCategoriesModal()" class="px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                <span>Categorías</span>
+              </button>
+              <button onclick="openStockAdjustmentModal()" class="px-3 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-800 flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="arrow-up-down" class="w-3.5 h-3.5"></i>
+                <span>Ajustar Stock</span>
+              </button>
+              <button onclick="openProductModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>+ Nuevo Producto</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Barra de Búsqueda, Filtro de Categoría y Vista Toggle -->
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex flex-1 items-center space-x-2 w-full">
+              <div class="relative flex-1">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-2.5"></i>
+                <input type="text" id="filter-product-search" placeholder="Buscar producto por nombre o código..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-xs">
+              </div>
+              <select id="filter-product-category" class="px-3 py-2 rounded-xl border border-gray-200 text-xs w-48">
+                <option value="">Todas las categorías</option>
+              </select>
+            </div>
+
+            <!-- Botones Toggle Tarjeta / Tabla -->
+            <div class="flex items-center space-x-1 bg-gray-100 p-1 rounded-xl">
+              <button onclick="setProductViewMode('cards')" id="btn-prod-view-cards" class="p-1.5 rounded-lg text-xs font-bold bg-white text-[#333333] shadow-xs">
+                <i data-lucide="layout-grid" class="w-4 h-4"></i>
+              </button>
+              <button onclick="setProductViewMode('table')" id="btn-prod-view-table" class="p-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800">
+                <i data-lucide="list" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenedor Vista de Tarjetas -->
+          <div id="products-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Llenado dinámico -->
+          </div>
+
+          <!-- Contenedor Vista de Tabla -->
+          <div id="products-table-container" class="hidden bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Código</th>
+                    <th class="px-4 py-3">Producto</th>
+                    <th class="px-4 py-3">Categoría</th>
+                    <th class="px-4 py-3">P. Venta</th>
+                    <th class="px-4 py-3">P. Costo</th>
+                    <th class="px-4 py-3">Stock Disp.</th>
+                    <th class="px-4 py-3">Estado</th>
+                    <th class="px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="table-productos-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 4: PEDIDOS (ÓRDENES COMERCIALES)
+             ========================================== -->
+        <section id="view-pedidos" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Gestión de Pedidos</h2>
+              <p class="text-xs text-gray-500">Recepción, preparación, entrega y facturación multi-producto de pedidos comerciales.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="exportOrdersCSV()" class="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Exportar Excel</span>
+              </button>
+              <button onclick="openOrderModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>+ Crear Pedido</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Pestañas de Estados de Pedido -->
+          <div class="flex flex-wrap items-center gap-1.5 border-b border-gray-200 pb-2">
+            <button onclick="setOrdersFilter('TODOS')" id="tab-orders-todos" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white">Todos</button>
+            <button onclick="setOrdersFilter('Pendiente')" id="tab-orders-pendiente" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🟡 Pendientes</button>
+            <button onclick="setOrdersFilter('Confirmado')" id="tab-orders-confirmado" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🔵 Confirmados</button>
+            <button onclick="setOrdersFilter('En preparación')" id="tab-orders-preparacion" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🟣 En Preparación</button>
+            <button onclick="setOrdersFilter('Entregado')" id="tab-orders-entregado" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🟢 Entregados</button>
+            <button onclick="setOrdersFilter('Facturado')" id="tab-orders-facturado" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">📑 Facturados</button>
+            <button onclick="setOrdersFilter('Cancelado')" id="tab-orders-cancelado" class="tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🔴 Cancelados</button>
+          </div>
+
+          <!-- Tabla de Pedidos -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">N° Pedido</th>
+                    <th class="px-4 py-3">Cliente</th>
+                    <th class="px-4 py-3">Fecha</th>
+                    <th class="px-4 py-3">Ítems Solicitados</th>
+                    <th class="px-4 py-3">Total ($)</th>
+                    <th class="px-4 py-3">Pago</th>
+                    <th class="px-4 py-3">Estado</th>
+                    <th class="px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="table-pedidos-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 5: FACTURACIÓN SRI & VENTAS
+             ========================================== -->
+        <section id="view-facturas" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Facturación y Ventas</h2>
+              <p class="text-xs text-gray-500">Emisión formal e inmutable de facturas comerciales conforme a la estructura legal del SRI.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="exportInvoicesCSV()" class="px-3.5 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>Exportar Facturas</span>
+              </button>
+              <button onclick="openDirectInvoiceModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>+ Emitir Factura</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Búsqueda y Filtro de Facturas -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="relative sm:col-span-2">
+              <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-2.5"></i>
+              <input type="text" id="filter-invoice-search" placeholder="Buscar por número SRI (001-001-...), cliente o fecha..." class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-xs">
+            </div>
+            <div>
+              <select id="filter-invoice-status" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs">
+                <option value="">Todos los Estados de Pago</option>
+                <option value="Pagada">🟢 Pagadas</option>
+                <option value="Pendiente de pago">🟡 Pendientes de Pago</option>
+                <option value="Emitida">Emitidas</option>
+                <option value="Anulada">🔴 Anuladas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabla de Facturas -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Número SRI</th>
+                    <th class="px-4 py-3">Cliente / RUC</th>
+                    <th class="px-4 py-3">Fecha Emisión</th>
+                    <th class="px-4 py-3">Subtotal</th>
+                    <th class="px-4 py-3">Total Facturado</th>
+                    <th class="px-4 py-3">Forma Pago</th>
+                    <th class="px-4 py-3">Estado</th>
+                    <th class="px-4 py-3 text-right">Comprobante / Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="table-facturas-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 6: SEGUIMIENTO COMERCIAL CRM
+             ========================================== -->
+        <section id="view-seguimiento" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Seguimiento Comercial CRM</h2>
+              <p class="text-xs text-gray-500">Historial de llamadas, WhatsApps, reuniones y pipeline de oportunidades de venta.</p>
+            </div>
+            <button onclick="openCRMInteractionModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="phone-forwarded" class="w-4 h-4"></i>
+              <span>+ Registrar Contacto</span>
+            </button>
+          </div>
+
+          <!-- Alerta de Clientes Inactivos a Recuperar -->
+          <div class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-amber-900">Campaña de Recuperación de Clientes Inactivos</h4>
+                <p class="text-[11px] text-amber-700">Clientes que superan los 30 días sin registrar compras en Avícola QUÉ POLLO.</p>
+              </div>
+            </div>
+            <button onclick="switchView('whatsapp')" class="px-3 py-1.5 rounded-xl bg-amber-600 text-white font-bold text-xs hover:bg-amber-700 flex items-center space-x-1">
+              <i data-lucide="send" class="w-3.5 h-3.5"></i>
+              <span>Enviar Oferta por WhatsApp</span>
+            </button>
+          </div>
+
+          <!-- Timeline de Interacciones -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-4">
+            <h3 class="text-sm font-bold text-[#333333] pb-2 border-b border-gray-100">Bitácora de Contactos Recientes</h3>
+            <div id="crm-timeline-container" class="space-y-3">
+              <!-- Llenado dinámico -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 7: MARKETING, PROMOCIONES & BANNERS CANVAS
+             ========================================== -->
+        <section id="view-marketing" class="hidden space-y-6">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Marketing, Promociones y Publicidad</h2>
+              <p class="text-xs text-gray-500">Planificación de promociones con fechas, calendario comercial y diseñador de banners para redes sociales.</p>
+            </div>
+            <button onclick="openPromotionModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Nueva Promoción</span>
+            </button>
+          </div>
+
+          <!-- Sub-pestañas de Marketing -->
+          <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-2">
+            <button onclick="setMarketingTab('promos')" id="tab-mkt-promos" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white">Promociones Activas</button>
+            <button onclick="setMarketingTab('calendar')" id="tab-mkt-calendar" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">📅 Calendario Comercial</button>
+            <button onclick="setMarketingTab('designer')" id="tab-mkt-designer" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">🎨 Diseñador de Banners Canvas</button>
+            <button onclick="setMarketingTab('campaigns')" id="tab-mkt-campaigns" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">Campañas Publicitarias</button>
+          </div>
+
+          <!-- CONTENIDO SUB-PESTAÑA 1: PROMOCIONES -->
+          <div id="mkt-content-promos" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Llenado dinámico -->
+          </div>
+
+          <!-- CONTENIDO SUB-PESTAÑA 2: CALENDARIO COMERCIAL -->
+          <div id="mkt-content-calendar" class="hidden bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+              <h3 class="text-sm font-bold text-[#333333]">Fechas Comerciales y Campañas de Temporada (Ecuador & Ambato)</h3>
+              <span class="text-xs text-gray-400 font-medium">Planificación Anual 2026</span>
+            </div>
+            <div id="commercial-calendar-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <!-- Llenado dinámico con festividades como FFF Ambato, Carnaval, Día de la Madre... -->
+            </div>
+          </div>
+
+          <!-- CONTENIDO SUB-PESTAÑA 3: DISEÑADOR DE BANNERS CON HTML5 CANVAS -->
+          <div id="mkt-content-designer" class="hidden bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 gap-2">
+              <div>
+                <h3 class="text-base font-bold text-[#333333]">Diseñador Gráfico de Publicidad Digital</h3>
+                <p class="text-xs text-gray-500">Genera piezas publicitarias profesionales listas para compartir en redes sociales sin salir del CRM.</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button onclick="downloadCanvasAd()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-md">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Descargar Banner PNG</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              <!-- Controles de Edición -->
+              <div class="lg:col-span-5 space-y-4 text-xs">
+                
+                <div>
+                  <label class="block font-bold text-gray-700 mb-1">1. Formato de Publicación</label>
+                  <select id="ad-format-select" onchange="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+                    <option value="square">Cuadrado 1:1 (Feed Instagram / Facebook - 1080x1080)</option>
+                    <option value="story">Vertical 9:16 (Historias / TikTok / WhatsApp - 1080x1920)</option>
+                    <option value="banner">Banner Horizontal (Catálogo WhatsApp - 1200x630)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-700 mb-1">2. Producto Seleccionado</label>
+                  <select id="ad-product-select" onchange="onAdProductChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium">
+                    <!-- Dinámico -->
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-700 mb-1">3. Título Comercial Principal</label>
+                  <input type="text" id="ad-title-input" value="¡GRAN OFERTA DEL DÍA!" oninput="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold text-[#E30613]">
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-700 mb-1">4. Mensaje Secundario / Beneficio</label>
+                  <input type="text" id="ad-subtitle-input" value="Frescura, Calidad y el Mejor Sabor a tu mesa" oninput="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block font-bold text-gray-700 mb-1">Precio Normal ($)</label>
+                    <input type="number" step="0.01" id="ad-price-normal" value="8.50" oninput="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-gray-500 font-bold">
+                  </div>
+                  <div>
+                    <label class="block font-bold text-[#E30613] mb-1">Precio Promoción ($)</label>
+                    <input type="number" step="0.01" id="ad-price-promo" value="6.99" oninput="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-red-200 text-[#E30613] font-black">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block font-bold text-gray-700 mb-1">Texto del Sello de Descuento</label>
+                  <input type="text" id="ad-badge-text" value="AHORRA 18%" oninput="updateAdCanvas()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+                </div>
+
+              </div>
+
+              <!-- Vista Previa del Canvas -->
+              <div class="lg:col-span-7 flex flex-col items-center justify-center p-4 bg-gray-100/70 rounded-2xl border border-gray-200">
+                <span class="text-[11px] font-bold text-gray-400 mb-2">Previsualización en Tiempo Real</span>
+                <div class="max-w-full max-h-[500px] overflow-hidden rounded-xl shadow-lg border border-gray-300">
+                  <canvas id="ad-preview-canvas" width="1080" height="1080" class="max-w-full h-auto object-contain"></canvas>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CONTENIDO SUB-PESTAÑA 4: CAMPAÑAS -->
+          <div id="mkt-content-campaigns" class="hidden space-y-4">
+            <div id="campaigns-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Llenado dinámico -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 8: WHATSAPP COMERCIAL CENTER
+             ========================================== -->
+        <section id="view-whatsapp" class="hidden space-y-4">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">WhatsApp Comercial & Atención</h2>
+              <p class="text-xs text-gray-500">Envío directo de promociones, confirmación de pedidos y fidelización a través de WhatsApp oficial.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Configurador de Mensaje -->
+            <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4 text-xs">
+              
+              <div>
+                <label class="block font-bold text-gray-700 mb-1">1. Seleccionar Cliente Destinatario *</label>
+                <select id="wa-client-select" onchange="onWhatsAppClientChange()" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 font-medium">
+                  <!-- Llenado dinámico -->
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-bold text-gray-700 mb-1">2. Plantilla de Mensaje Comercial</label>
+                <select id="wa-template-select" onchange="applyWhatsAppTemplate()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold text-[#00A651]">
+                  <option value="promo">🍗 Promoción Especial del Día</option>
+                  <option value="order">📦 Confirmación de Pedido y Entrega</option>
+                  <option value="pending_pay">💳 Recordatorio Amistoso de Saldo / Factura</option>
+                  <option value="bday">🎂 Saludo de Cumpleaños + Regalo</option>
+                  <option value="recovery">👋 Te Extrañamos en QUÉ POLLO (Reactivación)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-bold text-gray-700 mb-1">3. Mensaje Personalizado</label>
+                <textarea id="wa-message-text" rows="5" class="w-full p-3 rounded-xl border border-gray-200 font-sans leading-relaxed"></textarea>
+              </div>
+
+              <div class="pt-2 flex items-center justify-between">
+                <span class="text-[11px] text-gray-400">Se abrirá WhatsApp Web o App</span>
+                <button onclick="sendWhatsAppMessage()" class="px-5 py-2.5 rounded-xl bg-[#00A651] hover:bg-emerald-700 text-white font-bold flex items-center space-x-2 shadow-sm transition-colors">
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                  <span>Enviar por WhatsApp</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Vista Previa Tipo Celular -->
+            <div class="lg:col-span-6 flex flex-col items-center justify-center p-6 bg-gray-100 rounded-2xl border border-gray-200">
+              <div class="w-full max-w-xs bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-300">
+                <div class="bg-[#008C44] text-white p-3 flex items-center space-x-2">
+                  <div class="w-7 h-7 rounded-full bg-white text-[#00A651] flex items-center justify-center font-bold text-xs">QP</div>
+                  <div class="text-xs">
+                    <p class="font-bold leading-none">Avícola QUÉ POLLO</p>
+                    <span class="text-[9px] text-white/80">En línea</span>
+                  </div>
+                </div>
+                <div class="p-4 bg-[#E5DDD5] min-h-[220px] flex flex-col justify-end text-xs">
+                  <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-xs text-gray-800 leading-relaxed font-sans max-w-[90%] space-y-1">
+                    <p id="wa-preview-text">¡Hola! En Avícola QUÉ POLLO tenemos ofertas especiales para ti.</p>
+                    <span class="text-[9px] text-gray-400 block text-right">12:00 PM</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 9: FIDELIZACIÓN (POLLOPUNTOS)
+             ========================================== -->
+        <section id="view-fidelizacion" class="hidden space-y-6">
+          
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-2xl font-black text-[#333333]">Programa de Fidelización PolloPuntos</h2>
+              <p class="text-xs text-gray-500">Premia la lealtad de tus clientes acumulando puntos por compras y canjeando recompensas.</p>
+            </div>
+            <button onclick="openRedeemPointsModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
+              <i data-lucide="gift" class="w-4 h-4"></i>
+              <span>Canjear Recompensa</span>
+            </button>
+          </div>
+
+          <!-- Catálogo de Recompensas -->
+          <div class="space-y-3">
+            <h3 class="text-sm font-bold text-[#333333]">Catálogo Oficial de Beneficios</h3>
+            <div id="rewards-catalog-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <!-- Dinámico -->
+            </div>
+          </div>
+
+          <!-- Libro Mayor de Puntos (Ledger) -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Historial de Puntos Acumulados y Canjeados</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Código</th>
+                    <th class="px-4 py-3">Cliente</th>
+                    <th class="px-4 py-3">Operación</th>
+                    <th class="px-4 py-3">Puntos</th>
+                    <th class="px-4 py-3">Referencia / Motivo</th>
+                    <th class="px-4 py-3">Fecha</th>
+                  </tr>
+                </thead>
+                <tbody id="table-fidelizacion-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Dinámico -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==========================================
+             VISTA 10: REPORTES GENERALES
+             ========================================== -->
+        <section id="view-reportes" class="hidden space-y-6">
+          
+          <div>
+            <h2 class="text-2xl font-black text-[#333333]">Centro de Reportes y Estadísticas</h2>
+            <p class="text-xs text-gray-500">Descarga reportes estructurados en Excel (CSV) y genera comprobantes de auditoría en PDF.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+              <div class="w-10 h-10 rounded-xl bg-red-50 text-[#E30613] flex items-center justify-center font-bold">
                 <i data-lucide="users" class="w-5 h-5"></i>
               </div>
+              <h3 class="text-sm font-bold text-[#333333]">Reporte General de Clientes</h3>
+              <p class="text-xs text-gray-500">Listado con Cédula/RUC, teléfonos, provincia, puntos acumulados y estado.</p>
+              <button onclick="exportClientsCSV()" class="w-full py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-700 flex items-center justify-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Excel (CSV)</span>
+              </button>
             </div>
-            <div class="mt-3">
-              <div id="kpi-total-clients" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
-              <p class="text-xs text-gray-500 font-medium mt-1">Frecuentes y mayoristas</p>
-            </div>
-          </div>
 
-          <!-- KPI 4: Catálogo de Productos (Amarillo/Dorado Icono) -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs card-hover-effect">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Productos Activos</span>
-              <div class="w-9 h-9 rounded-xl bg-yellow-50 text-[#806B20] flex items-center justify-center border border-yellow-200">
-                <i data-lucide="package" class="w-5 h-5 text-[#9A6800]"></i>
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#00A651] flex items-center justify-center font-bold">
+                <i data-lucide="package" class="w-5 h-5"></i>
               </div>
+              <h3 class="text-sm font-bold text-[#333333]">Reporte de Inventario & Kardex</h3>
+              <p class="text-xs text-gray-500">Existencias actuales, costos, precios, unidades de medida y alertas de stock.</p>
+              <button onclick="exportInventoryCSV()" class="w-full py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-700 flex items-center justify-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Excel (CSV)</span>
+              </button>
             </div>
-            <div class="mt-3">
-              <div id="kpi-total-products" class="text-2xl sm:text-3xl font-extrabold text-[#333333]">0</div>
-              <p class="text-xs text-gray-500 font-medium mt-1">Variedades avícolas</p>
+
+            <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+              </div>
+              <h3 class="text-sm font-bold text-[#333333]">Libro de Facturación SRI</h3>
+              <p class="text-xs text-gray-500">Registro correlativo de facturas emitidas, desglose de impuestos y anulaciones.</p>
+              <button onclick="exportInvoicesCSV()" class="w-full py-2 rounded-xl border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-700 flex items-center justify-center space-x-2">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Descargar Excel (CSV)</span>
+              </button>
             </div>
+
           </div>
 
-        </div>
+        </section>
 
-        <!-- Gráficos de Analítica Corporativos -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- ==========================================
+             VISTA 11: USUARIOS, ACCESOS & AUDITORÍA RBAC
+             ========================================== -->
+        <section id="view-usuarios" class="hidden space-y-6">
           
-          <!-- Gráfico 1: Ventas por Canal -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="font-bold text-[#333333] text-sm">Ventas por Canal</h3>
-                <p class="text-xs text-gray-400">Instagram, WhatsApp, Facebook, Local</p>
-              </div>
-              <i data-lucide="pie-chart" class="w-4 h-4 text-[#E30613]"></i>
-            </div>
-            <div class="h-60 relative flex items-center justify-center">
-              <canvas id="chart-channels"></canvas>
-            </div>
-          </div>
-
-          <!-- Gráfico 2: Estado de Pedidos -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="font-bold text-[#333333] text-sm">Estado de Seguimiento</h3>
-                <p class="text-xs text-gray-400">Completados vs Pendientes</p>
-              </div>
-              <i data-lucide="check-circle-2" class="w-4 h-4 text-[#00A651]"></i>
-            </div>
-            <div class="h-60 relative flex items-center justify-center">
-              <canvas id="chart-status"></canvas>
-            </div>
-          </div>
-
-          <!-- Gráfico 3: Productos con Mayor Demanda -->
-          <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
-            <div class="flex items-center justify-between mb-4">
-              <div>
-                <h3 class="font-bold text-[#333333] text-sm">Top Productos</h3>
-                <p class="text-xs text-gray-400">Unidades vendidas por ítem</p>
-              </div>
-              <i data-lucide="bar-chart-3" class="w-4 h-4 text-[#FFD200]"></i>
-            </div>
-            <div class="h-60 relative flex items-center justify-center">
-              <canvas id="chart-products"></canvas>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Tabla Rápida: Últimos Movimientos -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h3 class="font-bold text-[#333333] text-sm">Últimos Pedidos / Seguimiento</h3>
-              <p class="text-xs text-gray-400">Transacciones comerciales recientes</p>
+              <h2 class="text-2xl font-black text-[#333333]">Usuarios y Control de Acceso (RBAC)</h2>
+              <p class="text-xs text-gray-500">Aprobación de nuevas solicitudes, asignación de roles y bitácora de auditoría.</p>
             </div>
-            <button onclick="switchView('ventas')" class="text-xs font-semibold text-[#E30613] hover:underline flex items-center">
-              Ver todas <i data-lucide="arrow-right" class="w-3.5 h-3.5 ml-1"></i>
-            </button>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
-                <tr>
-                  <th class="px-6 py-3">ID</th>
-                  <th class="px-6 py-3">Cliente</th>
-                  <th class="px-6 py-3">Producto</th>
-                  <th class="px-6 py-3">Fecha</th>
-                  <th class="px-6 py-3">Canal</th>
-                  <th class="px-6 py-3">Total</th>
-                  <th class="px-6 py-3">Estado</th>
-                </tr>
-              </thead>
-              <tbody id="dashboard-recent-sales-body" class="divide-y divide-gray-100 text-[#333333]">
-                <!-- Se llena con JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ==========================================
-           VISTA 2: CLIENTES (TABLA 1)
-           ========================================== -->
-      <section id="view-clientes" class="hidden space-y-6">
-        
-        <!-- Header de Sección -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center space-x-2">
-              <h2 class="text-2xl font-bold text-[#333333]">1. Cartera de Clientes</h2>
-              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: CLIENTES</span>
-            </div>
-            <p class="text-xs text-gray-500 mt-0.5">Gestión de contactos, canales de interacción y segmentación</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="openClientModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
+            <button onclick="openUserModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
               <i data-lucide="user-plus" class="w-4 h-4"></i>
-              <span>+ Registrar Cliente</span>
+              <span>+ Crear Perfil</span>
             </button>
           </div>
-        </div>
 
-        <!-- Filtros y Búsqueda -->
-        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
-          <div class="flex-1 relative">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input type="text" id="filter-client-search" placeholder="Buscar por nombre, apellido, teléfono, correo o ID..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
+          <!-- Pestañas de Estado de Usuarios -->
+          <div class="flex flex-wrap items-center gap-1.5 border-b border-gray-200 pb-2">
+            <button onclick="setProfilesFilter('TODOS')" id="tab-filter-todos" class="tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white">Todos (<span id="badge-tab-todos">0</span>)</button>
+            <button onclick="setProfilesFilter('PENDIENTE')" id="tab-filter-pendiente" class="tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">🟡 Pendientes (<span id="badge-tab-pendiente">0</span>)</button>
+            <button onclick="setProfilesFilter('APROBADO')" id="tab-filter-aprobado" class="tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🟢 Aprobados (<span id="badge-tab-aprobado">0</span>)</button>
+            <button onclick="setProfilesFilter('RECHAZADO')" id="tab-filter-rechazado" class="tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">🔴 Rechazados (<span id="badge-tab-rechazado">0</span>)</button>
+            <button onclick="setProfilesFilter('DESACTIVADO')" id="tab-filter-desactivado" class="tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200">⚪ Desactivados (<span id="badge-tab-desactivado">0</span>)</button>
           </div>
-          <div class="flex items-center space-x-2">
-            <select id="filter-client-type" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-              <option value="">Todos los Tipos</option>
-              <option value="Frecuente">Frecuente</option>
-              <option value="Mayorista">Mayorista</option>
-              <option value="Ocasional">Ocasional</option>
-              <option value="Nuevo">Nuevo</option>
-            </select>
-            <select id="filter-client-social" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-              <option value="">Todas las Redes</option>
-              <option value="Facebook">Facebook</option>
-              <option value="Instagram">Instagram</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="TikTok">TikTok</option>
-            </select>
-          </div>
-        </div>
 
-        <!-- Tabla de Clientes -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
-                <tr>
-                  <th class="px-5 py-3">ID_Cliente</th>
-                  <th class="px-5 py-3">Nombre & Apellido</th>
-                  <th class="px-5 py-3">Teléfono</th>
-                  <th class="px-5 py-3">Correo</th>
-                  <th class="px-5 py-3">Red_Social</th>
-                  <th class="px-5 py-3">Fecha_Registro</th>
-                  <th class="px-5 py-3">Tipo_Cliente</th>
-                  <th class="px-5 py-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="table-clientes-body" class="divide-y divide-gray-100 text-[#333333]">
-                <!-- Se llena dinámicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ==========================================
-           VISTA 3: PRODUCTOS (TABLA 2)
-           ========================================== -->
-      <section id="view-productos" class="hidden space-y-6">
-        
-        <!-- Header de Sección -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center space-x-2">
-              <h2 class="text-2xl font-bold text-[#333333]">2. Catálogo de Productos</h2>
-              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: PRODUCTOS</span>
+          <!-- Tabla de Perfiles -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
+                  <tr>
+                    <th class="px-4 py-3">Nombre</th>
+                    <th class="px-4 py-3">Correo & Teléfono</th>
+                    <th class="px-4 py-3">Rol</th>
+                    <th class="px-4 py-3">Estado</th>
+                    <th class="px-4 py-3">Fecha Registro</th>
+                    <th class="px-4 py-3">Aprobado Por</th>
+                    <th class="px-4 py-3 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="table-usuarios-body" class="divide-y divide-gray-100 text-gray-700">
+                  <!-- Llenado dinámico -->
+                </tbody>
+              </table>
             </div>
-            <p class="text-xs text-gray-500 mt-0.5">Control de precios de venta (Precio_V), costo (Precio_C) y categorías dinámicas</p>
           </div>
-          <div class="flex items-center space-x-2">
-            <!-- Botón para Administrar Categorías -->
-            <button onclick="openCategoriesModal()" class="px-3.5 py-2 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-[#333333] text-xs font-semibold flex items-center space-x-1.5 shadow-xs">
-              <i data-lucide="tags" class="w-4 h-4 text-[#00A651]"></i>
-              <span>Administrar Categorías</span>
-            </button>
-            <button onclick="openProductModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              <span>+ Nuevo Producto</span>
-            </button>
-          </div>
-        </div>
 
-        <!-- Filtros y Búsqueda -->
-        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
-          <div class="flex-1 relative">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input type="text" id="filter-product-search" placeholder="Buscar producto por nombre o código..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-          </div>
-          <div class="flex items-center space-x-2">
-            <select id="filter-product-category" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-              <option value="">Todas las Categorías</option>
-              <!-- Llenado dinámico desde categorías -->
-            </select>
-          </div>
-        </div>
-
-        <!-- Grid de Tarjetas de Productos -->
-        <div id="products-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Se llena dinámicamente con JS -->
-        </div>
-
-        <!-- Tabla detallada de Productos -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-            <span class="text-xs font-bold text-gray-600 uppercase">Vista en Tabla Detallada</span>
-            <span class="text-xs text-gray-400">Precios y rentabilidad comercial</span>
-          </div>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
-                <tr>
-                  <th class="px-5 py-3">ID_Producto</th>
-                  <th class="px-5 py-3">Nombre</th>
-                  <th class="px-5 py-3">Categoría</th>
-                  <th class="px-5 py-3">Precio_V (Venta)</th>
-                  <th class="px-5 py-3">Precio_C (Costo)</th>
-                  <th class="px-5 py-3">Margen Bruto</th>
-                  <th class="px-5 py-3 text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="table-productos-body" class="divide-y divide-gray-100 text-[#333333]">
-                <!-- Se llena con JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ==========================================
-           VISTA 4: SEGUIMIENTO / VENTAS (TABLA 3)
-           ========================================== -->
-      <section id="view-ventas" class="hidden space-y-6">
-        
-        <!-- Header de Sección -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div class="flex items-center space-x-2">
-              <h2 class="text-2xl font-bold text-[#333333]">3. Seguimiento y Ventas</h2>
-              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-50 text-[#E30613] border border-red-200">Tabla: SEGUIMIENTO / VENTAS</span>
+          <!-- Bitácora de Auditoría -->
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-xs p-5 space-y-3">
+            <div class="flex items-center space-x-2 pb-2 border-b border-gray-100">
+              <i data-lucide="shield" class="w-4 h-4 text-gray-500"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Bitácora de Auditoría en Tiempo Real</h3>
             </div>
-            <p class="text-xs text-gray-500 mt-0.5">Relaciones foráneas (ID_Cliente + ID_Producto), canales y trazabilidad de entrega</p>
-          </div>
-          <div class="flex items-center space-x-2">
-            <button onclick="openSaleModal()" class="px-4 py-2 rounded-xl btn-primary text-xs sm:text-sm font-semibold flex items-center space-x-1.5 shadow-xs">
-              <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-              <span>+ Registrar Venta</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Filtros y Búsqueda -->
-        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs flex flex-col md:flex-row gap-3">
-          <div class="flex-1 relative">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input type="text" id="filter-sales-search" placeholder="Buscar por ID de venta, cliente u observación..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="filter-sales-status" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-              <option value="">Todos los Estados</option>
-              <option value="Completado">Completado</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
-            <select id="filter-sales-channel" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-              <option value="">Todos los Canales</option>
-              <option value="Instagram">Instagram</option>
-              <option value="Facebook">Facebook</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="Local">Local</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Tabla de Ventas / Seguimiento -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
-                <tr>
-                  <th class="px-4 py-3">ID_Seguimiento</th>
-                  <th class="px-4 py-3">ID_Cliente (Relación)</th>
-                  <th class="px-4 py-3">ID_Producto (Relación)</th>
-                  <th class="px-4 py-3">Fecha_Compra</th>
-                  <th class="px-4 py-3">Cantidad</th>
-                  <th class="px-4 py-3">Total</th>
-                  <th class="px-4 py-3">Canal</th>
-                  <th class="px-4 py-3">Método_Pago</th>
-                  <th class="px-4 py-3">Estado</th>
-                  <th class="px-4 py-3">Observación</th>
-                  <th class="px-4 py-3 text-right">Comprobante / Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="table-ventas-body" class="divide-y divide-gray-100 text-[#333333]">
-                <!-- Se llena dinámicamente -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- ==========================================
-           VISTA 4: USUARIOS Y PANEL DE APROBACIÓN (ADMINISTRACIÓN)
-           ========================================== -->
-      <section id="view-usuarios" class="space-y-6 hidden">
-        
-        <div class="bg-white rounded-2xl p-6 sm:p-7 border border-gray-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div class="space-y-1">
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-red-50 text-[#E30613] text-xs font-semibold border border-red-100">
-              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#00A651]"></i>
-              <span>Control de Acceso & Supabase Auth</span>
+            <div id="audit-log-container" class="space-y-2 max-h-48 overflow-y-auto text-xs font-mono text-gray-600">
+              <!-- Llenado dinámico -->
             </div>
-            <h2 class="text-2xl font-extrabold text-[#333333]">Gestión y Aprobación de Usuarios</h2>
-            <p class="text-gray-600 text-xs sm:text-sm">Revisa solicitudes de registro, aprueba o rechaza accesos y administra los roles comerciales.</p>
           </div>
-          <button onclick="openUserModal()" class="px-4 py-2.5 rounded-xl btn-primary text-xs sm:text-sm font-bold flex items-center space-x-2 shadow-xs shrink-0 self-start sm:self-center">
-            <i data-lucide="user-plus" class="w-4 h-4"></i>
-            <span>+ Crear Usuario</span>
-          </button>
+
+        </section>
+
+      </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-200 py-6 mt-12 text-xs text-gray-500">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-[#333333]">Avícola QUÉ POLLO</span>
+          <span>•</span>
+          <span>Sistema Comercial & CRM Integral 2026</span>
         </div>
+        <button onclick="openModal('modal-uta')" class="hover:text-[#E30613] transition-colors font-medium">
+          Créditos: UTA Mercadotecnia 7mo "B" - Grupo 4
+        </button>
+      </div>
+    </footer>
 
-        <!-- Pestañas de Filtrado por Estado -->
-        <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-3">
-          <button onclick="setProfilesFilter('TODOS')" id="tab-filter-todos" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#333333] text-white shadow-xs">
-            <span>Todos</span>
-            <span id="badge-tab-todos" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono">0</span>
-          </button>
-
-          <button onclick="setProfilesFilter('PENDIENTE')" id="tab-filter-pendiente" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100">
-            <span>🟡 Pendientes</span>
-            <span id="badge-tab-pendiente" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-200 text-amber-900 font-mono font-bold">0</span>
-          </button>
-
-          <button onclick="setProfilesFilter('APROBADO')" id="tab-filter-aprobado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
-            <span>🟢 Aprobados</span>
-            <span id="badge-tab-aprobado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
-          </button>
-
-          <button onclick="setProfilesFilter('RECHAZADO')" id="tab-filter-rechazado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
-            <span>🔴 Rechazados</span>
-            <span id="badge-tab-rechazado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
-          </button>
-
-          <button onclick="setProfilesFilter('DESACTIVADO')" id="tab-filter-desactivado" class="tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200">
-            <span>⚪ Desactivados</span>
-            <span id="badge-tab-desactivado" class="ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] bg-gray-200 text-gray-800 font-mono">0</span>
-          </button>
-        </div>
-
-        <!-- Barra de Búsqueda y Rol -->
-        <div class="flex flex-col sm:flex-row gap-3">
-          <div class="flex-1 relative">
-            <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute left-3.5 top-3"></i>
-            <input type="text" id="filter-user-search" placeholder="Buscar por nombre, apellido, correo o teléfono..." class="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 text-sm bg-white focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-          </div>
-          <select id="filter-user-role" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white">
-            <option value="">Todos los Roles</option>
-            <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-            <option value="USUARIO">USUARIO</option>
-          </select>
-        </div>
-
-        <!-- Tabla de Perfiles y Solicitudes -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-xs overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-gray-50/80 text-gray-600 text-xs font-semibold uppercase border-b border-gray-200">
-                <tr>
-                  <th class="px-4 py-3">Usuario / Nombre</th>
-                  <th class="px-4 py-3">Correo & Teléfono</th>
-                  <th class="px-4 py-3">Rol</th>
-                  <th class="px-4 py-3">Estado de Acceso</th>
-                  <th class="px-4 py-3">Fecha Registro</th>
-                  <th class="px-4 py-3">Aprobación / Info</th>
-                  <th class="px-4 py-3 text-right">Acciones Administrativas</th>
-                </tr>
-              </thead>
-              <tbody id="table-usuarios-body" class="divide-y divide-gray-100 text-[#333333]">
-                <!-- Se llena dinámicamente con JavaScript -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-    </main>
-  </div>
+  </div> <!-- Fin #app-container -->
 
   <!-- ==========================================
        MODALES DE LA APLICACIÓN
        ========================================== -->
 
-  <!-- MODAL: REGISTRAR / EDITAR CLIENTE -->
+  <!-- MODAL: REGISTRAR / EDITAR CLIENTE (CON VALIDACIÓN SRI) -->
   <div id="modal-client" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
         <div>
-          <h3 id="modal-client-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Cliente</h3>
-          <p class="text-xs text-gray-500">Tabla 1: CLIENTES</p>
+          <h3 id="modal-client-title" class="text-base font-bold text-[#333333]">Registrar Nuevo Cliente</h3>
+          <p class="text-[11px] text-gray-500">Validación legal de Cédula y RUC según algoritmo SRI</p>
         </div>
-        <button onclick="closeModal('modal-client')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
+        <button onclick="closeModal('modal-client')" class="text-gray-400 hover:text-gray-600 p-1">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
-      <form id="form-client" class="mt-4 space-y-4" onsubmit="handleSaveClient(event)">
+      <form id="form-client" class="mt-4 space-y-3 text-xs" onsubmit="handleSaveClient(event)">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Cliente (Único) *</label>
-            <input type="text" id="client-id" required placeholder="C001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+            <label class="block font-bold text-gray-700 mb-1">ID Cliente (Bloqueado) *</label>
+            <input type="text" id="client-id" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-gray-600">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Tipo_Cliente *</label>
-            <select id="client-type" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="Frecuente">Frecuente</option>
-              <option value="Mayorista">Mayorista</option>
-              <option value="Ocasional">Ocasional</option>
+            <label class="block font-bold text-gray-700 mb-1">Tipo Identificación *</label>
+            <select id="client-id-type" onchange="validateDocumentInput()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+              <option value="Cédula">Cédula de Identidad (10 dígitos)</option>
+              <option value="RUC Natural">RUC Persona Natural (13 dígitos)</option>
+              <option value="RUC Jurídico">RUC Jurídico / Sociedades (13 dígitos)</option>
+              <option value="Pasaporte">Pasaporte / Especial</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Número de Identificación (Cédula / RUC) *</label>
+          <input type="text" id="client-doc-number" required oninput="validateDocumentInput()" placeholder="Ej: 1804149863" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-mono font-bold">
+          <p id="client-doc-feedback" class="text-[10px] mt-1 text-gray-400">Ingresa una identificación válida</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Nombres *</label>
+            <input type="text" id="client-name" required placeholder="Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Apellidos *</label>
+            <input type="text" id="client-lastname" required placeholder="Solis" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Teléfono WhatsApp *</label>
+            <input type="tel" id="client-phone" required placeholder="0984149863" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Correo Electrónico</label>
+            <input type="email" id="client-email" placeholder="cliente@correo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Provincia</label>
+            <input type="text" id="client-province" value="Tungurahua" class="w-full px-2.5 py-2 rounded-xl border border-gray-200">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Ciudad</label>
+            <input type="text" id="client-city" value="Ambato" class="w-full px-2.5 py-2 rounded-xl border border-gray-200">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Sector</label>
+            <input type="text" id="client-sector" placeholder="Ficoa, Centro..." class="w-full px-2.5 py-2 rounded-xl border border-gray-200">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Dirección Exacta</label>
+          <input type="text" id="client-address" placeholder="Calle principal y secundaria, N° de casa..." class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Clasificación de Cliente</label>
+            <select id="client-type-select" class="w-full px-3 py-2 rounded-xl border border-gray-200">
               <option value="Nuevo">Nuevo</option>
+              <option value="Frecuente">Frecuente</option>
+              <option value="Potencial">Potencial</option>
+              <option value="Mayorista">Mayorista</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Estado</label>
+            <select id="client-status-select" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+              <option value="Activo">🟢 Activo</option>
+              <option value="Bloqueado">🔴 Bloqueado</option>
             </select>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre *</label>
-            <input type="text" id="client-name" required placeholder="Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Apellido *</label>
-            <input type="text" id="client-lastname" required placeholder="Solis" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-          </div>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Teléfono (WhatsApp)</label>
-            <input type="tel" id="client-phone" placeholder="0984149863" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Red_Social</label>
-            <select id="client-social" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="Facebook">Facebook</option>
-              <option value="Instagram">Instagram</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="TikTok">TikTok</option>
-              <option value="Ninguna">Ninguna</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Correo Electrónico</label>
-          <input type="email" id="client-email" placeholder="carlosol@gmail.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Fecha_Registro</label>
-          <input type="date" id="client-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-        </div>
-
-        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-client')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar Cliente
-          </button>
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-client')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" id="btn-save-client" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Guardar Cliente</button>
         </div>
       </form>
     </div>
@@ -965,564 +1379,398 @@
 
   <!-- MODAL: REGISTRAR / EDITAR PRODUCTO -->
   <div id="modal-product" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div>
-          <h3 id="modal-product-title" class="text-lg font-bold text-[#333333]">Registrar Nuevo Producto</h3>
-          <p class="text-xs text-gray-500">Tabla 2: PRODUCTOS</p>
-        </div>
-        <button onclick="closeModal('modal-product')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 id="modal-product-title" class="text-base font-bold text-[#333333]">Registrar Producto</h3>
+        <button onclick="closeModal('modal-product')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="form-product" class="mt-4 space-y-4" onsubmit="handleSaveProduct(event)">
+      <form id="form-product" class="mt-4 space-y-3 text-xs" onsubmit="handleSaveProduct(event)">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Producto *</label>
-            <input type="text" id="product-id" required placeholder="P001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+            <label class="block font-bold text-gray-700 mb-1">ID Producto (Bloqueado) *</label>
+            <input type="text" id="product-id" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-gray-600">
           </div>
           <div>
-            <div class="flex items-center justify-between mb-1">
-              <label class="block text-xs font-semibold text-[#333333]">Categoría *</label>
-              <button type="button" onclick="openAddCategoryModal()" class="text-[11px] font-bold text-[#E30613] hover:underline flex items-center space-x-0.5" title="Crear nueva categoría">
-                <i data-lucide="plus" class="w-3 h-3"></i>
-                <span>+ Nueva</span>
-              </button>
-            </div>
-            <div class="flex items-center space-x-1.5">
-              <select id="product-category" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-                <!-- Dinámico -->
-              </select>
-              <button type="button" onclick="openCategoriesModal()" title="Administrar todas las categorías" class="p-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-100 shrink-0">
-                <i data-lucide="settings" class="w-4 h-4"></i>
-              </button>
-            </div>
+            <label class="block font-bold text-gray-700 mb-1">Categoría *</label>
+            <select id="product-category" required class="w-full px-3 py-2 rounded-xl border border-gray-200"></select>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre del Producto *</label>
-          <input type="text" id="product-name" required placeholder="Pollo entero" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          <label class="block font-bold text-gray-700 mb-1">Nombre del Producto *</label>
+          <input type="text" id="product-name" required placeholder="Ej: Pollo entero seleccionado" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Descripción</label>
+          <input type="text" id="product-desc" placeholder="Detalles de frescura y porcionado..." class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block font-bold text-[#E30613] mb-1">Precio Venta ($) *</label>
+            <input type="number" step="0.01" min="0" id="product-price-v" required placeholder="8.50" class="w-full px-2.5 py-2 rounded-xl border border-red-200 font-bold text-[#E30613]">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Precio Costo ($) *</label>
+            <input type="number" step="0.01" min="0" id="product-price-c" required placeholder="5.80" class="w-full px-2.5 py-2 rounded-xl border border-gray-200 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Unidad Medida</label>
+            <select id="product-unit" class="w-full px-2.5 py-2 rounded-xl border border-gray-200">
+              <option value="Unidad">Unidad</option>
+              <option value="kg">kg (Kilos)</option>
+              <option value="Cubeta">Cubeta</option>
+              <option value="Libra">Libra</option>
+              <option value="Paquete">Paquete</option>
+            </select>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Precio_V (Venta $) *</label>
-            <input type="number" step="0.01" min="0" id="product-price-v" required placeholder="8.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold text-[#E30613]">
+            <label class="block font-bold text-gray-700 mb-1">Stock Disponible *</label>
+            <input type="number" step="0.1" min="0" id="product-stock" required value="50" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold text-[#00A651]">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Precio_C (Costo $) *</label>
-            <input type="number" step="0.01" min="0" id="product-price-c" required placeholder="16.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-medium">
+            <label class="block font-bold text-gray-700 mb-1">Stock Mínimo (Alerta)</label>
+            <input type="number" step="0.1" min="0" id="product-stock-min" required value="15" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium text-amber-700">
           </div>
         </div>
 
-        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-product')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar Producto
-          </button>
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-product')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Guardar Producto</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: ADMINISTRAR CATEGORÍAS -->
-  <div id="modal-categories" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] flex flex-col">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+  <!-- MODAL: AJUSTE MANUAL DE INVENTARIO / KARDEX -->
+  <div id="modal-stock-adjustment" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-[#333333]">Ajuste de Inventario (Kardex)</h3>
+        <button onclick="closeModal('modal-stock-adjustment')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-stock-adjustment" class="mt-4 space-y-3 text-xs" onsubmit="handleStockAdjustmentSubmit(event)">
         <div>
-          <h3 class="text-lg font-bold text-[#333333]">Administrar Categorías</h3>
-          <p class="text-xs text-gray-500">Crea, edita y organiza las categorías del catálogo avícola</p>
+          <label class="block font-bold text-gray-700 mb-1">Seleccionar Producto *</label>
+          <select id="adj-product-select" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold"></select>
         </div>
-        <button onclick="closeModal('modal-categories')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
 
-      <!-- Botón visible para Agregar Categoría -->
-      <div class="py-3 flex items-center justify-between">
-        <span class="text-xs font-semibold text-gray-600">Categorías registradas:</span>
-        <button onclick="openAddCategoryModal()" class="px-3.5 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
-          <i data-lucide="plus" class="w-4 h-4"></i>
-          <span>+ Agregar categoría</span>
-        </button>
-      </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Tipo de Movimiento *</label>
+            <select id="adj-type-select" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+              <option value="Entrada">📥 Entrada (+ Compra/Ingreso)</option>
+              <option value="Salida">📤 Salida (- Merma/Ajuste)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Cantidad *</label>
+            <input type="number" step="0.1" min="0.1" id="adj-qty-input" required placeholder="Ej: 20" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-black">
+          </div>
+        </div>
 
-      <!-- Listado de Categorías -->
-      <div class="flex-1 overflow-y-auto border border-gray-200 rounded-xl">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-gray-50 text-gray-600 uppercase font-semibold border-b border-gray-200">
-            <tr>
-              <th class="px-4 py-3">ID</th>
-              <th class="px-4 py-3">Nombre de Categoría</th>
-              <th class="px-4 py-3">Productos Asociados</th>
-              <th class="px-4 py-3 text-right">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="table-categories-body" class="divide-y divide-gray-100">
-            <!-- Llenado dinámico con JS -->
-          </tbody>
-        </table>
-      </div>
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Motivo del Ajuste *</label>
+          <input type="text" id="adj-reason-input" required placeholder="Llegada de camión proveedor, merma, conteo físico..." class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
 
-      <div class="pt-4 mt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-        <span>* No se permite eliminar categorías con productos asignados.</span>
-        <button type="button" onclick="closeModal('modal-categories')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50">
-          Cerrar
-        </button>
-      </div>
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-stock-adjustment')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Aplicar al Kardex</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  <!-- MODAL: AGREGAR / EDITAR CATEGORÍA -->
-  <div id="modal-category-form" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-gray-200 animate-fade-in">
+  <!-- MODAL: CREAR / GESTIONAR PEDIDO (MULTI-PRODUCTO) -->
+  <div id="modal-order" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 shadow-2xl border border-gray-200 max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-3 border-b border-gray-100">
         <div>
-          <h4 id="category-form-title" class="text-base font-bold text-[#333333]">Agregar categoría</h4>
-          <p class="text-[11px] text-gray-500">Categoría del catálogo</p>
+          <h3 id="modal-order-title" class="text-lg font-bold text-[#333333]">Nuevo Pedido Comercial</h3>
+          <p class="text-xs text-gray-500">Selección de cliente, carrito multi-producto y cálculo automático</p>
         </div>
-        <button onclick="closeModal('modal-category-form')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeModal('modal-order')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="form-category" class="mt-4 space-y-4" onsubmit="handleSaveCategory(event)">
-        <input type="hidden" id="category-form-id" value="">
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre de categoría *</label>
-          <input type="text" id="category-form-name" required placeholder="Ej. Cerdo, Pavo, Embutidos..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-        </div>
-
-        <div class="pt-2 flex items-center justify-end space-x-2">
-          <button type="button" onclick="closeModal('modal-category-form')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL: REGISTRAR / EDITAR VENTA (SEGUIMIENTO) -->
-  <div id="modal-sale" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div>
-          <h3 id="modal-sale-title" class="text-lg font-bold text-[#333333]">Registrar Venta / Seguimiento</h3>
-          <p class="text-xs text-gray-500">Tabla 3: SEGUIMIENTO / VENTAS</p>
-        </div>
-        <button onclick="closeModal('modal-sale')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-sale" class="mt-4 space-y-4" onsubmit="handleSaveSale(event)">
+      <form id="form-order" class="mt-4 space-y-4 text-xs" onsubmit="handleSaveOrderSubmit(event)">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Seguimiento *</label>
-            <input type="text" id="sale-id" required placeholder="S001" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-mono font-bold">
+            <label class="block font-bold text-gray-700 mb-1">N° Pedido (Bloqueado) *</label>
+            <input type="text" id="order-id" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-gray-600">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Fecha_Compra *</label>
-            <input type="date" id="sale-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <label class="block font-bold text-gray-700 mb-1">Fecha del Pedido *</label>
+            <input type="date" id="order-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium">
           </div>
         </div>
 
-        <!-- Relación ID_Cliente -->
         <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Cliente (Relación Clientes) *</label>
-          <select id="sale-client-id" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-            <!-- Dinámico -->
-          </select>
+          <label class="block font-bold text-gray-700 mb-1">Cliente Solicitante *</label>
+          <select id="order-client-select" required onchange="onOrderClientSelect()" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 font-semibold"></select>
         </div>
 
-        <!-- Relación ID_Producto -->
-        <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">ID_Producto (Relación Productos) *</label>
-          <select id="sale-product-id" required onchange="calculateSaleTotal()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-            <!-- Dinámico -->
-          </select>
+        <!-- Carrito de Productos del Pedido -->
+        <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-3">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-gray-800 uppercase tracking-wider text-[11px]">Ítems del Pedido</h4>
+            <button type="button" onclick="addOrderItemRow()" class="px-3 py-1 rounded-lg bg-[#E30613] text-white font-bold text-xs hover:bg-red-700 flex items-center space-x-1">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>Agregar Producto</span>
+            </button>
+          </div>
+
+          <div id="order-items-container" class="space-y-2">
+            <!-- Filas dinámicas -->
+          </div>
+
+          <div class="pt-2 border-t border-gray-200 flex justify-end space-x-4 text-xs font-bold">
+            <span class="text-gray-500">Subtotal: <span id="order-subtotal-disp">$0.00</span></span>
+            <span class="text-gray-500">Descuento: <span id="order-discount-disp">$0.00</span></span>
+            <span class="text-[#E30613] text-sm">TOTAL: <span id="order-total-disp">$0.00</span></span>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Cantidad *</label>
-            <input type="number" min="1" id="sale-qty" required value="1" oninput="calculateSaleTotal()" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-bold">
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Total ($) *</label>
-            <input type="number" step="0.01" min="0" id="sale-total" required placeholder="8.50" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm font-extrabold text-[#E30613]">
-            <span class="text-[10px] text-gray-400">Autocalculado o editable con descuento</span>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Canal *</label>
-            <select id="sale-channel" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="Instagram">Instagram</option>
-              <option value="Facebook">Facebook</option>
-              <option value="WhatsApp">WhatsApp</option>
-              <option value="Local">Local</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Método_Pago *</label>
-            <select id="sale-payment" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <label class="block font-bold text-gray-700 mb-1">Forma de Pago *</label>
+            <select id="order-payment-method" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium">
               <option value="Efectivo">Efectivo</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Deuna">Deuna</option>
-              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia Bancaria</option>
+              <option value="Deuna">Deuna / PayPhone</option>
+              <option value="Tarjeta">Tarjeta Débito/Crédito</option>
+              <option value="Crédito">Crédito Comercial</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Estado *</label>
-            <select id="sale-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="Completado">Completado</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Cancelado">Cancelado</option>
+            <label class="block font-bold text-gray-700 mb-1">Estado Inicial *</label>
+            <select id="order-status-select" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+              <option value="Pendiente">🟡 Pendiente</option>
+              <option value="Confirmado">🔵 Confirmado (Descuenta Stock)</option>
+              <option value="En preparación">🟣 En preparación</option>
+              <option value="Entregado">🟢 Entregado</option>
             </select>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Observación</label>
-          <textarea id="sale-notes" rows="2" placeholder="Entregado a conformidad" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm"></textarea>
+          <label class="block font-bold text-gray-700 mb-1">Dirección de Entrega</label>
+          <input type="text" id="order-delivery-address" placeholder="Av. Los Guaytambos, Ficoa..." class="w-full px-3 py-2 rounded-xl border border-gray-200">
         </div>
 
-        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-sale')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar Venta
-          </button>
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Observaciones</label>
+          <textarea id="order-notes" rows="2" placeholder="Indicaciones especiales de entrega..." class="w-full p-2.5 rounded-xl border border-gray-200"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-order')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Guardar Pedido</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: RECIBO / COMPROBANTE DE VENTA IMPRIMIBLE CON LOGO OFICIAL -->
+  <!-- MODAL: RECIBO / COMPROBANTE DE VENTA O FACTURA IMPRIMIBLE -->
   <div id="modal-receipt" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fade-in relative">
-      <button onclick="closeModal('modal-receipt')" class="no-print absolute top-4 right-4 text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 relative max-h-[95vh] overflow-y-auto">
+      <button onclick="closeModal('modal-receipt')" class="no-print absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
 
-      <!-- Contenido del Comprobante -->
-      <div id="printable-receipt" class="space-y-4 text-[#333333]">
-        
-        <!-- Encabezado de Empresa con Logotipo Oficial -->
-        <div class="text-center pb-4 border-b border-dashed border-gray-300">
+      <div id="printable-invoice" class="space-y-4 text-xs text-gray-800">
+        <!-- Logo y Encabezado Oficial -->
+        <div class="text-center pb-3 border-b border-dashed border-gray-300">
           <img src="logo.png" alt="QUÉ POLLO!" class="h-16 w-auto mx-auto object-contain mb-2">
-          <h2 class="text-xl font-extrabold tracking-tight text-[#333333]">AVÍCOLA QUÉ POLLO</h2>
-          <p class="text-xs text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
-          <p class="text-[10px] text-gray-400 mt-0.5">Ambato - Ecuador • RUC: 1890000000001</p>
-          <div class="mt-2 inline-block px-3 py-0.5 rounded-full text-[11px] font-bold bg-red-50 text-[#E30613] border border-red-200">
-            COMPROBANTE DE ENTREGA
+          <h2 class="text-lg font-black text-[#333333]">AVÍCOLA QUÉ POLLO</h2>
+          <p class="text-[11px] text-gray-500 font-medium">Calidad, Frescura y el Mejor Sabor</p>
+          <p class="text-[10px] text-gray-400">RUC: 1890000000001 • Matriz Ambato, Ecuador</p>
+          <div class="mt-2 inline-block px-3 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-[#E30613] border border-red-200">
+            COMPROBANTE COMERCIAL
           </div>
         </div>
 
-        <!-- Info Transacción -->
-        <div class="text-xs space-y-1.5 py-2 border-b border-dashed border-gray-200">
-          <div class="flex justify-between">
-            <span class="text-gray-500">N° Seguimiento:</span>
-            <span id="rcpt-id" class="font-bold text-[#333333] font-mono">S001</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Fecha:</span>
-            <span id="rcpt-date" class="font-medium">2026-09-09</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Canal de Venta:</span>
-            <span id="rcpt-channel" class="font-medium">Instagram</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Método de Pago:</span>
-            <span id="rcpt-payment" class="font-medium">Efectivo</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Estado:</span>
-            <span id="rcpt-status" class="font-bold text-[#00A651]">Completado</span>
+        <!-- Datos del Comprobante -->
+        <div class="space-y-1 text-[11px]">
+          <div class="flex justify-between"><span class="text-gray-500">Documento:</span> <span id="rcpt-num" class="font-mono font-bold">001-001-000000001</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Fecha y Hora:</span> <span id="rcpt-date">2026-09-18</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Cliente:</span> <span id="rcpt-client" class="font-bold">Consumidor Final</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Cédula / RUC:</span> <span id="rcpt-doc" class="font-mono">9999999999</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">Forma de Pago:</span> <span id="rcpt-payment">Efectivo</span></div>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <table class="w-full text-left border-t border-b border-gray-200 py-2">
+          <thead>
+            <tr class="text-gray-400 text-[10px] uppercase">
+              <th class="py-1">Cant.</th>
+              <th class="py-1">Descripción</th>
+              <th class="py-1 text-right">P.U.</th>
+              <th class="py-1 text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody id="rcpt-items-body" class="divide-y divide-gray-100 font-medium">
+            <!-- Dinámico -->
+          </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div class="space-y-1 text-right text-xs pt-1">
+          <div class="flex justify-between"><span class="text-gray-500">Subtotal:</span> <span id="rcpt-subtotal" class="font-mono">$0.00</span></div>
+          <div class="flex justify-between"><span class="text-gray-500">IVA (0% / 15%):</span> <span id="rcpt-iva" class="font-mono">$0.00</span></div>
+          <div class="flex justify-between text-sm font-black text-[#E30613] pt-1 border-t border-gray-200">
+            <span>TOTAL A PAGAR:</span> <span id="rcpt-total">$0.00</span>
           </div>
         </div>
 
-        <!-- Info Cliente -->
-        <div class="text-xs space-y-1.5 py-2 border-b border-dashed border-gray-200 bg-gray-50 p-2.5 rounded-lg">
-          <div class="font-bold text-gray-700 uppercase tracking-wider text-[10px]">Datos del Cliente:</div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Nombre:</span>
-            <span id="rcpt-client-name" class="font-semibold text-[#333333]">Carlos Solis</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Teléfono:</span>
-            <span id="rcpt-client-phone" class="font-medium">0984149863</span>
-          </div>
-          <div class="flex justify-between">
-            <span class="text-gray-500">Correo:</span>
-            <span id="rcpt-client-email" class="font-medium">carlosol@gmail.com</span>
-          </div>
+        <div class="pt-3 text-center text-[10px] text-gray-400 space-y-0.5">
+          <p>¡Gracias por preferir Avícola QUÉ POLLO!</p>
+          <p>Ambato • Tungurahua • Ecuador</p>
         </div>
-
-        <!-- Desglose de Producto -->
-        <div class="py-2 border-b border-dashed border-gray-200">
-          <table class="w-full text-xs">
-            <thead>
-              <tr class="text-gray-500 border-b border-gray-100 pb-1">
-                <th class="text-left font-semibold">Producto</th>
-                <th class="text-center font-semibold">Cant.</th>
-                <th class="text-right font-semibold">Total</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr>
-                <td id="rcpt-product-name" class="py-2 font-medium text-[#333333]">Pollo entero</td>
-                <td id="rcpt-product-qty" class="py-2 text-center font-bold">2</td>
-                <td id="rcpt-total" class="py-2 text-right font-extrabold text-[#E30613]">$7.00</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Observaciones -->
-        <div class="text-xs bg-red-50/50 p-2.5 rounded-lg border border-red-100">
-          <span class="text-gray-500 text-[10px] block uppercase font-bold">Observación:</span>
-          <p id="rcpt-obs" class="text-[#333333] italic mt-0.5">Entregado a conformidad</p>
-        </div>
-
-        <!-- Pie de Ticket y Agradecimiento -->
-        <div class="text-center pt-2 text-[10px] text-gray-400 space-y-1">
-          <p class="font-bold text-[#E30613]">¡Gracias por preferir Avícola QUÉ POLLO!</p>
-          <p>Proyecto de Sistemas de Información • UTA 7mo B Mercadotecnia</p>
-        </div>
-
       </div>
 
       <!-- Botones de Acción -->
-      <div class="no-print mt-5 pt-4 border-t border-gray-100 flex items-center justify-end space-x-2">
-        <button onclick="closeModal('modal-receipt')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-          Cerrar
-        </button>
+      <div class="no-print mt-5 pt-3 border-t border-gray-100 flex items-center justify-end space-x-2">
+        <button onclick="closeModal('modal-receipt')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">Cerrar</button>
         <button onclick="window.print()" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-md">
           <i data-lucide="printer" class="w-4 h-4"></i>
           <span>Imprimir Comprobante</span>
         </button>
       </div>
-
-    </div>
-  </div>
-
-  <!-- MODAL: HISTORIAL DE COMPRAS POR CLIENTE -->
-  <div id="modal-client-history" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div>
-          <h3 id="history-client-name" class="text-lg font-bold text-[#333333]">Historial del Cliente</h3>
-          <p id="history-client-details" class="text-xs text-gray-500">C001 • Carlos Solis</p>
-        </div>
-        <button onclick="closeModal('modal-client-history')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="mt-4 max-h-72 overflow-y-auto">
-        <table class="w-full text-left text-xs">
-          <thead class="bg-gray-50 text-gray-600 uppercase font-semibold">
-            <tr>
-              <th class="px-3 py-2">ID Venta</th>
-              <th class="px-3 py-2">Producto</th>
-              <th class="px-3 py-2">Fecha</th>
-              <th class="px-3 py-2">Total</th>
-              <th class="px-3 py-2">Estado</th>
-            </tr>
-          </thead>
-          <tbody id="history-table-body" class="divide-y divide-gray-100">
-            <!-- Llenado con JS -->
-          </tbody>
-        </table>
-      </div>
-
-      <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-        <div class="text-xs">
-          <span class="text-gray-500">Total Acumulado:</span>
-          <span id="history-total-spent" class="font-extrabold text-[#E30613] ml-1 text-sm">$0.00</span>
-        </div>
-        <button onclick="closeModal('modal-client-history')" class="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-gray-700">
-          Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: REGISTRARSE / CREAR CUENTA (PÚBLICO) -->
-  <div id="modal-register" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-gray-200 animate-fade-in max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div class="flex items-center space-x-2.5">
-          <div class="w-10 h-10 rounded-2xl bg-red-50 text-[#E30613] flex items-center justify-center">
-            <i data-lucide="user-plus" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-black text-[#333333]">Crear una Cuenta</h3>
-            <p class="text-xs text-gray-500">Solicitud de acceso al CRM Avícola QUÉ POLLO</p>
-          </div>
-        </div>
-        <button onclick="closeModal('modal-register')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <form id="form-register" class="mt-4 space-y-3.5" onsubmit="handleRegisterSubmit(event)">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-[#333333] mb-1">Nombre *</label>
-            <input type="text" id="reg-name" required placeholder="Ej: Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-[#333333] mb-1">Apellido *</label>
-            <input type="text" id="reg-lastname" required placeholder="Ej: Mendoza" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#333333] mb-1">Correo Electrónico *</label>
-          <div class="relative">
-            <i data-lucide="mail" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
-            <input type="email" id="reg-email" required placeholder="carlos.mendoza@gmail.com" class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#333333] mb-1">Teléfono (WhatsApp) *</label>
-          <div class="relative">
-            <i data-lucide="phone" class="w-4 h-4 text-gray-400 absolute left-3 top-2.5"></i>
-            <input type="tel" id="reg-phone" required placeholder="0987654321" class="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#333333] mb-1">Contraseña (Mínimo 6 caracteres) *</label>
-          <div class="relative">
-            <input type="password" id="reg-password" minlength="6" required placeholder="••••••••" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-            <button type="button" onclick="togglePasswordVisibility('reg-password', 'reg-pass-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <i id="reg-pass-eye" data-lucide="eye" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-bold text-[#333333] mb-1">Confirmar Contraseña *</label>
-          <div class="relative">
-            <input type="password" id="reg-confirm-password" minlength="6" required placeholder="••••••••" class="w-full pl-3 pr-10 py-2 rounded-xl border border-gray-200 text-sm focus:border-[#E30613] focus:ring-1 focus:ring-red-100">
-            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', 'reg-conf-pass-eye')" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <i id="reg-conf-pass-eye" data-lucide="eye" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <div class="p-3 bg-amber-50/70 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
-          <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
-          <span>Al registrarte, tu cuenta quedará en <strong>PENDIENTE DE APROBACIÓN</strong> hasta que un administrador verifique tu identidad y autorice el acceso.</span>
-        </div>
-
-        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-register')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" id="btn-register-submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Crear Cuenta
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
   <!-- MODAL: RECUPERAR CONTRASEÑA -->
   <div id="modal-forgot-password" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200">
       <div class="flex items-center justify-between pb-3 border-b border-gray-100">
         <h3 class="text-base font-bold text-[#333333]">Recuperar Contraseña</h3>
-        <button onclick="closeModal('modal-forgot-password')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeModal('modal-forgot-password')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="form-forgot-password" class="mt-4 space-y-4" onsubmit="handleForgotPasswordSubmit(event)">
-        <p class="text-xs text-gray-500 leading-relaxed">
-          Ingresa el correo electrónico asociado a tu cuenta para recibir un enlace de restablecimiento de contraseña vía Supabase Auth.
-        </p>
-
+      <form id="form-forgot-password" class="mt-4 space-y-4 text-xs" onsubmit="handleForgotPasswordSubmit(event)">
+        <p class="text-gray-500">Ingresa tu correo electrónico para recibir el enlace de restablecimiento seguro vía Supabase Auth.</p>
         <div>
-          <label class="block text-xs font-bold text-[#333333] mb-1">Correo Electrónico *</label>
-          <input type="email" id="forgot-email" required placeholder="tu.correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          <label class="block font-bold text-gray-700 mb-1">Correo Electrónico *</label>
+          <input type="email" id="forgot-email" required placeholder="tu.correo@ejemplo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200">
         </div>
-
-        <div class="pt-2 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-forgot-password')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Enviar Enlace
-          </button>
+        <div class="pt-2 flex items-center justify-end space-x-2">
+          <button type="button" onclick="closeModal('modal-forgot-password')" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded-xl btn-primary font-bold">Enviar Enlace</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: CREAR / EDITAR PERFIL DE USUARIO (ADMINISTRADOR) -->
-  <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div>
-          <h3 id="modal-user-title" class="text-lg font-bold text-[#333333]">Administrar Usuario</h3>
-          <p class="text-xs text-gray-500">Gestión de Perfil, Rol y Estado</p>
+  <!-- MODAL: REGISTRARSE / CREAR CUENTA PÚBLICA -->
+  <div id="modal-register" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-gray-200 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-red-50 text-[#E30613] flex items-center justify-center font-bold">
+            <i data-lucide="user-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-[#333333]">Crear una Cuenta</h3>
+            <p class="text-[11px] text-gray-500">Solicitud de acceso al CRM Avícola QUÉ POLLO</p>
+          </div>
         </div>
-        <button onclick="closeModal('modal-user')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeModal('modal-register')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="form-user" class="mt-4 space-y-3.5" onsubmit="handleSaveUser(event)">
+      <form id="form-register" class="mt-4 space-y-3 text-xs" onsubmit="handleRegisterSubmit(event)">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Nombre *</label>
+            <input type="text" id="reg-name" required placeholder="Ej: Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Apellido *</label>
+            <input type="text" id="reg-lastname" required placeholder="Ej: Mendoza" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Correo Electrónico *</label>
+          <input type="email" id="reg-email" required placeholder="carlos.mendoza@gmail.com" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Teléfono WhatsApp *</label>
+          <input type="tel" id="reg-phone" required placeholder="0987654321" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Contraseña (Mínimo 6 caracteres) *</label>
+          <input type="password" id="reg-password" minlength="6" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Confirmar Contraseña *</label>
+          <input type="password" id="reg-confirm-password" minlength="6" required placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-gray-200">
+        </div>
+
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
+          <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+          <span>Al registrarte, tu cuenta quedará en estado <strong>PENDIENTE DE APROBACIÓN</strong> hasta que una administradora autorice tu acceso comercial.</span>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-register')" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600">Cancelar</button>
+          <button type="submit" id="btn-register-submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Crear Cuenta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREAR / EDITAR PERFIL DE USUARIO (RBAC) -->
+  <div id="modal-user" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 id="modal-user-title" class="text-base font-bold text-[#333333]">Crear Nuevo Perfil de Usuario</h3>
+        <button onclick="closeModal('modal-user')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-user" class="mt-4 space-y-3 text-xs" onsubmit="handleSaveUser(event)">
         <input type="hidden" id="user-profile-id">
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Nombre *</label>
-            <input type="text" id="user-name" required placeholder="Ej: Juan" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <label class="block font-bold text-gray-700 mb-1">Nombres *</label>
+            <input type="text" id="user-name" required placeholder="Carlos" class="w-full px-3 py-2 rounded-xl border border-gray-200">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Apellido *</label>
-            <input type="text" id="user-lastname" required placeholder="Ej: Pérez" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <label class="block font-bold text-gray-700 mb-1">Apellidos *</label>
+            <input type="text" id="user-lastname" required placeholder="Mendoza" class="w-full px-3 py-2 rounded-xl border border-gray-200">
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Correo Electrónico *</label>
-          <input type="email" id="user-email" required placeholder="juan.perez@quepollo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          <label class="block font-bold text-gray-700 mb-1">Correo Electrónico *</label>
+          <input type="email" id="user-email" required placeholder="usuario@quepollo.com" class="w-full px-3 py-2 rounded-xl border border-gray-200">
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-[#333333] mb-1">Teléfono</label>
-          <input type="tel" id="user-phone" placeholder="0987654321" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+          <label class="block font-bold text-gray-700 mb-1">Teléfono *</label>
+          <input type="tel" id="user-phone" required placeholder="0987654321" class="w-full px-3 py-2 rounded-xl border border-gray-200">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Rol del Sistema *</label>
-            <select id="user-role" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
-              <option value="USUARIO">💼 USUARIO</option>
+            <label class="block font-bold text-gray-700 mb-1">Rol de Acceso *</label>
+            <select id="user-role" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
               <option value="ADMINISTRADOR">👑 ADMINISTRADOR</option>
+              <option value="VENDEDOR">💼 VENDEDOR</option>
+              <option value="EMPLEADO">👷 EMPLEADO</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-[#333333] mb-1">Estado de Acceso *</label>
-            <select id="user-status" required class="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm">
+            <label class="block font-bold text-gray-700 mb-1">Estado de Aprobación *</label>
+            <select id="user-status" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
               <option value="APROBADO">🟢 APROBADO</option>
               <option value="PENDIENTE">🟡 PENDIENTE</option>
               <option value="RECHAZADO">🔴 RECHAZADO</option>
@@ -1531,110 +1779,256 @@
           </div>
         </div>
 
-        <div class="pt-4 flex items-center justify-end space-x-2 border-t border-gray-100">
-          <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
-            Cancelar
-          </button>
-          <button type="submit" class="px-5 py-2 rounded-xl btn-primary text-xs font-bold shadow-xs">
-            Guardar Cambios
-          </button>
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-user')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Guardar Perfil</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL: INFORMACIÓN DEL PROYECTO ACADÉMICO UTA -->
-  <div id="modal-uta" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 animate-fade-in">
-      <div class="flex items-center justify-between pb-4 border-b border-gray-100">
-        <div class="flex items-center space-x-2">
-          <div class="w-9 h-9 rounded-xl bg-red-50 text-[#E30613] border border-red-100 flex items-center justify-center font-bold">
-            UTA
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-[#333333]">UNIVERSIDAD TÉCNICA DE AMBATO</h3>
-            <p class="text-xs text-gray-500">Facultad de Ciencias Administrativas</p>
-          </div>
-        </div>
-        <button onclick="closeModal('modal-uta')" class="text-gray-400 hover:text-[#333333] p-1 rounded-lg">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+  <!-- MODAL: REGISTRAR CONTACTO CRM -->
+  <div id="modal-crm-interaction" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-[#333333]">Registrar Contacto Comercial</h3>
+        <button onclick="closeModal('modal-crm-interaction')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <div class="mt-4 space-y-4 text-xs">
-        <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-          <div class="font-bold text-[#333333]">Módulo: Sistemas de Información</div>
-          <div class="text-gray-600">Carrera: Mercadotecnia | Curso: 7mo "B"</div>
-          <div class="text-[#E30613] font-semibold mt-1">Actividad: ACT - BD CRM (Avícola QUÉ POLLO)</div>
+      <form id="form-crm-interaction" class="mt-4 space-y-3 text-xs" onsubmit="handleSaveCRMInteraction(event)">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Cliente *</label>
+          <select id="crm-client-select" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium"></select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Canal de Contacto *</label>
+            <select id="crm-channel-select" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+              <option value="WhatsApp">💬 WhatsApp</option>
+              <option value="Llamada">📞 Llamada Telefónica</option>
+              <option value="Visita">🏪 Visita en Local</option>
+              <option value="Correo">✉️ Correo Electrónico</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Estado de la Oportunidad *</label>
+            <select id="crm-stage-select" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+              <option value="Contactado">🔵 Contactado</option>
+              <option value="Cotización">🟡 Cotización Enviada</option>
+              <option value="Cerrado Ganado">🟢 Cerrado Ganado</option>
+              <option value="Cerrado Perdido">🔴 Cerrado Perdido</option>
+            </select>
+          </div>
         </div>
 
         <div>
-          <h4 class="font-bold text-[#333333] uppercase tracking-wider text-[11px] mb-2">Integrantes del GRUPO 4:</h4>
-          <ul class="space-y-1.5 text-gray-700">
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
-              <span><strong>Toaza Veronica</strong></span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
-              <span><strong>Flores Salomé</strong></span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
-              <span><strong>Solis Fabian</strong></span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
-              <span><strong>Quinapanta Rebeca</strong></span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#E30613]"></span>
-              <span><strong>Naranjo Domenica</strong></span>
-            </li>
-            <li class="flex items-center space-x-2">
-              <span class="w-2 h-2 rounded-full bg-[#00A651]"></span>
-              <span><strong>Pico Daniela</strong></span>
-            </li>
-          </ul>
+          <label class="block font-bold text-gray-700 mb-1">Resumen del Contacto / Acuerdos *</label>
+          <textarea id="crm-notes-input" required rows="3" placeholder="Se ofreció pollo entero para entrega los días viernes, cotización solicitada..." class="w-full p-2.5 rounded-xl border border-gray-200"></textarea>
         </div>
 
-        <div class="p-3 bg-red-50/50 rounded-xl border border-red-100 text-[#333333]">
-          <strong class="text-[#E30613]">Base de Datos Implementada:</strong>
-          <p class="mt-0.5 text-gray-600">1. CLIENTES • 2. PRODUCTOS (con Categorías) • 3. SEGUIMIENTO / VENTAS • 4. USUARIOS Y ACCESOS</p>
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-crm-interaction')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Guardar Interacción</button>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA PROMOCIÓN COMERCIAL -->
+  <div id="modal-promotion" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-[#333333]">Crear Promoción Comercial</h3>
+        <button onclick="closeModal('modal-promotion')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <div class="mt-5 pt-3 border-t border-gray-100 flex justify-end">
-        <button onclick="closeModal('modal-uta')" class="px-4 py-2 rounded-xl btn-primary font-semibold text-xs shadow-xs">
-          Entendido
-        </button>
+      <form id="form-promotion" class="mt-4 space-y-3 text-xs" onsubmit="handleSavePromotion(event)">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Título de la Promoción *</label>
+          <input type="text" id="promo-title-input" required placeholder="Ej: Combo Parrillero Fin de Semana" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Tipo Descuento *</label>
+            <select id="promo-type-select" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+              <option value="Porcentaje">Porcentaje (%)</option>
+              <option value="Fijo">Monto Fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-[#E30613] mb-1">Valor Descuento *</label>
+            <input type="number" step="0.01" min="0" id="promo-value-input" required placeholder="15" class="w-full px-3 py-2 rounded-xl border border-red-200 font-bold text-[#E30613]">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Inicio *</label>
+            <input type="date" id="promo-start-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-700 mb-1">Fecha Fin *</label>
+            <input type="date" id="promo-end-date" required class="w-full px-3 py-2 rounded-xl border border-gray-200 font-medium">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Descripción / Condiciones</label>
+          <textarea id="promo-desc-input" rows="2" placeholder="Válido en compras mayores a $20, aplicable en Ambato..." class="w-full p-2.5 rounded-xl border border-gray-200"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-promotion')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Crear Promoción</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CANJE DE POLLOPUNTOS -->
+  <div id="modal-redeem-points" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div>
+          <h3 class="text-base font-bold text-[#333333]">Canjear PolloPuntos</h3>
+          <p class="text-[11px] text-gray-500">Aplica recompensas directas para tus clientes frecuentes</p>
+        </div>
+        <button onclick="closeModal('modal-redeem-points')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-redeem-points" class="mt-4 space-y-3 text-xs" onsubmit="handleRedeemPointsSubmit(event)">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Seleccionar Cliente *</label>
+          <select id="redeem-client-select" required onchange="onRedeemClientChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold"></select>
+          <p id="redeem-client-balance" class="text-[11px] text-[#00A651] font-bold mt-1">Saldo disponible: 0 PolloPuntos</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Seleccionar Recompensa *</label>
+          <select id="redeem-reward-select" required onchange="onRedeemRewardChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold"></select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Puntos Requeridos</label>
+          <input type="number" id="redeem-cost-input" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-[#E30613]">
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-redeem-points')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl btn-primary font-bold shadow-xs">Confirmar Canje</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: GESTIÓN DE CATEGORÍAS -->
+  <div id="modal-categories" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <h3 class="text-base font-bold text-[#333333]">Gestión de Categorías de Productos</h3>
+        <button onclick="closeModal('modal-categories')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="mt-4 space-y-4 text-xs">
+        <!-- Formulario rápida agregar categoría -->
+        <form id="form-category-quick" onsubmit="handleQuickAddCategory(event)" class="p-3 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
+          <label class="block font-bold text-gray-700">Nueva Categoría</label>
+          <div class="flex space-x-2">
+            <input type="text" id="quick-cat-name" required placeholder="Ej: Pollo Ahumado" class="flex-1 px-3 py-2 rounded-xl border border-gray-200 font-medium">
+            <button type="submit" class="px-4 py-2 rounded-xl btn-primary font-bold shadow-xs">Agregar</button>
+          </div>
+        </form>
+
+        <!-- Lista de categorías existentes -->
+        <div class="space-y-2">
+          <h4 class="font-bold text-gray-700 uppercase tracking-wider text-[11px]">Categorías Existentes</h4>
+          <div id="categories-modal-list" class="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden max-h-60 overflow-y-auto">
+            <!-- Dinámico -->
+          </div>
+        </div>
+
+        <div class="pt-3 flex justify-end border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-categories')" class="px-4 py-2 rounded-xl border border-gray-200 text-gray-600 font-semibold">Cerrar</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================
-       FOOTER
-       ========================================== -->
-  <footer class="bg-white border-t border-gray-200 py-6 mt-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-      <div class="flex items-center space-x-2">
-        <span class="font-bold text-[#333333]">Avícola QUÉ POLLO</span>
-        <span>•</span>
-        <span>CRM Comercial & Seguimiento</span>
+  <!-- MODAL: ANULACIÓN DE FACTURA SRI -->
+  <div id="modal-cancel-invoice" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div>
+          <h3 class="text-base font-bold text-[#E30613]">Anulación Formal de Factura SRI</h3>
+          <p class="text-[11px] text-gray-500">Esta acción restaurará el stock y registrará el motivo legal</p>
+        </div>
+        <button onclick="closeModal('modal-cancel-invoice')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <div class="flex items-center space-x-4">
-        <button onclick="openModal('modal-uta')" class="hover:text-[#E30613] transition-colors">
-          Créditos Académicos UTA Grupo 4
-        </button>
+
+      <form id="form-cancel-invoice" class="mt-4 space-y-3 text-xs" onsubmit="handleCancelInvoiceSubmit(event)">
+        <input type="hidden" id="cancel-invoice-id">
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">N° de Factura</label>
+          <input type="text" id="cancel-invoice-num" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-gray-700">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-700 mb-1">Motivo Legal de Anulación *</label>
+          <textarea id="cancel-invoice-reason" required rows="3" placeholder="Error en digitación de RUC, producto devuelto..." class="w-full p-2.5 rounded-xl border border-red-200 text-gray-800"></textarea>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
+          <button type="button" onclick="closeModal('modal-cancel-invoice')" class="px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-600 font-semibold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-[#E30613] hover:bg-red-700 text-white font-bold shadow-xs">Anular Factura</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PROYECTO ACADÉMICO UTA -->
+  <div id="modal-uta" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200">
+      <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div class="flex items-center space-x-2">
+          <div class="w-9 h-9 rounded-xl bg-red-50 text-[#E30613] font-black flex items-center justify-center">UTA</div>
+          <div>
+            <h3 class="text-sm font-bold text-[#333333]">UNIVERSIDAD TÉCNICA DE AMBATO</h3>
+            <p class="text-[11px] text-gray-500">Facultad de Ciencias Administrativas • Mercadotecnia 7mo "B"</p>
+          </div>
+        </div>
+        <button onclick="closeModal('modal-uta')" class="text-gray-400 hover:text-gray-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="mt-4 space-y-3 text-xs">
+        <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 space-y-1">
+          <p class="font-bold text-gray-800">Sistemas de Información Comercial • Actividad BD CRM</p>
+          <p class="text-gray-600">Empresa Analizada: <strong>Avícola QUÉ POLLO (Ambato - Ecuador)</strong></p>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-gray-700 uppercase tracking-wider text-[11px] mb-2">Integrantes del Grupo 4:</h4>
+          <ul class="space-y-1 text-gray-700">
+            <li>👑 <strong>Toaza Veronica</strong> (Administradora Principal)</li>
+            <li>👑 <strong>Flores Salomé</strong> (Administradora Principal)</li>
+            <li>💼 <strong>Solis Fabian</strong></li>
+            <li>💼 <strong>Quinapanta Rebeca</strong></li>
+            <li>💼 <strong>Naranjo Domenica</strong></li>
+            <li>💼 <strong>Pico Daniela</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-gray-100 flex justify-end">
+        <button onclick="closeModal('modal-uta')" class="px-4 py-2 rounded-xl btn-primary font-bold text-xs shadow-xs">Entendido</button>
       </div>
     </div>
-  </footer>
+  </div>
 
-  </div> <!-- Fin #app-container -->
-
-  <!-- Scripts de la Aplicación con Cache-Buster -->
-  <script src="supabase-client.js?v=3.0"></script>
-  <script src="app.js?v=3.0"></script>
+  <!-- Scripts de la Aplicación -->
+  <script src="supabase-client.js?v=3.5"></script>
+  <script src="app.js?v=3.5"></script>
 
 </body>
 </html>

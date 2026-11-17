@@ -1,95 +1,70 @@
-# CRM Avícola "QUÉ POLLO" 🍗
-
-> Sistema de Gestión Comercial, Trazabilidad de Ventas y Administración de Catálogo para **Avícola QUÉ POLLO**.  
-> Desarrollado de acuerdo con las especificaciones de la actividad académica **ACT - BD CRM**.
+# CRM AVÍCOLA "QUÉ POLLO" 🍗
+> **Sistema Integral de Administración Comercial, Ventas, Inventario, Facturación SRI, Marketing Digital y Fidelización**  
+> Ambato, Tungurahua, Ecuador
 
 ---
 
-## 🎓 Información Académica
-
+## 👥 Datos Académicos & Proyecto
 - **Institución:** Universidad Técnica de Ambato (UTA)
-- **Facultad:** Facultad de Ciencias Administrativas
-- **Carrera:** Mercadotecnia
-- **Curso:** 7mo Semestre "B"
-- **Módulo:** Sistemas de Información
-- **Grupo:** GRUPO 4
-- **Integrantes:**
-  - Flores Salomé
-  - Solis Fabian
-  - Quinapanta Rebeca
-  - Naranjo Domenica
-  - Pico Daniela
+- **Facultad:** Ciencias Administrativas | Mercadotecnia 7mo "B"
+- **Módulo:** Sistemas de Información Comercial (Actividad BD CRM)
+- **Grupo 4:**
+  - 👑 **Toaza Veronica** (Administradora Principal)
+  - 👑 **Flores Salomé** (Administradora Principal)
+  - 💼 Solis Fabian
+  - 💼 Quinapanta Rebeca
+  - 💼 Naranjo Domenica
+  - 💼 Pico Daniela
 
 ---
 
-## 🗄️ Estructura de la Base de Datos
+## 🔑 Credenciales Maestras de Acceso
 
-El sistema implementa fielmente las entidades y campos requeridos, incorporando la administración dinámica de categorías vinculada a productos:
-
-### 1. Tabla: `CATEGORIAS` (Administración Dinámica)
-| Campo | Tipo de Dato | Ejemplo / Valores |
-| :--- | :--- | :--- |
-| `ID_Categoria` | Número / ID (Clave primaria) | `CAT001` |
-| `Nombre_Categoria` | Texto (Único) | `Pollo`, `Cerdo`, `Res`, `Embutidos`, `Menudencias`, `Otros` |
-| `Fecha_Creacion` | Fecha | `2026-09-09` |
-| `Estado` | Texto | `Activo` |
-
-### 2. Tabla: `CLIENTES`
-| Campo | Tipo de Dato | Ejemplo / Valores |
-| :--- | :--- | :--- |
-| `ID_Cliente` | Número / ID (Clave primaria) | `C001` |
-| `Nombre` | Texto | `Carlos` |
-| `Apellido` | Texto | `Solis` |
-| `Teléfono` | Texto | `0984149863` (con acceso directo a WhatsApp) |
-| `Correo` | Texto | `carlosol@gmail.com` |
-| `Red_Social` | Texto / Selección | `Facebook`, `Instagram`, `WhatsApp`, `TikTok` |
-| `Fecha_Registro`| Fecha | `09/09/2026` |
-| `Tipo_Cliente` | Selección | `Frecuente`, `Mayorista`, `Ocasional`, `Nuevo` |
-
-### 3. Tabla: `PRODUCTOS`
-| Campo | Tipo de Dato | Ejemplo / Valores |
-| :--- | :--- | :--- |
-| `ID_Producto` | Número / ID (Clave primaria) | `P001` |
-| `Nombre` | Texto | `Pollo entero` |
-| `ID_Categoria` | Relación con Categorías | `CAT001` |
-| `Categoría` | Selección dinámica | `Pollo` |
-| `Precio_V` | Decimal (2) - Precio de Venta | `8.50` |
-| `Precio_C` | Decimal (2) - Precio de Costo | `16.50` |
-
-### 4. Tabla: `SEGUIMIENTO / VENTAS`
-| Campo | Tipo de Dato | Ejemplo / Valores |
-| :--- | :--- | :--- |
-| `ID_Seguimiento`| Número / ID (Clave primaria) | `S001` |
-| `ID_Cliente` | Relación (Foránea) | `C001` (Carlos Solis) |
-| `ID_Producto` | Relación (Foránea) | `P001` (Pollo entero) |
-| `Fecha_Compra` | Fecha | `09/09/2026` |
-| `Cantidad` | Número entero | `2` |
-| `Total` | Decimal | `$7.00` / `$17.00` (Calculado o con descuento) |
-| `Canal` | Selección | `Instagram`, `Facebook`, `WhatsApp`, `Local` |
-| `Método_Pago` | Selección | `Efectivo`, `Transferencia`, `Deuna`, `Tarjeta` |
-| `Estado` | Selección | `Completado`, `Pendiente`, `Cancelado` |
-| `Observación` | Texto | `Entregado a conformidad` |
+| Perfil / Rol | Correo Electrónico | Contraseña | Estado |
+| :--- | :--- | :--- | :--- |
+| **Administradora Principal** | `veronica@quepollo.com` | `admin123` | 🟢 APROBADO |
+| **Administradora Principal** | `salome@quepollo.com` | `admin123` | 🟢 APROBADO |
+| **Vendedora Comercial** | `rebeca@quepollo.com` | `123456` | 🟢 APROBADO |
+| **Vendedor Comercial** | `carlos@quepollo.com` | `123456` | 🟢 APROBADO |
 
 ---
 
-## 🍗 Módulo de Categorías Dinámicas
+## 🚀 15 Módulos Integrados
 
-- **Gestión completa:** Creación, edición del nombre y eliminación de categorías desde una interfaz limpia e intuitiva.
-- **Protección referencial:** Si una categoría está asociada a uno o más productos, el sistema bloquea su eliminación y avisa: *"No se puede eliminar esta categoría porque existen productos asociados. Cambia primero la categoría de esos productos."*
-- **Confirmación segura:** Las categorías sin productos se eliminan tras confirmar en la ventana emergente con botones **Cancelar** y **Eliminar**.
-- **Sincronización en tiempo real:** Toda nueva categoría o cambio de nombre se actualiza de inmediato en el formulario de creación/edición de productos y en los filtros del catálogo.
-- **Persistencia garantizada:** Los cambios en las categorías se guardan de forma permanente.
+1. **Dashboard General & Analítica:** KPIs en tiempo real (Ingresos, Pedidos, Clientes, Inventario), selector de periodo (Hoy, Semana, Mes, Año), y gráficos interactivos Chart.js.
+2. **Gestión de Clientes & Validación SRI:** Algoritmo oficial de validación legal ecuatoriana (Módulo 10 para Cédula, Módulo 11 para RUC Persona Jurídica y RUC Institución Pública), provincia, ciudad, sector, bloqueo preventivo y botón directo a WhatsApp.
+3. **Productos e Inventario (Kardex):** Selector de vista (Cards Grid / Tabla), unidades de medida (`kg`, `Unidad`, `Cubeta`, `Libra`, `Paquete`), control de stock mínimo con alertas visuales, e historial de entradas/salidas previniendo inventario negativo.
+4. **Categorías Dinámicas:** Creación, edición y administración de categorías de productos.
+5. **Pedidos Comerciales (Multi-Producto):** Carrito dinámico multi-ítem, cálculo automático de subtotales, flujo de estados (`Pendiente`, `Confirmado`, `En preparación`, `Entregado`, `Facturado`, `Cancelado`), y descuento automático de inventario sin duplicidad.
+6. **Facturación SRI:** Generación formal de facturas correlativas (`001-001-000000001`), inmutabilidad una vez emitidas, anulación legal obligatoria con registro de motivo y reversión de existencias.
+7. **Comprobante de Venta Imprimible:** Recibo comercial con el logo oficial (`logo.png`), desglose de productos y botón de impresión directa / PDF.
+8. **Seguimiento Comercial CRM:** Bitácora de contactos (WhatsApp, Llamadas, Visitas, Correos), embudo de ventas (Contactado, Cotización, Ganado, Perdido) y detector de clientes inactivos (>30 días).
+9. **Marketing & Promociones:** Programación de ofertas con vigencia, tipo de descuento (porcentaje o fijo) y compartición rápida en redes.
+10. **Calendario Comercial:** Fechas festivas de Ecuador y festividades de Ambato (Fiesta de la Fruta y de las Flores, Independencia de Ambato, Carnaval, Fin de Año) con campañas sugeridas.
+11. **Diseñador Gráfico de Publicidad Digital (Canvas):** Creación de piezas publicitarias en formatos Feed 1:1 (1080x1080), Historias 9:16 (1080x1920) y Banner (1200x630) con logotipo oficial, precios tachados y descarga en PNG.
+12. **WhatsApp Comercial Center:** Plantillas prediseñadas (Promoción del día, confirmación de pedido, recordatorio de pago, cumpleaños) con enlace directo `wa.me/593...`.
+13. **Fidelización PolloPuntos:** Acumulación de puntos por compras, libro mayor de transacciones y catálogo de recompensas canjeables.
+14. **Centro de Reportes:** Descargas instantáneas en formato Excel (.CSV) para Clientes, Inventario & Kardex, Pedidos y Facturación.
+15. **Seguridad & Control de Acceso (RBAC):** Flujo de aprobación para nuevas solicitudes de registro, asignación de roles (`ADMINISTRADOR`, `VENDEDOR`, `EMPLEADO`), bloqueo de cuentas y bitácora de auditoría en vivo.
 
 ---
 
-## 🚀 Uso y Despliegue
+## 🛠️ Conexión con Supabase (Base de Datos en la Nube)
 
-### Uso Local Inmediato
-1. Abre el archivo **`index.html`** en cualquier navegador web moderno (Edge, Chrome, Brave, Firefox).
-2. Todo funciona localmente de inmediato con datos precargados.
+- **Proyecto:** `https://qgkaqlyfbjjbkqjernjs.supabase.co`
+- **Llave Pública:** `sb_publishable_-aJAjB_cVDr-nj2AmCdj-w_GAuJ4Cwb`
 
-### Base de Datos Supabase (PostgreSQL)
-El archivo **`schema.sql`** contiene la definición de todas las tablas con sus relaciones foráneas y políticas RLS para ejecutar en el SQL Editor de Supabase.
+### Para sincronizar Supabase:
+1. Ingresa a tu panel de Supabase: [https://supabase.com/dashboard](https://supabase.com/dashboard)
+2. Abre tu proyecto y entra en **SQL Editor** en el menú izquierdo.
+3. Copia y pega el contenido completo del archivo **`schema.sql`**.
+4. Haz clic en **Run** (Ejecutar).
+5. ¡Listo! Todas las 15 tablas, triggers de autenticación y datos semilla quedarán creados.
 
-### Despliegue en Vercel
-El archivo **`vercel.json`** permite desplegar el proyecto directamente en la plataforma Vercel para acceso en línea.
+---
+
+## 📦 Despliegue en Vercel o Servidor Web
+
+1. Sube todos los archivos del proyecto a tu repositorio de GitHub.
+2. Vercel desplegará automáticamente la aplicación.
+3. También puedes abrir directamente **`index.html`** en cualquier navegador (Edge, Chrome, Brave, Firefox) para usar el sistema de forma local con persistencia sincronizada.

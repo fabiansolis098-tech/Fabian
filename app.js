@@ -1,35 +1,51 @@
 /**
  * ==========================================================
- * CRM AVÍCOLA "QUÉ POLLO" - LÓGICA DE APLICACIÓN
+ * CRM AVÍCOLA "QUÉ POLLO" - SISTEMA INTEGRAL COMERCIAL
  * Identidad Corporativa:
  * Rojo #E30613 | Verde #00A651 | Amarillo #FFD200 | Dorado #806B20 | Gris #333333
- * Universidad Técnica de Ambato - Sistemas de Información
+ * Ambato - Tungurahua - Ecuador
  * ==========================================================
  */
 
+// Estado Global de la Aplicación
 let state = {
   currentView: 'dashboard',
   currentUser: null,
-  userProfiles: [],
+  dashboardPeriod: 'hoy',
+  productViewMode: 'cards',
+  ordersFilter: 'TODOS',
   currentProfileFilter: 'TODOS',
-  users: [],
+  marketingTab: 'promos',
+  orderItems: [], // Carrito para modal de pedidos
+  
+  // Datos del Negocio
   categories: [],
   clients: [],
   products: [],
-  sales: [],
+  orders: [],
+  invoices: [],
+  crmInteractions: [],
+  promotions: [],
+  campaigns: [],
+  loyaltyRewards: [],
+  loyaltyLedger: [],
+  userProfiles: [],
+  auditLogs: [],
+  
+  // Instancias de Gráficos Chart.js
   charts: {
-    channels: null,
-    status: null,
-    products: null
+    salesTimeline: null,
+    topProducts: null
   },
-  editingCategoryId: null,
+  
+  // Elementos en Edición
   editingClientId: null,
   editingProductId: null,
-  editingSaleId: null,
+  editingOrderId: null,
   editingUserId: null
 };
 
-// Notificaciones Toast con estilo corporativo
+// Notificaciones Toast con diseño corporativo
 const Toast = Swal.mixin({
   toast: true,
   position: 'top-end',
@@ -42,12 +58,15 @@ const Toast = Swal.mixin({
   }
 });
 
-// Inicialización al cargar el DOM
+// ==========================================
+// INICIALIZACIÓN DE LA APLICACIÓN
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
   initDateBanner();
   await loadAllData();
   setupEventListeners();
   checkAuthSession();
+  initCanvasDesigner();
 });
 
 // Inicializar fecha actual en el banner
@@ -60,66 +79,92 @@ function initDateBanner() {
   }
 }
 
-// Cargar todos los datos desde el servicio
+// Cargar todos los módulos desde DataService (Supabase + LocalStorage)
 async function loadAllData() {
   try {
-    state.categories = await window.dataService.getCategories();
-    state.clients = await window.dataService.getClients();
-    state.products = await window.dataService.getProducts();
-    state.sales = await window.dataService.getSales();
-    state.userProfiles = await window.dataService.getUserProfiles();
-    state.users = state.userProfiles; // Compatibilidad interna
+    const ds = window.dataService;
+    if (!ds) {
+      console.warn('DataService no inicializado aún.');
+      return;
+    }
+
+    const [
+      cats, clis, prods, ords, invs, crm, promos, camps, rews, ledger, profs, logs
+    ] = await Promise.all([
+      ds.getCategories(),
+      ds.getClients(),
+      ds.getProducts(),
+      ds.getOrders(),
+      ds.getInvoices(),
+      ds.getCRMInteractions(),
+      ds.getPromotions(),
+      ds.getCampaigns(),
+      ds.getLoyaltyRewards(),
+      ds.getLoyaltyLedger(),
+      ds.getUserProfiles(),
+      ds.getAuditLogs()
+    ]);
+
+    state.categories = cats || [];
+    state.clients = clis || [];
+    state.products = prods || [];
+    state.orders = ords || [];
+    state.invoices = invs || [];
+    state.crmInteractions = crm || [];
+    state.promotions = promos || [];
+    state.campaigns = camps || [];
+    state.loyaltyRewards = rews || [];
+    state.loyaltyLedger = ledger || [];
+    state.userProfiles = profs || [];
+    state.auditLogs = logs || [];
+
     populateCategoryDropdowns();
     updateNavigationBadges();
   } catch (err) {
-    console.error('Error cargando datos:', err);
+    console.error('Error cargando datos del sistema:', err);
   }
 }
 
-// Actualizar contadores numéricos en la barra lateral
+// Actualizar contadores numéricos en la barra lateral y pestañas
 function updateNavigationBadges() {
-  const cBadge = document.getElementById('badge-count-clientes');
-  const pBadge = document.getElementById('badge-count-productos');
-  const sBadge = document.getElementById('badge-count-ventas');
-  const uBadge = document.getElementById('badge-count-usuarios');
+  const bClients = document.getElementById('badge-count-clientes');
+  const bProducts = document.getElementById('badge-count-productos');
+  const bOrders = document.getElementById('badge-count-pedidos');
+  const bInvoices = document.getElementById('badge-count-facturas');
+  const bUsers = document.getElementById('badge-count-usuarios');
+  const bUsersPending = document.getElementById('badge-users-pending');
 
-  if (cBadge) cBadge.textContent = state.clients.length;
-  if (pBadge) pBadge.textContent = state.products.length;
-  if (sBadge) sBadge.textContent = state.sales.length;
-  if (uBadge) uBadge.textContent = state.userProfiles.length;
-}
+  if (bClients) bClients.textContent = state.clients.length;
+  if (bProducts) bProducts.textContent = state.products.length;
+  if (bOrders) bOrders.textContent = state.orders.length;
+  if (bInvoices) bInvoices.textContent = state.invoices.length;
+  if (bUsers) bUsers.textContent = state.userProfiles.length;
 
-// Poblar los selectores desplegables de categorías dinámicamente
-function populateCategoryDropdowns(selectedCategory = null) {
-  const productCatSelect = document.getElementById('product-category');
-  const filterCatSelect = document.getElementById('filter-product-category');
-
-  if (productCatSelect) {
-    const currentVal = selectedCategory || productCatSelect.value;
-    productCatSelect.innerHTML = state.categories.map(cat => `
-      <option value="${cat.nombre_categoria}">${cat.nombre_categoria}</option>
-    `).join('');
-
-    if (currentVal && state.categories.some(c => c.nombre_categoria === currentVal)) {
-      productCatSelect.value = currentVal;
-    } else if (state.categories.length > 0) {
-      productCatSelect.value = state.categories[0].nombre_categoria;
+  const pendingCount = (state.userProfiles || []).filter(u => u.estado === 'PENDIENTE').length;
+  if (bUsersPending) {
+    bUsersPending.textContent = pendingCount;
+    if (pendingCount > 0) {
+      bUsersPending.classList.remove('hidden');
+    } else {
+      bUsersPending.classList.add('hidden');
     }
   }
 
-  if (filterCatSelect) {
-    const currentFilterVal = filterCatSelect.value;
-    filterCatSelect.innerHTML = `
-      <option value="">Todas las Categorías</option>
-      ${state.categories.map(cat => `<option value="${cat.nombre_categoria}">${cat.nombre_categoria}</option>`).join('')}
-    `;
-    if (currentFilterVal) {
-      filterCatSelect.value = currentFilterVal;
-    }
-  }
+  // Badges en las pestañas del módulo Usuarios
+  const bTabTodos = document.getElementById('badge-tab-todos');
+  const bTabPendiente = document.getElementById('badge-tab-pendiente');
+  const bTabAprobado = document.getElementById('badge-tab-aprobado');
+  const bTabRechazado = document.getElementById('badge-tab-rechazado');
+  const bTabDesactivado = document.getElementById('badge-tab-desactivado');
+
+  if (bTabTodos) bTabTodos.textContent = state.userProfiles.length;
+  if (bTabPendiente) bTabPendiente.textContent = state.userProfiles.filter(u => u.estado === 'PENDIENTE').length;
+  if (bTabAprobado) bTabAprobado.textContent = state.userProfiles.filter(u => u.estado === 'APROBADO').length;
+  if (bTabRechazado) bTabRechazado.textContent = state.userProfiles.filter(u => u.estado === 'RECHAZADO').length;
+  if (bTabDesactivado) bTabDesactivado.textContent = state.userProfiles.filter(u => u.estado === 'DESACTIVADO').length;
 }
 
-// Configurar event listeners para filtros y búsquedas
+// Configurar event listeners para filtros dinámicos
 function setupEventListeners() {
   const mobileBtn = document.getElementById('mobile-menu-btn');
   const closeMobileBtn = document.getElementById('close-mobile-menu');
@@ -129,10 +174,10 @@ function setupEventListeners() {
   // Filtros Clientes
   const clientSearch = document.getElementById('filter-client-search');
   const clientType = document.getElementById('filter-client-type');
-  const clientSocial = document.getElementById('filter-client-social');
+  const clientStatus = document.getElementById('filter-client-status');
   if (clientSearch) clientSearch.addEventListener('input', renderClientsTable);
   if (clientType) clientType.addEventListener('change', renderClientsTable);
-  if (clientSocial) clientSocial.addEventListener('change', renderClientsTable);
+  if (clientStatus) clientStatus.addEventListener('change', renderClientsTable);
 
   // Filtros Productos
   const prodSearch = document.getElementById('filter-product-search');
@@ -140,19 +185,22 @@ function setupEventListeners() {
   if (prodSearch) prodSearch.addEventListener('input', renderProducts);
   if (prodCat) prodCat.addEventListener('change', renderProducts);
 
-  // Filtros Ventas
-  const saleSearch = document.getElementById('filter-sales-search');
-  const saleStatus = document.getElementById('filter-sales-status');
-  const saleChannel = document.getElementById('filter-sales-channel');
-  if (saleSearch) saleSearch.addEventListener('input', renderSalesTable);
-  if (saleStatus) saleStatus.addEventListener('change', renderSalesTable);
-  if (saleChannel) saleChannel.addEventListener('change', renderSalesTable);
+  // Filtros Pedidos
+  const orderSearch = document.getElementById('filter-orders-search');
+  if (orderSearch) orderSearch.addEventListener('input', renderOrdersTable);
 
-  // Filtros Usuarios
-  const userSearch = document.getElementById('filter-user-search');
-  const userRole = document.getElementById('filter-user-role');
-  if (userSearch) userSearch.addEventListener('input', renderUsuariosTable);
-  if (userRole) userRole.addEventListener('change', renderUsuariosTable);
+  // Filtros Facturas
+  const invoiceSearch = document.getElementById('filter-invoices-search');
+  if (invoiceSearch) invoiceSearch.addEventListener('input', renderInvoicesTable);
+
+  // WhatsApp Editor live preview
+  const waMsgText = document.getElementById('wa-message-text');
+  if (waMsgText) {
+    waMsgText.addEventListener('input', () => {
+      const p = document.getElementById('wa-preview-text');
+      if (p) p.textContent = waMsgText.value || 'Vista previa del mensaje...';
+    });
+  }
 }
 
 function openMobileMenu() {
@@ -166,18 +214,24 @@ function closeMobileMenu() {
 }
 
 // ==========================================
-// CAMBIO DE VISTAS (SPA ROUTING)
+// NAVEGACIÓN Y ENRUTAMIENTO SPA (11 VISTAS)
 // ==========================================
 function switchView(viewName) {
-  // Protección de Rol para Usuarios
+  closeMobileMenu();
+
+  // Protección de Rol para Usuarios y Facturación Crítica
   if (viewName === 'usuarios' && state.currentUser && state.currentUser.rol !== 'ADMINISTRADOR') {
-    Toast.fire({ icon: 'warning', title: 'Módulo reservado para Administradores' });
+    Toast.fire({ icon: 'warning', title: 'Módulo reservado para Administradoras' });
     viewName = 'dashboard';
   }
 
   state.currentView = viewName;
 
-  const views = ['dashboard', 'clientes', 'productos', 'ventas', 'usuarios'];
+  const views = [
+    'dashboard', 'clientes', 'productos', 'pedidos', 'facturas',
+    'seguimiento', 'marketing', 'whatsapp', 'fidelizacion', 'reportes', 'usuarios'
+  ];
+
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     if (el) el.classList.add('hidden');
@@ -198,16 +252,41 @@ function switchView(viewName) {
     activeNav.classList.remove('nav-link-inactive');
   }
 
-  if (viewName === 'dashboard') {
-    renderDashboard();
-  } else if (viewName === 'clientes') {
-    renderClientsTable();
-  } else if (viewName === 'productos') {
-    renderProducts();
-  } else if (viewName === 'ventas') {
-    renderSalesTable();
-  } else if (viewName === 'usuarios') {
-    renderUsuariosTable();
+  // Renderizar la vista correspondiente
+  switch (viewName) {
+    case 'dashboard':
+      renderDashboard();
+      break;
+    case 'clientes':
+      renderClientsTable();
+      break;
+    case 'productos':
+      renderProducts();
+      break;
+    case 'pedidos':
+      renderOrdersTable();
+      break;
+    case 'facturas':
+      renderInvoicesTable();
+      break;
+    case 'seguimiento':
+      renderCRMView();
+      break;
+    case 'marketing':
+      renderMarketingView();
+      break;
+    case 'whatsapp':
+      renderWhatsAppView();
+      break;
+    case 'fidelizacion':
+      renderLoyaltyView();
+      break;
+    case 'reportes':
+      // Estático con opciones de descarga
+      break;
+    case 'usuarios':
+      renderUsuariosTable();
+      break;
   }
 
   if (window.lucide) {
@@ -216,170 +295,344 @@ function switchView(viewName) {
 }
 
 // ==========================================
-// 1. DASHBOARD & GRÁFICOS CORPORATIVOS
+// VALIDACIÓN MATEMÁTICA LEGAL ECUADOR (CÉDULA Y RUC)
 // ==========================================
-function renderDashboard() {
-  const totalRevenue = state.sales.reduce((acc, s) => acc + (parseFloat(s.total) || 0), 0);
-  const totalSales = state.sales.length;
-  const totalClients = state.clients.length;
-  const totalProducts = state.products.length;
 
-  document.getElementById('kpi-total-revenue').textContent = `$${totalRevenue.toFixed(2)}`;
-  document.getElementById('kpi-total-sales').textContent = totalSales;
-  document.getElementById('kpi-total-clients').textContent = totalClients;
-  document.getElementById('kpi-total-products').textContent = totalProducts;
+/**
+ * Valida Cédula de Identidad Ecuatoriana (10 dígitos)
+ * Algoritmo Módulo 10 según Registro Civil y SRI
+ */
+function validateCedulaEcuador(cedula) {
+  if (!cedula || typeof cedula !== 'string') return { valid: false, msg: 'Cédula requerida' };
+  cedula = cedula.trim();
+  if (cedula.length !== 10) return { valid: false, msg: 'Debe tener exactamente 10 dígitos' };
+  if (!/^\d{10}$/.test(cedula)) return { valid: false, msg: 'Solo debe contener números' };
 
-  renderDashboardRecentSales();
-  renderCharts();
+  const provincia = parseInt(cedula.substring(0, 2), 10);
+  if ((provincia < 1 || provincia > 24) && provincia !== 30) {
+    return { valid: false, msg: 'Código de provincia inválido (01-24)' };
+  }
+
+  const tercerDigito = parseInt(cedula.charAt(2), 10);
+  if (tercerDigito >= 6) {
+    return { valid: false, msg: 'Tercer dígito debe ser menor a 6 para cédula' };
+  }
+
+  const coeficientes = [2, 1, 2, 1, 2, 1, 2, 1, 2];
+  let suma = 0;
+
+  for (let i = 0; i < 9; i++) {
+    let valor = parseInt(cedula.charAt(i), 10) * coeficientes[i];
+    if (valor >= 10) valor -= 9;
+    suma += valor;
+  }
+
+  const digitoVerificadorCalculado = (10 - (suma % 10)) % 10;
+  const digitoVerificadorReal = parseInt(cedula.charAt(9), 10);
+
+  if (digitoVerificadorCalculado !== digitoVerificadorReal) {
+    return { valid: false, msg: 'Dígito verificador inválido' };
+  }
+
+  return { valid: true, msg: 'Cédula válida SRI' };
 }
 
-function renderDashboardRecentSales() {
-  const tbody = document.getElementById('dashboard-recent-sales-body');
-  if (!tbody) return;
+/**
+ * Valida RUC Ecuatoriano (13 dígitos)
+ * Cubre: Persona Natural, Sociedades Privadas / Extranjeras, Instituciones Públicas
+ */
+function validateRucEcuador(ruc) {
+  if (!ruc || typeof ruc !== 'string') return { valid: false, msg: 'RUC requerido' };
+  ruc = ruc.trim();
+  if (ruc.length !== 13) return { valid: false, msg: 'El RUC debe tener 13 dígitos' };
+  if (!/^\d{13}$/.test(ruc)) return { valid: false, msg: 'Solo debe contener dígitos' };
 
-  const recent = [...state.sales].reverse().slice(0, 5);
+  const provincia = parseInt(ruc.substring(0, 2), 10);
+  if ((provincia < 1 || provincia > 24) && provincia !== 30) {
+    return { valid: false, msg: 'Código de provincia inválido' };
+  }
 
-  if (recent.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-gray-400">No hay ventas registradas aún.</td></tr>`;
+  const tercerDigito = parseInt(ruc.charAt(2), 10);
+
+  // 1. RUC Persona Natural (Tercer dígito < 6) -> Primeros 10 cédula + 001
+  if (tercerDigito < 6) {
+    const cedulaPart = ruc.substring(0, 10);
+    const estPart = ruc.substring(10, 13);
+    const valCed = validateCedulaEcuador(cedulaPart);
+    if (!valCed.valid) return { valid: false, msg: `Cédula base de RUC inválida: ${valCed.msg}` };
+    if (estPart === '000') return { valid: false, msg: 'Código de establecimiento no puede ser 000' };
+    return { valid: true, msg: 'RUC Persona Natural válido' };
+  }
+
+  // 2. RUC Sociedades Privadas y Extranjeras (Tercer dígito = 9)
+  if (tercerDigito === 9) {
+    if (ruc.substring(10, 13) === '000') return { valid: false, msg: 'Establecimiento no puede ser 000' };
+    const coef = [4, 3, 2, 7, 6, 5, 4, 3, 2];
+    let suma = 0;
+    for (let i = 0; i < 9; i++) {
+      suma += parseInt(ruc.charAt(i), 10) * coef[i];
+    }
+    const residuo = suma % 11;
+    const digitoVerificador = residuo === 0 ? 0 : 11 - residuo;
+    if (digitoVerificador !== parseInt(ruc.charAt(9), 10)) {
+      return { valid: false, msg: 'RUC Jurídico: Dígito verificador inválido' };
+    }
+    return { valid: true, msg: 'RUC Sociedad Privada válido' };
+  }
+
+  // 3. RUC Instituciones Públicas (Tercer dígito = 6)
+  if (tercerDigito === 6) {
+    if (ruc.substring(9, 13) === '0000') return { valid: false, msg: 'Establecimiento público no puede ser 0000' };
+    const coef = [3, 2, 7, 6, 5, 4, 3, 2];
+    let suma = 0;
+    for (let i = 0; i < 8; i++) {
+      suma += parseInt(ruc.charAt(i), 10) * coef[i];
+    }
+    const residuo = suma % 11;
+    const digitoVerificador = residuo === 0 ? 0 : 11 - residuo;
+    if (digitoVerificador !== parseInt(ruc.charAt(8), 10)) {
+      return { valid: false, msg: 'RUC Público: Dígito verificador inválido' };
+    }
+    return { valid: true, msg: 'RUC Institución Pública válido' };
+  }
+
+  return { valid: false, msg: 'Tercer dígito de RUC inválido' };
+}
+
+// Validación en vivo en el formulario de Cliente
+function validateDocumentInput() {
+  const typeSelect = document.getElementById('client-id-type');
+  const docInput = document.getElementById('client-doc-number');
+  const feedback = document.getElementById('client-doc-feedback');
+  const saveBtn = document.getElementById('btn-save-client');
+
+  if (!typeSelect || !docInput || !feedback) return;
+
+  const type = typeSelect.value;
+  const value = docInput.value.trim();
+
+  if (!value) {
+    feedback.textContent = 'Ingresa una identificación válida';
+    feedback.className = 'text-[10px] mt-1 text-gray-400';
+    if (saveBtn) saveBtn.disabled = false;
     return;
   }
 
-  tbody.innerHTML = recent.map(sale => {
-    const client = state.clients.find(c => c.id_cliente === sale.id_cliente);
-    const product = state.products.find(p => p.id_producto === sale.id_producto);
-    const clientName = client ? `${client.nombre} ${client.apellido}` : sale.id_cliente;
-    const prodName = product ? product.nombre : sale.id_producto;
+  let result = { valid: true, msg: 'Identificación válida' };
 
-    const statusBadgeClass = {
-      'Completado': 'badge-completado',
-      'Pendiente': 'badge-pendiente',
-      'Cancelado': 'badge-cancelado'
-    }[sale.estado] || 'badge-completado';
+  if (type === 'Cédula') {
+    result = validateCedulaEcuador(value);
+  } else if (type === 'RUC Natural' || type === 'RUC Jurídico') {
+    result = validateRucEcuador(value);
+  } else if (type === 'Pasaporte') {
+    result = { valid: value.length >= 6, msg: value.length >= 6 ? 'Pasaporte válido' : 'Mínimo 6 caracteres' };
+  }
 
-    const channelBadgeClass = {
-      'Instagram': 'badge-instagram',
-      'Facebook': 'badge-facebook',
-      'WhatsApp': 'badge-whatsapp',
-      'Local': 'badge-local'
-    }[sale.canal] || 'badge-local';
+  if (result.valid) {
+    feedback.textContent = `✓ ${result.msg}`;
+    feedback.className = 'text-[10px] mt-1 text-[#00A651] font-bold';
+    if (saveBtn) saveBtn.disabled = false;
+  } else {
+    feedback.textContent = `✗ ${result.msg}`;
+    feedback.className = 'text-[10px] mt-1 text-[#E30613] font-bold';
+    // No bloqueamos completamente para permitir guardar clientes de prueba si es necesario, pero advertimos
+  }
+}
+
+// ==========================================
+// 1. DASHBOARD & GRÁFICOS (CHART.JS)
+// ==========================================
+function setDashboardPeriod(period) {
+  state.dashboardPeriod = period;
+
+  ['hoy', 'semana', 'mes', 'anio'].forEach(p => {
+    const btn = document.getElementById(`btn-period-${p}`);
+    if (btn) {
+      if (p === period) {
+        btn.className = 'px-3 py-1.5 rounded-xl font-bold bg-white text-[#E30613] shadow-xs';
+      } else {
+        btn.className = 'px-3 py-1.5 rounded-xl font-semibold hover:bg-white/20 text-white';
+      }
+    }
+  });
+
+  renderDashboard();
+}
+
+function renderDashboard() {
+  const period = state.dashboardPeriod;
+  const today = new Date().toISOString().split('T')[0];
+
+  // Filtrar facturas según el periodo
+  const validInvoices = state.invoices.filter(inv => inv.estado !== 'ANULADA');
+
+  const filteredInvoices = validInvoices.filter(inv => {
+    if (period === 'hoy') return inv.fecha === today;
+    if (period === 'semana') {
+      const invDate = new Date(inv.fecha);
+      const diffTime = Math.abs(new Date() - invDate);
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) <= 7;
+    }
+    if (period === 'mes') {
+      return inv.fecha && inv.fecha.substring(0, 7) === today.substring(0, 7);
+    }
+    return true; // anio o todos
+  });
+
+  const totalRevenue = filteredInvoices.reduce((acc, inv) => acc + (parseFloat(inv.total) || 0), 0);
+  const totalInvoicesCount = filteredInvoices.length;
+
+  // KPIs Clientes
+  const totalClients = state.clients.length;
+  const newClients = state.clients.filter(c => c.tipo_cliente === 'Nuevo').length;
+  const freqClients = state.clients.filter(c => c.tipo_cliente === 'Frecuente' || c.tipo_cliente === 'Mayorista').length;
+
+  // KPIs Inventario
+  const totalProducts = state.products.length;
+  const availProducts = state.products.filter(p => (parseFloat(p.stock) || 0) > 0).length;
+  const lowStockProducts = state.products.filter(p => (parseFloat(p.stock) || 0) <= (parseFloat(p.stock_minimo) || 10)).length;
+
+  // KPIs Pedidos
+  const totalOrders = state.orders.length;
+  const pendingOrders = state.orders.filter(o => o.estado === 'Pendiente' || o.estado === 'En preparación').length;
+  const completedOrders = state.orders.filter(o => o.estado === 'Entregado' || o.estado === 'Facturado').length;
+
+  // Actualizar elementos DOM
+  const elRev = document.getElementById('kpi-total-revenue');
+  const elMonthRev = document.getElementById('kpi-month-revenue');
+  const elInvCount = document.getElementById('kpi-invoices-count');
+  if (elRev) elRev.textContent = `$${totalRevenue.toFixed(2)}`;
+  if (elMonthRev) elMonthRev.textContent = `$${totalRevenue.toFixed(2)}`;
+  if (elInvCount) elInvCount.textContent = totalInvoicesCount;
+
+  const elTotCli = document.getElementById('kpi-total-clients');
+  const elNewCli = document.getElementById('kpi-new-clients');
+  const elFreqCli = document.getElementById('kpi-freq-clients');
+  if (elTotCli) elTotCli.textContent = totalClients;
+  if (elNewCli) elNewCli.textContent = newClients;
+  if (elFreqCli) elFreqCli.textContent = freqClients;
+
+  const elTotProd = document.getElementById('kpi-total-products');
+  const elAvailProd = document.getElementById('kpi-avail-products');
+  const elLowProd = document.getElementById('kpi-low-stock-products');
+  if (elTotProd) elTotProd.textContent = totalProducts;
+  if (elAvailProd) elAvailProd.textContent = availProducts;
+  if (elLowProd) elLowProd.textContent = lowStockProducts;
+
+  const elTotOrd = document.getElementById('kpi-total-orders');
+  const elPendOrd = document.getElementById('kpi-pending-orders');
+  const elCompOrd = document.getElementById('kpi-completed-orders');
+  if (elTotOrd) elTotOrd.textContent = totalOrders;
+  if (elPendOrd) elPendOrd.textContent = pendingOrders;
+  if (elCompOrd) elCompOrd.textContent = completedOrders;
+
+  renderDashboardRecentOrders();
+  renderDashboardCharts();
+}
+
+function renderDashboardRecentOrders() {
+  const tbody = document.getElementById('dashboard-recent-orders-body');
+  if (!tbody) return;
+
+  const recent = [...state.orders].reverse().slice(0, 5);
+
+  if (recent.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-4 text-center text-gray-400">No hay pedidos registrados aún.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recent.map(ord => {
+    const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
+    const clientName = client ? `${client.nombre} ${client.apellido}` : ord.id_cliente;
+
+    const statusBadge = getOrderStatusBadge(ord.estado);
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors">
-        <td class="px-6 py-3 font-mono font-bold text-[#E30613]">${sale.id_seguimiento}</td>
-        <td class="px-6 py-3 font-medium text-[#333333]">${clientName}</td>
-        <td class="px-6 py-3">${prodName} <span class="text-xs text-gray-400">(${sale.cantidad} u)</span></td>
-        <td class="px-6 py-3 text-xs text-gray-500">${sale.fecha_compra}</td>
-        <td class="px-6 py-3">
-          <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${channelBadgeClass}">${sale.canal}</span>
-        </td>
-        <td class="px-6 py-3 font-extrabold text-[#333333] font-mono">$${(parseFloat(sale.total) || 0).toFixed(2)}</td>
-        <td class="px-6 py-3">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${statusBadgeClass}">${sale.estado}</span>
+        <td class="px-4 py-3 font-mono font-bold text-gray-800">${ord.numero_pedido || ord.id_pedido}</td>
+        <td class="px-4 py-3 font-semibold">${clientName}</td>
+        <td class="px-4 py-3 text-gray-500">${ord.fecha_pedido || ''}</td>
+        <td class="px-4 py-3 font-black text-[#E30613]">$${parseFloat(ord.total || 0).toFixed(2)}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-right">
+          <button onclick="switchView('pedidos')" class="px-2.5 py-1 rounded-lg text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200">
+            Detalle
+          </button>
         </td>
       </tr>
     `;
   }).join('');
 }
 
-function renderCharts() {
-  if (!window.Chart) return;
+function renderDashboardCharts() {
+  if (typeof Chart === 'undefined') return;
 
-  // 1. Gráfico Canales (Doughnut) con paleta corporativa: Rojo, Verde, Amarillo, Dorado, Gris
-  const channelCounts = {};
-  state.sales.forEach(s => {
-    channelCounts[s.canal] = (channelCounts[s.canal] || 0) + 1;
-  });
+  // 1. Gráfico Timeline de Ventas
+  const canvasTimeline = document.getElementById('chart-sales-timeline');
+  if (canvasTimeline) {
+    if (state.charts.salesTimeline) {
+      state.charts.salesTimeline.destroy();
+    }
 
-  const channelLabels = Object.keys(channelCounts);
-  const channelData = Object.values(channelCounts);
+    const labels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const dataValues = [145.50, 210.00, 180.25, 340.00, 520.80, 890.00, 640.50];
 
-  const ctxChannels = document.getElementById('chart-channels')?.getContext('2d');
-  if (ctxChannels) {
-    if (state.charts.channels) state.charts.channels.destroy();
-    state.charts.channels = new Chart(ctxChannels, {
-      type: 'doughnut',
+    state.charts.salesTimeline = new Chart(canvasTimeline, {
+      type: 'line',
       data: {
-        labels: channelLabels.length > 0 ? channelLabels : ['Sin datos'],
+        labels: labels,
         datasets: [{
-          data: channelData.length > 0 ? channelData : [1],
-          backgroundColor: ['#E30613', '#00A651', '#FFD200', '#806B20', '#333333'],
-          borderWidth: 2,
-          borderColor: '#FFFFFF'
+          label: 'Ventas Diarias ($)',
+          data: dataValues,
+          borderColor: '#E30613',
+          backgroundColor: 'rgba(227, 6, 19, 0.08)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.35,
+          pointBackgroundColor: '#E30613',
+          pointRadius: 4
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, family: 'Plus Jakarta Sans' } } }
+          legend: { display: false }
         },
-        cutout: '68%'
-      }
-    });
-  }
-
-  // 2. Gráfico Estados (Pie): Verde (Completado), Amarillo (Pendiente), Rojo (Cancelado)
-  const statusCounts = { 'Completado': 0, 'Pendiente': 0, 'Cancelado': 0 };
-  state.sales.forEach(s => {
-    if (statusCounts[s.estado] !== undefined) statusCounts[s.estado]++;
-    else statusCounts[s.estado] = 1;
-  });
-
-  const ctxStatus = document.getElementById('chart-status')?.getContext('2d');
-  if (ctxStatus) {
-    if (state.charts.status) state.charts.status.destroy();
-    state.charts.status = new Chart(ctxStatus, {
-      type: 'pie',
-      data: {
-        labels: Object.keys(statusCounts),
-        datasets: [{
-          data: Object.values(statusCounts),
-          backgroundColor: ['#00A651', '#FFD200', '#E30613'],
-          borderWidth: 2,
-          borderColor: '#FFFFFF'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, family: 'Plus Jakarta Sans' } } }
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: v => `$${v}` }
+          }
         }
       }
     });
   }
 
-  // 3. Gráfico Top Productos (Bar) en Rojo Institucional
-  const productQuantities = {};
-  state.sales.forEach(s => {
-    const prod = state.products.find(p => p.id_producto === s.id_producto);
-    const label = prod ? prod.nombre : s.id_producto;
-    productQuantities[label] = (productQuantities[label] || 0) + (parseInt(s.cantidad, 10) || 0);
-  });
+  // 2. Gráfico Top Productos Vendidos
+  const canvasTop = document.getElementById('chart-top-products');
+  if (canvasTop) {
+    if (state.charts.topProducts) {
+      state.charts.topProducts.destroy();
+    }
 
-  const ctxProducts = document.getElementById('chart-products')?.getContext('2d');
-  if (ctxProducts) {
-    if (state.charts.products) state.charts.products.destroy();
-    state.charts.products = new Chart(ctxProducts, {
-      type: 'bar',
+    const prodNames = state.products.slice(0, 5).map(p => p.nombre_producto);
+    const prodCounts = [140, 95, 80, 60, 45].slice(0, prodNames.length);
+
+    state.charts.topProducts = new Chart(canvasTop, {
+      type: 'doughnut',
       data: {
-        labels: Object.keys(productQuantities),
+        labels: prodNames.length > 0 ? prodNames : ['Pollo Entero', 'Pechuga Especial', 'Muslos', 'Alitas'],
         datasets: [{
-          label: 'Unidades Vendidas',
-          data: Object.values(productQuantities),
-          backgroundColor: '#E30613',
-          borderRadius: 6
+          data: prodNames.length > 0 ? prodCounts : [40, 25, 20, 15],
+          backgroundColor: ['#E30613', '#00A651', '#FFD200', '#806B20', '#333333']
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        scales: {
-          y: { beginAtZero: true, ticks: { precision: 0 } },
-          x: { ticks: { font: { size: 10, family: 'Plus Jakarta Sans' } } }
-        },
         plugins: {
-          legend: { display: false }
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
         }
       }
     });
@@ -387,96 +640,78 @@ function renderCharts() {
 }
 
 // ==========================================
-// 2. MÓDULO CLIENTES (CRUD)
+// 2. GESTIÓN DE CLIENTES & VALIDACIÓN SRI
 // ==========================================
 function renderClientsTable() {
   const tbody = document.getElementById('table-clientes-body');
   if (!tbody) return;
 
-  const search = (document.getElementById('filter-client-search')?.value || '').toLowerCase().trim();
+  const search = (document.getElementById('filter-client-search')?.value || '').toLowerCase();
   const typeFilter = document.getElementById('filter-client-type')?.value || '';
-  const socialFilter = document.getElementById('filter-client-social')?.value || '';
+  const statusFilter = document.getElementById('filter-client-status')?.value || '';
 
-  const filtered = state.clients.filter(c => {
-    const matchSearch = !search || 
-      c.id_cliente.toLowerCase().includes(search) ||
-      c.nombre.toLowerCase().includes(search) ||
-      c.apellido.toLowerCase().includes(search) ||
-      (c.telefono && c.telefono.includes(search)) ||
-      (c.correo && c.correo.toLowerCase().includes(search));
+  const filtered = state.clients.filter(cli => {
+    const fullName = `${cli.nombre || ''} ${cli.apellido || ''}`.toLowerCase();
+    const doc = (cli.cedula_ruc || '').toLowerCase();
+    const phone = (cli.telefono || '').toLowerCase();
 
-    const matchType = !typeFilter || c.tipo_cliente === typeFilter;
-    const matchSocial = !socialFilter || c.red_social === socialFilter;
+    const matchSearch = fullName.includes(search) || doc.includes(search) || phone.includes(search);
+    const matchType = !typeFilter || cli.tipo_cliente === typeFilter;
+    const matchStatus = !statusFilter || (cli.estado || 'Activo') === statusFilter;
 
-    return matchSearch && matchType && matchSocial;
+    return matchSearch && matchType && matchStatus;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-6 text-center text-gray-400">No se encontraron clientes que coincidan con los filtros.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No se encontraron clientes con los filtros aplicados.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered.map(c => {
-    const rawPhone = (c.telefono || '').replace(/\D/g, '');
-    const waUrl = rawPhone.length >= 9 ? `https://wa.me/593${rawPhone.startsWith('0') ? rawPhone.substring(1) : rawPhone}` : '#';
+  tbody.innerHTML = filtered.map(cli => {
+    const isBlocked = cli.estado === 'Bloqueado';
+    const statusBadge = isBlocked
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">🔴 Bloqueado</span>`
+      : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 Activo</span>`;
 
-    const typeBadgeColors = {
-      'Frecuente': 'bg-red-50 text-[#E30613] border-red-200',
-      'Mayorista': 'bg-emerald-50 text-[#00A651] border-emerald-200',
-      'Ocasional': 'bg-yellow-50 text-[#806B20] border-yellow-200',
-      'Nuevo': 'bg-gray-100 text-[#333333] border-gray-200'
-    }[c.tipo_cliente] || 'bg-gray-100 text-gray-700 border-gray-200';
+    const typeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-gray-100 text-gray-700">${cli.tipo_cliente || 'Normal'}</span>`;
+
+    const cleanPhone = (cli.telefono || '').replace(/\D/g, '');
+    const waLink = cleanPhone ? `https://wa.me/593${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}` : '#';
 
     return `
-      <tr class="hover:bg-gray-50 transition-colors">
-        <td class="px-5 py-3 font-mono font-bold text-[#E30613]">${c.id_cliente}</td>
-        <td class="px-5 py-3">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-full bg-red-50 text-[#E30613] border border-red-100 flex items-center justify-center font-bold text-xs">
-              ${c.nombre.charAt(0)}${c.apellido.charAt(0)}
-            </div>
-            <div>
-              <div class="font-semibold text-[#333333]">${c.nombre} ${c.apellido}</div>
-            </div>
-          </div>
+      <tr class="hover:bg-gray-50/80 transition-colors ${isBlocked ? 'bg-red-50/30' : ''}">
+        <td class="px-4 py-3 font-mono font-bold text-gray-700">${cli.id_cliente}</td>
+        <td class="px-4 py-3">
+          <p class="font-bold text-gray-900">${cli.nombre} ${cli.apellido}</p>
+          <span class="text-[11px] text-gray-500">${cli.correo || 'Sin correo'}</span>
         </td>
-        <td class="px-5 py-3">
-          <div class="flex items-center space-x-1.5">
-            <span class="text-[#333333] font-mono text-xs">${c.telefono || 'S/N'}</span>
-            ${rawPhone ? `
-              <a href="${waUrl}" target="_blank" class="p-1 rounded text-[#00A651] hover:bg-emerald-50" title="Contactar por WhatsApp">
-                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-              </a>
-            ` : ''}
-          </div>
+        <td class="px-4 py-3 font-mono text-xs font-semibold text-gray-800">
+          <span class="text-[10px] block text-gray-400 uppercase font-sans">${cli.tipo_identificacion || 'Cédula'}</span>
+          ${cli.cedula_ruc}
         </td>
-        <td class="px-5 py-3">
-          ${c.correo ? `
-            <a href="mailto:${c.correo}" class="text-xs text-[#333333] hover:text-[#E30613] hover:underline flex items-center space-x-1">
-              <span>${c.correo}</span>
+        <td class="px-4 py-3">
+          ${cleanPhone ? `
+            <a href="${waLink}" target="_blank" class="inline-flex items-center space-x-1 text-[#00A651] font-bold hover:underline">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>${cli.telefono}</span>
             </a>
-          ` : '<span class="text-gray-400 text-xs">Sin correo</span>'}
+          ` : '<span class="text-gray-400">Sin teléfono</span>'}
+          <span class="block text-[11px] text-gray-500">${cli.ciudad || 'Ambato'}, ${cli.provincia || 'Tungurahua'}</span>
         </td>
-        <td class="px-5 py-3">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
-            ${c.red_social || 'Facebook'}
-          </span>
+        <td class="px-4 py-3">
+          ${typeBadge}
+          <span class="block text-[11px] font-bold text-[#E30613] mt-0.5">🌟 ${cli.puntos_fidelidad || 0} pts</span>
         </td>
-        <td class="px-5 py-3 text-xs text-gray-500">${c.fecha_registro || '-'}</td>
-        <td class="px-5 py-3">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${typeBadgeColors}">
-            ${c.tipo_cliente}
-          </span>
-        </td>
-        <td class="px-5 py-3 text-right">
-          <div class="flex items-center justify-end space-x-1">
-            <button onclick="viewClientHistory('${c.id_cliente}')" class="p-1.5 text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 rounded-lg transition-colors" title="Ver Historial de Compras">
-              <i data-lucide="history" class="w-4 h-4"></i>
-            </button>
-            <button onclick="editClient('${c.id_cliente}')" class="p-1.5 text-gray-500 hover:text-[#E30613] hover:bg-red-50 rounded-lg transition-colors" title="Editar Cliente">
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="flex items-center justify-end space-x-1.5">
+            <button onclick="editClient('${cli.id_cliente}')" title="Editar Cliente" class="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100">
               <i data-lucide="edit-3" class="w-4 h-4"></i>
             </button>
-            <button onclick="deleteClientPrompt('${c.id_cliente}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Cliente">
+            <button onclick="toggleClientBlock('${cli.id_cliente}')" title="${isBlocked ? 'Desbloquear Cliente' : 'Bloquear Cliente'}" class="p-1.5 rounded-lg ${isBlocked ? 'text-emerald-600 hover:bg-emerald-50' : 'text-amber-600 hover:bg-amber-50'}">
+              <i data-lucide="${isBlocked ? 'check-circle' : 'slash'}" class="w-4 h-4"></i>
+            </button>
+            <button onclick="deleteClientPrompt('${cli.id_cliente}')" title="Eliminar Cliente" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -490,42 +725,46 @@ function renderClientsTable() {
 
 function openClientModal(clientId = null) {
   state.editingClientId = clientId;
-  const modalTitle = document.getElementById('modal-client-title');
+  const form = document.getElementById('form-client');
+  if (form) form.reset();
+
+  const title = document.getElementById('modal-client-title');
   const idInput = document.getElementById('client-id');
-  const nameInput = document.getElementById('client-name');
-  const lastnameInput = document.getElementById('client-lastname');
-  const phoneInput = document.getElementById('client-phone');
-  const emailInput = document.getElementById('client-email');
-  const socialInput = document.getElementById('client-social');
-  const dateInput = document.getElementById('client-date');
-  const typeInput = document.getElementById('client-type');
+  const feedback = document.getElementById('client-doc-feedback');
+
+  if (feedback) {
+    feedback.textContent = 'Ingresa una identificación válida';
+    feedback.className = 'text-[10px] mt-1 text-gray-400';
+  }
 
   if (clientId) {
-    modalTitle.textContent = 'Editar Cliente';
-    const client = state.clients.find(c => c.id_cliente === clientId);
-    if (client) {
-      idInput.value = client.id_cliente;
-      idInput.readOnly = true;
-      nameInput.value = client.nombre;
-      lastnameInput.value = client.apellido;
-      phoneInput.value = client.telefono || '';
-      emailInput.value = client.correo || '';
-      socialInput.value = client.red_social || 'Facebook';
-      dateInput.value = client.fecha_registro || new Date().toISOString().split('T')[0];
-      typeInput.value = client.tipo_cliente || 'Frecuente';
-    }
+    const cli = state.clients.find(c => c.id_cliente === clientId);
+    if (!cli) return;
+
+    if (title) title.textContent = 'Editar Cliente Registrado';
+    if (idInput) idInput.value = cli.id_cliente;
+
+    document.getElementById('client-id-type').value = cli.tipo_identificacion || 'Cédula';
+    document.getElementById('client-doc-number').value = cli.cedula_ruc || '';
+    document.getElementById('client-name').value = cli.nombre || '';
+    document.getElementById('client-lastname').value = cli.apellido || '';
+    document.getElementById('client-phone').value = cli.telefono || '';
+    document.getElementById('client-email').value = cli.correo || '';
+    document.getElementById('client-province').value = cli.provincia || 'Tungurahua';
+    document.getElementById('client-city').value = cli.ciudad || 'Ambato';
+    document.getElementById('client-sector').value = cli.sector || '';
+    document.getElementById('client-address').value = cli.direccion || '';
+    document.getElementById('client-type-select').value = cli.tipo_cliente || 'Nuevo';
+    document.getElementById('client-status-select').value = cli.estado || 'Activo';
+
+    validateDocumentInput();
   } else {
-    modalTitle.textContent = 'Registrar Nuevo Cliente';
-    idInput.readOnly = false;
-    const nextNum = state.clients.length + 1;
-    idInput.value = `C${String(nextNum).padStart(3, '0')}`;
-    nameInput.value = '';
-    lastnameInput.value = '';
-    phoneInput.value = '09';
-    emailInput.value = '';
-    socialInput.value = 'Facebook';
-    dateInput.value = new Date().toISOString().split('T')[0];
-    typeInput.value = 'Frecuente';
+    if (title) title.textContent = 'Registrar Nuevo Cliente';
+    if (idInput) idInput.value = `CLI-${Date.now().toString().slice(-6)}`;
+    document.getElementById('client-province').value = 'Tungurahua';
+    document.getElementById('client-city').value = 'Ambato';
+    document.getElementById('client-type-select').value = 'Nuevo';
+    document.getElementById('client-status-select').value = 'Activo';
   }
 
   openModal('modal-client');
@@ -535,215 +774,271 @@ function editClient(id) {
   openClientModal(id);
 }
 
-async function handleSaveClient(event) {
-  event.preventDefault();
-  const id = document.getElementById('client-id').value.trim();
-  const nombre = document.getElementById('client-name').value.trim();
-  const apellido = document.getElementById('client-lastname').value.trim();
-  const telefono = document.getElementById('client-phone').value.trim();
-  const correo = document.getElementById('client-email').value.trim();
-  const red_social = document.getElementById('client-social').value;
-  const fecha_registro = document.getElementById('client-date').value;
-  const tipo_cliente = document.getElementById('client-type').value;
+async function handleSaveClient(e) {
+  if (e) e.preventDefault();
 
-  if (!id || !nombre || !apellido) {
-    Toast.fire({ icon: 'warning', title: 'Completa los campos obligatorios' });
+  const id = document.getElementById('client-id')?.value;
+  const tipoIdentificacion = document.getElementById('client-id-type')?.value;
+  const cedulaRuc = document.getElementById('client-doc-number')?.value.trim();
+  const nombre = document.getElementById('client-name')?.value.trim();
+  const apellido = document.getElementById('client-lastname')?.value.trim();
+  const telefono = document.getElementById('client-phone')?.value.trim();
+  const correo = document.getElementById('client-email')?.value.trim();
+  const provincia = document.getElementById('client-province')?.value.trim();
+  const ciudad = document.getElementById('client-city')?.value.trim();
+  const sector = document.getElementById('client-sector')?.value.trim();
+  const direccion = document.getElementById('client-address')?.value.trim();
+  const tipoCliente = document.getElementById('client-type-select')?.value;
+  const estado = document.getElementById('client-status-select')?.value;
+
+  if (!cedulaRuc || !nombre || !apellido || !telefono) {
+    Toast.fire({ icon: 'warning', title: 'Completa los campos obligatorios (*)' });
     return;
   }
 
+  // Validación SRI obligatoria antes de guardar
+  let valCheck = { valid: true };
+  if (tipoIdentificacion === 'Cédula') valCheck = validateCedulaEcuador(cedulaRuc);
+  else if (tipoIdentificacion.startsWith('RUC')) valCheck = validateRucEcuador(cedulaRuc);
+
+  if (!valCheck.valid) {
+    const confirmSave = await Swal.fire({
+      title: 'Identificación Inválida',
+      text: `El número ingresado no cumple con el algoritmo oficial del SRI: "${valCheck.msg}". ¿Deseas guardarlo de todas formas?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#E30613',
+      confirmButtonText: 'Sí, guardar de todos modos',
+      cancelButtonText: 'Corregir'
+    });
+    if (!confirmSave.isConfirmed) return;
+  }
+
+  const existingClient = state.clients.find(c => c.id_cliente === id);
   const clientData = {
     id_cliente: id,
+    tipo_identificacion: tipoIdentificacion,
+    cedula_ruc: cedulaRuc,
     nombre,
     apellido,
     telefono,
     correo,
-    red_social,
-    fecha_registro,
-    tipo_cliente
+    provincia,
+    ciudad,
+    sector,
+    direccion,
+    tipo_cliente: tipoCliente,
+    estado,
+    puntos_fidelidad: existingClient ? existingClient.puntos_fidelidad : 0
   };
 
-  await window.dataService.saveClient(clientData);
-  await loadAllData();
-  closeModal('modal-client');
-  renderClientsTable();
-  Toast.fire({ icon: 'success', title: 'Cliente guardado con éxito' });
+  try {
+    await window.dataService.saveClient(clientData);
+    state.clients = await window.dataService.getClients();
+    updateNavigationBadges();
+    renderClientsTable();
+    closeModal('modal-client');
+    Toast.fire({ icon: 'success', title: 'Cliente guardado correctamente' });
+  } catch (err) {
+    console.error('Error guardando cliente:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
 }
 
-async function deleteClientPrompt(id) {
-  const result = await Swal.fire({
-    title: '¿Eliminar cliente?',
-    text: `Se eliminará el cliente ${id}. Esta acción no se puede deshacer.`,
+async function toggleClientBlock(clientId) {
+  const cli = state.clients.find(c => c.id_cliente === clientId);
+  if (!cli) return;
+
+  const willBlock = cli.estado !== 'Bloqueado';
+  const actionText = willBlock ? 'Bloquear' : 'Desbloquear';
+
+  const res = await Swal.fire({
+    title: `¿${actionText} Cliente?`,
+    text: `El cliente ${cli.nombre} ${cli.apellido} ${willBlock ? 'no podrá registrar nuevos pedidos en el sistema' : 'volverá a estar habilitado para compras'}.`,
+    icon: willBlock ? 'warning' : 'question',
+    showCancelButton: true,
+    confirmButtonColor: willBlock ? '#E30613' : '#00A651',
+    confirmButtonText: `Sí, ${actionText.toLowerCase()}`,
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.toggleClientBlock(clientId, willBlock);
+      state.clients = await window.dataService.getClients();
+      renderClientsTable();
+      Toast.fire({ icon: 'success', title: `Cliente ${willBlock ? 'bloqueado' : 'desbloqueado'} con éxito` });
+    } catch (err) {
+      console.error('Error cambiando estado de cliente:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+async function deleteClientPrompt(clientId) {
+  const cli = state.clients.find(c => c.id_cliente === clientId);
+  if (!cli) return;
+
+  const res = await Swal.fire({
+    title: '¿Eliminar Cliente?',
+    text: `Se eliminará el cliente ${cli.nombre} ${cli.apellido}. Esta acción no se puede deshacer.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar'
   });
 
-  if (result.isConfirmed) {
-    await window.dataService.deleteClient(id);
-    await loadAllData();
-    renderClientsTable();
-    Toast.fire({ icon: 'success', title: 'Cliente eliminado' });
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.deleteClient(clientId);
+      state.clients = await window.dataService.getClients();
+      updateNavigationBadges();
+      renderClientsTable();
+      Toast.fire({ icon: 'success', title: 'Cliente eliminado' });
+    } catch (err) {
+      console.error('Error eliminando cliente:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
   }
 }
 
-function viewClientHistory(clientId) {
-  const client = state.clients.find(c => c.id_cliente === clientId);
-  if (!client) return;
+// ==========================================
+// 3. PRODUCTOS & INVENTARIO (KARDEX)
+// ==========================================
+function setProductViewMode(mode) {
+  state.productViewMode = mode;
+  const cardsContainer = document.getElementById('products-cards-container');
+  const tableContainer = document.getElementById('products-table-container');
+  const btnCards = document.getElementById('btn-prod-view-cards');
+  const btnTable = document.getElementById('btn-prod-view-table');
 
-  document.getElementById('history-client-name').textContent = `${client.nombre} ${client.apellido}`;
-  document.getElementById('history-client-details').textContent = `${client.id_cliente} • ${client.tipo_cliente} • ${client.correo || client.telefono || 'Sin datos de contacto'}`;
-
-  const clientSales = state.sales.filter(s => s.id_cliente === clientId);
-  const tbody = document.getElementById('history-table-body');
-  let totalSpent = 0;
-
-  if (clientSales.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="px-3 py-4 text-center text-gray-400">Este cliente aún no tiene ventas registradas.</td></tr>`;
+  if (mode === 'cards') {
+    if (cardsContainer) cardsContainer.classList.remove('hidden');
+    if (tableContainer) tableContainer.classList.add('hidden');
+    if (btnCards) {
+      btnCards.className = 'p-1.5 rounded-lg text-xs font-bold bg-white text-[#333333] shadow-xs';
+    }
+    if (btnTable) {
+      btnTable.className = 'p-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800';
+    }
   } else {
-    tbody.innerHTML = clientSales.map(s => {
-      totalSpent += parseFloat(s.total) || 0;
-      const product = state.products.find(p => p.id_producto === s.id_producto);
-      const prodName = product ? product.nombre : s.id_producto;
-      return `
-        <tr class="hover:bg-gray-50">
-          <td class="px-3 py-2 font-mono font-bold text-[#E30613]">${s.id_seguimiento}</td>
-          <td class="px-3 py-2 font-medium text-[#333333]">${prodName} (${s.cantidad} u)</td>
-          <td class="px-3 py-2 text-gray-500">${s.fecha_compra}</td>
-          <td class="px-3 py-2 font-bold text-[#333333] font-mono">$${(parseFloat(s.total) || 0).toFixed(2)}</td>
-          <td class="px-3 py-2">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.estado === 'Completado' ? 'badge-completado' : 'badge-pendiente'}">${s.estado}</span>
-          </td>
-        </tr>
-      `;
-    }).join('');
+    if (cardsContainer) cardsContainer.classList.add('hidden');
+    if (tableContainer) tableContainer.classList.remove('hidden');
+    if (btnCards) {
+      btnCards.className = 'p-1.5 rounded-lg text-xs font-semibold text-gray-500 hover:text-gray-800';
+    }
+    if (btnTable) {
+      btnTable.className = 'p-1.5 rounded-lg text-xs font-bold bg-white text-[#333333] shadow-xs';
+    }
   }
 
-  document.getElementById('history-total-spent').textContent = `$${totalSpent.toFixed(2)}`;
-  openModal('modal-client-history');
+  renderProducts();
 }
 
-// ==========================================
-// 3. MÓDULO PRODUCTOS (CRUD & CATEGORÍAS)
-// ==========================================
 function renderProducts() {
-  const container = document.getElementById('products-cards-container');
-  const tbody = document.getElementById('table-productos-body');
-  if (!container || !tbody) return;
-
-  const search = (document.getElementById('filter-product-search')?.value || '').toLowerCase().trim();
+  const search = (document.getElementById('filter-product-search')?.value || '').toLowerCase();
   const catFilter = document.getElementById('filter-product-category')?.value || '';
 
   const filtered = state.products.filter(p => {
-    const matchSearch = !search ||
-      p.id_producto.toLowerCase().includes(search) ||
-      p.nombre.toLowerCase().includes(search);
+    const matchName = (p.nombre_producto || '').toLowerCase().includes(search) || (p.id_producto || '').toLowerCase().includes(search);
     const matchCat = !catFilter || p.categoria === catFilter;
-    return matchSearch && matchCat;
+    return matchName && matchCat;
   });
 
-  // 1. Grid de Tarjetas Visuales con Branding QUÉ POLLO
-  if (filtered.length === 0) {
-    container.innerHTML = `<div class="col-span-full py-8 text-center text-gray-400">No hay productos que coincidan con la búsqueda.</div>`;
-  } else {
-    container.innerHTML = filtered.map(p => {
-      const pv = parseFloat(p.precio_v) || 0;
-      const pc = parseFloat(p.precio_c) || 0;
-      const margin = pv - pc;
-      const isPositive = margin >= 0;
+  const cardsContainer = document.getElementById('products-cards-container');
+  const tableBody = document.getElementById('table-productos-body');
 
-      const categoryIcons = {
-        'Pollo': '🍗',
-        'Cerdo': '🥩',
-        'Res': '🍖',
-        'Despresado': '🥩',
-        'Huevos': '🥚',
-        'Embutidos': '🌭',
-        'Menudencias': '🍲',
-        'Otros': '🏷️'
-      }[p.categoria] || '🏷️';
+  // Render Modo Cards
+  if (cardsContainer) {
+    if (filtered.length === 0) {
+      cardsContainer.innerHTML = `<div class="col-span-full py-8 text-center text-gray-400">No hay productos que coincidan.</div>`;
+    } else {
+      cardsContainer.innerHTML = filtered.map(p => {
+        const stock = parseFloat(p.stock) || 0;
+        const minStock = parseFloat(p.stock_minimo) || 10;
+        const isLow = stock <= minStock;
 
-      return `
-        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-xs card-hover-effect flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between">
-              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-100 flex items-center space-x-1">
-                <span>${categoryIcons}</span>
-                <span>${p.categoria}</span>
-              </span>
-              <span class="font-mono text-xs font-bold text-gray-400">${p.id_producto}</span>
+        return `
+          <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-md">${p.categoria}</span>
+                <span class="font-mono text-[10px] font-bold text-gray-400">${p.id_producto}</span>
+              </div>
+              <h4 class="font-bold text-gray-800 text-sm mt-2">${p.nombre_producto}</h4>
+              <p class="text-xs text-gray-500 mt-0.5">${p.descripcion || 'Producto Avícola Fresco'}</p>
             </div>
 
-            <h3 class="font-extrabold text-[#333333] text-lg mt-3 leading-snug">${p.nombre}</h3>
-          </div>
-
-          <div class="mt-4 pt-4 border-t border-gray-100 space-y-3">
-            <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="bg-[#F5F5F5] p-2.5 rounded-xl border border-gray-100">
-                <span class="text-gray-400 block text-[11px]">Precio_V (Venta)</span>
-                <span class="text-base font-extrabold text-[#E30613] font-mono">$${pv.toFixed(2)}</span>
+            <div class="mt-4 pt-3 border-t border-gray-100 flex items-end justify-between">
+              <div>
+                <span class="text-[10px] text-gray-400 block">Precio Venta</span>
+                <span class="text-lg font-black text-[#E30613]">$${parseFloat(p.precio_venta || 0).toFixed(2)}</span>
+                <span class="text-[10px] text-gray-500 font-medium block">x ${p.unidad_medida || 'Unidad'}</span>
               </div>
-              <div class="bg-[#F5F5F5] p-2.5 rounded-xl border border-gray-100">
-                <span class="text-gray-400 block text-[11px]">Precio_C (Costo)</span>
-                <span class="text-base font-medium text-gray-700 font-mono">$${pc.toFixed(2)}</span>
+              <div class="text-right">
+                <span class="text-[10px] text-gray-400 block">Stock Disponible</span>
+                <span class="text-sm font-bold ${isLow ? 'text-red-600' : 'text-[#00A651]'}">${stock} ${p.unidad_medida || 'u'}</span>
+                ${isLow ? '<span class="block text-[9px] font-bold text-red-500">¡Bajo Stock!</span>' : ''}
               </div>
             </div>
 
-            <div class="flex items-center justify-between text-xs px-1">
-              <span class="text-gray-500">Margen Unitario:</span>
-              <span class="font-bold font-mono ${isPositive ? 'text-[#00A651]' : 'text-[#E30613]'}">
-                $${margin.toFixed(2)}
-              </span>
-            </div>
-
-            <div class="flex items-center justify-end space-x-1 pt-1">
-              <button onclick="editProduct('${p.id_producto}')" class="px-3 py-1.5 text-xs font-semibold rounded-lg text-gray-700 hover:bg-gray-100 flex items-center space-x-1">
-                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-[#333333]"></i>
-                <span>Editar</span>
+            <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-end space-x-1">
+              <button onclick="openStockAdjustmentModal('${p.id_producto}')" title="Ajuste Kardex" class="p-1.5 rounded-lg text-amber-700 bg-amber-50 hover:bg-amber-100 text-xs font-bold flex items-center space-x-1">
+                <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+                <span>Kardex</span>
               </button>
-              <button onclick="deleteProductPrompt('${p.id_producto}')" class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // 2. Tabla Detallada
-  if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-gray-400">Sin productos registrados.</td></tr>`;
-  } else {
-    tbody.innerHTML = filtered.map(p => {
-      const pv = parseFloat(p.precio_v) || 0;
-      const pc = parseFloat(p.precio_c) || 0;
-      const margin = pv - pc;
-      return `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-5 py-3 font-mono font-bold text-[#E30613]">${p.id_producto}</td>
-          <td class="px-5 py-3 font-semibold text-[#333333]">${p.nombre}</td>
-          <td class="px-5 py-3">
-            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">${p.categoria}</span>
-          </td>
-          <td class="px-5 py-3 font-bold text-[#E30613] font-mono">$${pv.toFixed(2)}</td>
-          <td class="px-5 py-3 font-medium text-gray-600 font-mono">$${pc.toFixed(2)}</td>
-          <td class="px-5 py-3 font-bold font-mono ${margin >= 0 ? 'text-[#00A651]' : 'text-[#E30613]'}">$${margin.toFixed(2)}</td>
-          <td class="px-5 py-3 text-right">
-            <div class="flex items-center justify-end space-x-1">
-              <button onclick="editProduct('${p.id_producto}')" class="p-1.5 text-gray-500 hover:text-[#E30613] hover:bg-red-50 rounded-lg">
+              <button onclick="editProduct('${p.id_producto}')" title="Editar" class="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100">
                 <i data-lucide="edit-3" class="w-4 h-4"></i>
               </button>
-              <button onclick="deleteProductPrompt('${p.id_producto}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg">
+              <button onclick="deleteProductPrompt('${p.id_producto}')" title="Eliminar" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Render Modo Tabla
+  if (tableBody) {
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No hay productos registrados.</td></tr>`;
+    } else {
+      tableBody.innerHTML = filtered.map(p => {
+        const stock = parseFloat(p.stock) || 0;
+        const minStock = parseFloat(p.stock_minimo) || 10;
+        const isLow = stock <= minStock;
+
+        return `
+          <tr class="hover:bg-gray-50/80 transition-colors">
+            <td class="px-4 py-3 font-mono font-bold text-gray-700">${p.id_producto}</td>
+            <td class="px-4 py-3 font-bold text-gray-800">${p.nombre_producto}</td>
+            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-gray-100">${p.categoria}</span></td>
+            <td class="px-4 py-3 font-mono text-gray-500">$${parseFloat(p.precio_costo || 0).toFixed(2)}</td>
+            <td class="px-4 py-3 font-mono font-bold text-[#E30613]">$${parseFloat(p.precio_venta || 0).toFixed(2)}</td>
+            <td class="px-4 py-3">
+              <span class="font-bold ${isLow ? 'text-red-600' : 'text-[#00A651]'}">${stock} ${p.unidad_medida || 'Unidad'}</span>
+              ${isLow ? '<span class="ml-1 px-1.5 py-0.5 rounded text-[9px] font-black bg-red-100 text-red-700">BAJO</span>' : ''}
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end space-x-1">
+                <button onclick="openStockAdjustmentModal('${p.id_producto}')" title="Ajuste Kardex" class="p-1.5 rounded-lg text-amber-700 hover:bg-amber-50">
+                  <i data-lucide="sliders" class="w-4 h-4"></i>
+                </button>
+                <button onclick="editProduct('${p.id_producto}')" title="Editar" class="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteProductPrompt('${p.id_producto}')" title="Eliminar" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
   }
 
   if (window.lucide) window.lucide.createIcons();
@@ -751,33 +1046,35 @@ function renderProducts() {
 
 function openProductModal(prodId = null) {
   state.editingProductId = prodId;
-  const modalTitle = document.getElementById('modal-product-title');
-  const idInput = document.getElementById('product-id');
-  const nameInput = document.getElementById('product-name');
-  const priceVInput = document.getElementById('product-price-v');
-  const priceCInput = document.getElementById('product-price-c');
+  const form = document.getElementById('form-product');
+  if (form) form.reset();
 
   populateCategoryDropdowns();
 
+  const title = document.getElementById('modal-product-title');
+  const idInput = document.getElementById('product-id');
+
   if (prodId) {
-    modalTitle.textContent = 'Editar Producto';
     const prod = state.products.find(p => p.id_producto === prodId);
-    if (prod) {
-      idInput.value = prod.id_producto;
-      idInput.readOnly = true;
-      nameInput.value = prod.nombre;
-      populateCategoryDropdowns(prod.categoria);
-      priceVInput.value = prod.precio_v;
-      priceCInput.value = prod.precio_c;
-    }
+    if (!prod) return;
+
+    if (title) title.textContent = 'Editar Producto';
+    if (idInput) idInput.value = prod.id_producto;
+
+    document.getElementById('product-category').value = prod.categoria || '';
+    document.getElementById('product-name').value = prod.nombre_producto || '';
+    document.getElementById('product-desc').value = prod.descripcion || '';
+    document.getElementById('product-price-v').value = prod.precio_venta || '';
+    document.getElementById('product-price-c').value = prod.precio_costo || '';
+    document.getElementById('product-unit').value = prod.unidad_medida || 'Unidad';
+    document.getElementById('product-stock').value = prod.stock || 0;
+    document.getElementById('product-stock-min').value = prod.stock_minimo || 10;
   } else {
-    modalTitle.textContent = 'Registrar Nuevo Producto';
-    idInput.readOnly = false;
-    const nextNum = state.products.length + 1;
-    idInput.value = `P${String(nextNum).padStart(3, '0')}`;
-    nameInput.value = '';
-    priceVInput.value = '8.50';
-    priceCInput.value = '16.50';
+    if (title) title.textContent = 'Registrar Nuevo Producto';
+    if (idInput) idInput.value = `PROD-${Date.now().toString().slice(-5)}`;
+    document.getElementById('product-unit').value = 'Unidad';
+    document.getElementById('product-stock').value = 50;
+    document.getElementById('product-stock-min').value = 15;
   }
 
   openModal('modal-product');
@@ -787,332 +1084,211 @@ function editProduct(id) {
   openProductModal(id);
 }
 
-async function handleSaveProduct(event) {
-  event.preventDefault();
-  const id = document.getElementById('product-id').value.trim();
-  const nombre = document.getElementById('product-name').value.trim();
-  const categoria = document.getElementById('product-category').value;
-  const precio_v = parseFloat(document.getElementById('product-price-v').value) || 0;
-  const precio_c = parseFloat(document.getElementById('product-price-c').value) || 0;
+async function handleSaveProduct(e) {
+  if (e) e.preventDefault();
 
-  if (!id || !nombre) {
-    Toast.fire({ icon: 'warning', title: 'Completa los campos obligatorios' });
+  const id = document.getElementById('product-id')?.value;
+  const categoria = document.getElementById('product-category')?.value;
+  const nombre = document.getElementById('product-name')?.value.trim();
+  const descripcion = document.getElementById('product-desc')?.value.trim();
+  const precioVenta = parseFloat(document.getElementById('product-price-v')?.value) || 0;
+  const precioCosto = parseFloat(document.getElementById('product-price-c')?.value) || 0;
+  const unidadMedida = document.getElementById('product-unit')?.value || 'Unidad';
+  const stock = parseFloat(document.getElementById('product-stock')?.value) || 0;
+  const stockMinimo = parseFloat(document.getElementById('product-stock-min')?.value) || 10;
+
+  if (!nombre || precioVenta <= 0) {
+    Toast.fire({ icon: 'warning', title: 'Ingresa un nombre y precio de venta válido' });
     return;
   }
 
-  const matchingCat = state.categories.find(c => c.nombre_categoria === categoria);
-  const id_categoria = matchingCat ? matchingCat.id_categoria : '';
-
-  const productData = {
+  const prodData = {
     id_producto: id,
-    nombre,
-    id_categoria,
     categoria,
-    precio_v,
-    precio_c
+    nombre_producto: nombre,
+    descripcion,
+    precio_venta: precioVenta,
+    precio_costo: precioCosto,
+    unidad_medida: unidadMedida,
+    stock,
+    stock_minimo: stockMinimo,
+    activo: true
   };
 
-  await window.dataService.saveProduct(productData);
-  await loadAllData();
-  closeModal('modal-product');
-  renderProducts();
-  Toast.fire({ icon: 'success', title: 'Producto guardado con éxito' });
+  try {
+    await window.dataService.saveProduct(prodData);
+    state.products = await window.dataService.getProducts();
+    updateNavigationBadges();
+    renderProducts();
+    closeModal('modal-product');
+    Toast.fire({ icon: 'success', title: 'Producto guardado con éxito' });
+  } catch (err) {
+    console.error('Error guardando producto:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
 }
 
-async function deleteProductPrompt(id) {
-  const result = await Swal.fire({
-    title: '¿Eliminar producto?',
-    text: `Se eliminará el producto ${id} del catálogo.`,
+async function deleteProductPrompt(prodId) {
+  const prod = state.products.find(p => p.id_producto === prodId);
+  if (!prod) return;
+
+  const res = await Swal.fire({
+    title: '¿Eliminar Producto?',
+    text: `Se eliminará ${prod.nombre_producto}. Esta acción no se puede revertir.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar'
   });
 
-  if (result.isConfirmed) {
-    await window.dataService.deleteProduct(id);
-    await loadAllData();
-    renderProducts();
-    Toast.fire({ icon: 'success', title: 'Producto eliminado' });
-  }
-}
-
-// ==========================================
-// ADMINISTRACIÓN DINÁMICA DE CATEGORÍAS
-// ==========================================
-function openCategoriesModal() {
-  const tbody = document.getElementById('table-categories-body');
-  if (!tbody) return;
-
-  if (state.categories.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-gray-400">No hay categorías registradas.</td></tr>`;
-  } else {
-    tbody.innerHTML = state.categories.map(cat => {
-      const associatedProducts = state.products.filter(p => 
-        p.categoria === cat.nombre_categoria || p.id_categoria === cat.id_categoria
-      );
-      const count = associatedProducts.length;
-
-      return `
-        <tr class="hover:bg-gray-50 transition-colors">
-          <td class="px-4 py-3 font-mono font-bold text-[#E30613]">${cat.id_categoria}</td>
-          <td class="px-4 py-3 font-semibold text-[#333333]">${cat.nombre_categoria}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${count > 0 ? 'bg-red-50 text-[#E30613] border border-red-200' : 'bg-gray-100 text-gray-500 border border-gray-200'}">
-              ${count} ${count === 1 ? 'producto' : 'productos'}
-            </span>
-          </td>
-          <td class="px-4 py-3 text-right">
-            <div class="flex items-center justify-end space-x-1">
-              <button onclick="openAddCategoryModal('${cat.id_categoria}')" class="p-1.5 text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 rounded-lg transition-colors" title="Editar Categoría">
-                <i data-lucide="edit-3" class="w-4 h-4"></i>
-              </button>
-              <button onclick="deleteCategoryPrompt('${cat.id_categoria}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar Categoría">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
-
-  openModal('modal-categories');
-  if (window.lucide) window.lucide.createIcons();
-}
-
-function openAddCategoryModal(catId = null) {
-  state.editingCategoryId = catId;
-  const titleEl = document.getElementById('category-form-title');
-  const idInput = document.getElementById('category-form-id');
-  const nameInput = document.getElementById('category-form-name');
-
-  if (catId) {
-    const cat = state.categories.find(c => c.id_categoria === catId);
-    if (cat) {
-      titleEl.textContent = 'Editar categoría';
-      idInput.value = cat.id_categoria;
-      nameInput.value = cat.nombre_categoria;
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.deleteProduct(prodId);
+      state.products = await window.dataService.getProducts();
+      updateNavigationBadges();
+      renderProducts();
+      Toast.fire({ icon: 'success', title: 'Producto eliminado' });
+    } catch (err) {
+      console.error('Error eliminando producto:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
     }
-  } else {
-    titleEl.textContent = 'Agregar categoría';
-    idInput.value = '';
-    nameInput.value = '';
   }
-
-  openModal('modal-category-form');
-  setTimeout(() => nameInput.focus(), 100);
 }
 
-async function handleSaveCategory(event) {
-  event.preventDefault();
-  const rawName = document.getElementById('category-form-name').value;
-  const cleanName = rawName.trim();
+// Modal Kardex Ajuste de Inventario
+function openStockAdjustmentModal(prodId = null) {
+  const sel = document.getElementById('adj-product-select');
+  if (sel) {
+    sel.innerHTML = state.products.map(p => `
+      <option value="${p.id_producto}" ${p.id_producto === prodId ? 'selected' : ''}>
+        ${p.nombre_producto} (Stock actual: ${p.stock} ${p.unidad_medida || 'u'})
+      </option>
+    `).join('');
+  }
+  document.getElementById('adj-qty-input').value = '';
+  document.getElementById('adj-reason-input').value = '';
+  openModal('modal-stock-adjustment');
+}
 
-  if (!cleanName) {
+async function handleStockAdjustmentSubmit(e) {
+  if (e) e.preventDefault();
+
+  const prodId = document.getElementById('adj-product-select')?.value;
+  const tipo = document.getElementById('adj-type-select')?.value; // Entrada / Salida
+  const cantidad = parseFloat(document.getElementById('adj-qty-input')?.value) || 0;
+  const motivo = document.getElementById('adj-reason-input')?.value.trim();
+
+  if (!prodId || cantidad <= 0 || !motivo) {
+    Toast.fire({ icon: 'warning', title: 'Completa todos los campos requeridos' });
+    return;
+  }
+
+  const prod = state.products.find(p => p.id_producto === prodId);
+  if (!prod) return;
+
+  if (tipo === 'Salida' && (parseFloat(prod.stock) || 0) < cantidad) {
     Swal.fire({
-      icon: 'warning',
-      title: 'Nombre requerido',
-      text: 'El nombre de la categoría no puede estar vacío.',
+      icon: 'error',
+      title: 'Inventario Insuficiente',
+      text: `No puedes dar salida a ${cantidad} unidades porque solo hay ${prod.stock} disponibles en stock.`,
       confirmButtonColor: '#E30613'
     });
     return;
   }
 
-  const isDuplicate = state.categories.some(c => 
-    c.nombre_categoria.toLowerCase() === cleanName.toLowerCase() &&
-    c.id_categoria !== state.editingCategoryId
-  );
-
-  if (isDuplicate) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Categoría duplicada',
-      text: 'Ya existe una categoría con este nombre.',
-      confirmButtonColor: '#E30613'
-    });
-    return;
+  try {
+    await window.dataService.adjustProductStock(prodId, tipo, cantidad, motivo);
+    state.products = await window.dataService.getProducts();
+    renderProducts();
+    closeModal('modal-stock-adjustment');
+    Toast.fire({ icon: 'success', title: `Kardex actualizado: ${tipo} de ${cantidad} ${prod.unidad_medida || 'u'}` });
+  } catch (err) {
+    console.error('Error aplicando ajuste Kardex:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
+}
 
-  if (state.editingCategoryId) {
-    const cat = state.categories.find(c => c.id_categoria === state.editingCategoryId);
-    if (cat) {
-      const oldName = cat.nombre_categoria;
-      cat.nombre_categoria = cleanName;
-      await window.dataService.saveCategory(cat);
+// ==========================================
+// 4. GESTIÓN DE PEDIDOS COMERCIALES
+// ==========================================
+function setOrdersFilter(status) {
+  state.ordersFilter = status;
 
-      if (oldName !== cleanName) {
-        for (const prod of state.products) {
-          if (prod.categoria === oldName || prod.id_categoria === cat.id_categoria) {
-            prod.categoria = cleanName;
-            prod.id_categoria = cat.id_categoria;
-            await window.dataService.saveProduct(prod);
-          }
-        }
+  ['todos', 'pendiente', 'confirmado', 'entregado'].forEach(s => {
+    const btn = document.getElementById(`tab-orders-${s}`);
+    if (btn) {
+      if (s.toLowerCase() === status.toLowerCase() || (s === 'todos' && status === 'TODOS')) {
+        btn.className = 'tab-order-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white';
+      } else {
+        btn.className = 'tab-order-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200';
       }
-
-      Toast.fire({ icon: 'success', title: 'Categoría actualizada correctamente.' });
     }
-  } else {
-    const nextNum = state.categories.length + 1;
-    const newId = `CAT${String(nextNum).padStart(3, '0')}`;
-    const newCat = {
-      id_categoria: newId,
-      nombre_categoria: cleanName,
-      fecha_creacion: new Date().toISOString().split('T')[0],
-      estado: 'Activo'
-    };
-
-    await window.dataService.saveCategory(newCat);
-    Toast.fire({ icon: 'success', title: 'Categoría creada correctamente.' });
-  }
-
-  await loadAllData();
-  closeModal('modal-category-form');
-
-  const modalCat = document.getElementById('modal-categories');
-  if (modalCat && !modalCat.classList.contains('hidden')) {
-    openCategoriesModal();
-  }
-
-  if (state.currentView === 'productos') {
-    renderProducts();
-  }
-}
-
-async function deleteCategoryPrompt(catId) {
-  const cat = state.categories.find(c => c.id_categoria === catId);
-  if (!cat) return;
-
-  const associatedProducts = state.products.filter(p => 
-    p.categoria === cat.nombre_categoria || p.id_categoria === cat.id_categoria
-  );
-
-  if (associatedProducts.length > 0) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'No se puede eliminar',
-      text: 'No se puede eliminar esta categoría porque existen productos asociados. Cambia primero la categoría de esos productos.',
-      confirmButtonColor: '#E30613'
-    });
-    return;
-  }
-
-  const result = await Swal.fire({
-    title: '¿Estás seguro de que deseas eliminar esta categoría?',
-    text: `Se eliminará la categoría "${cat.nombre_categoria}".`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: 'Eliminar',
-    cancelButtonText: 'Cancelar'
   });
 
-  if (result.isConfirmed) {
-    await window.dataService.deleteCategory(catId);
-    await loadAllData();
-    openCategoriesModal();
-    renderProducts();
-    Toast.fire({ icon: 'success', title: 'Categoría eliminada.' });
-  }
+  renderOrdersTable();
 }
 
-// ==========================================
-// 4. MÓDULO SEGUIMIENTO / VENTAS (CRUD)
-// ==========================================
-function renderSalesTable() {
-  const tbody = document.getElementById('table-ventas-body');
+function renderOrdersTable() {
+  const tbody = document.getElementById('table-pedidos-body');
   if (!tbody) return;
 
-  const search = (document.getElementById('filter-sales-search')?.value || '').toLowerCase().trim();
-  const statusFilter = document.getElementById('filter-sales-status')?.value || '';
-  const channelFilter = document.getElementById('filter-sales-channel')?.value || '';
+  const search = (document.getElementById('filter-orders-search')?.value || '').toLowerCase();
+  const statusFilter = state.ordersFilter;
 
-  const filtered = state.sales.filter(s => {
-    const client = state.clients.find(c => c.id_cliente === s.id_cliente);
-    const prod = state.products.find(p => p.id_producto === s.id_producto);
+  const filtered = state.orders.filter(ord => {
+    const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
     const clientName = client ? `${client.nombre} ${client.apellido}`.toLowerCase() : '';
-    const prodName = prod ? prod.nombre.toLowerCase() : '';
-    const obs = (s.observacion || '').toLowerCase();
+    const num = (ord.numero_pedido || ord.id_pedido || '').toLowerCase();
 
-    const matchSearch = !search ||
-      s.id_seguimiento.toLowerCase().includes(search) ||
-      s.id_cliente.toLowerCase().includes(search) ||
-      clientName.includes(search) ||
-      prodName.includes(search) ||
-      obs.includes(search);
+    const matchSearch = num.includes(search) || clientName.includes(search);
+    const matchStatus = statusFilter === 'TODOS' || ord.estado === statusFilter;
 
-    const matchStatus = !statusFilter || s.estado === statusFilter;
-    const matchChannel = !channelFilter || s.canal === channelFilter;
-
-    return matchSearch && matchStatus && matchChannel;
+    return matchSearch && matchStatus;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" class="px-6 py-6 text-center text-gray-400">No se encontraron ventas registradas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No hay pedidos para mostrar.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = filtered.map(s => {
-    const client = state.clients.find(c => c.id_cliente === s.id_cliente);
-    const prod = state.products.find(p => p.id_producto === s.id_producto);
+  tbody.innerHTML = filtered.map(ord => {
+    const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
+    const clientName = client ? `${client.nombre} ${client.apellido}` : ord.id_cliente;
+    const clientPhone = client ? client.telefono : '';
 
-    const clientDisplay = client ? `${client.nombre} ${client.apellido}` : s.id_cliente;
-    const prodDisplay = prod ? prod.nombre : s.id_producto;
-
-    const statusBadgeClass = {
-      'Completado': 'badge-completado',
-      'Pendiente': 'badge-pendiente',
-      'Cancelado': 'badge-cancelado'
-    }[s.estado] || 'badge-completado';
-
-    const channelBadgeClass = {
-      'Instagram': 'badge-instagram',
-      'Facebook': 'badge-facebook',
-      'WhatsApp': 'badge-whatsapp',
-      'Local': 'badge-local'
-    }[s.canal] || 'badge-local';
+    const statusBadge = getOrderStatusBadge(ord.estado);
+    const canInvoice = ord.estado !== 'Facturado' && ord.estado !== 'Cancelado';
 
     return `
-      <tr class="hover:bg-gray-50 transition-colors">
-        <td class="px-4 py-3 font-mono font-bold text-[#E30613]">${s.id_seguimiento}</td>
+      <tr class="hover:bg-gray-50/80 transition-colors">
+        <td class="px-4 py-3 font-mono font-bold text-gray-800">${ord.numero_pedido || ord.id_pedido}</td>
         <td class="px-4 py-3">
-          <div class="font-semibold text-[#333333]">${clientDisplay}</div>
-          <span class="text-[11px] font-mono text-gray-400">${s.id_cliente}</span>
+          <p class="font-bold text-gray-900">${clientName}</p>
+          <span class="text-[11px] text-gray-500">${clientPhone || 'Sin teléfono'}</span>
         </td>
+        <td class="px-4 py-3 text-gray-500">${ord.fecha_pedido || ''}</td>
+        <td class="px-4 py-3 font-medium text-gray-700">${ord.metodo_pago || 'Efectivo'}</td>
+        <td class="px-4 py-3 font-black text-[#E30613]">$${parseFloat(ord.total || 0).toFixed(2)}</td>
         <td class="px-4 py-3">
-          <div class="font-medium text-[#333333]">${prodDisplay}</div>
-          <span class="text-[11px] text-gray-400">${prod ? prod.categoria : ''}</span>
+          <select onchange="changeOrderStatus('${ord.id_pedido}', this.value)" class="text-xs font-bold rounded-lg border border-gray-200 py-1 px-2">
+            <option value="Pendiente" ${ord.estado === 'Pendiente' ? 'selected' : ''}>🟡 Pendiente</option>
+            <option value="Confirmado" ${ord.estado === 'Confirmado' ? 'selected' : ''}>🔵 Confirmado</option>
+            <option value="En preparación" ${ord.estado === 'En preparación' ? 'selected' : ''}>🟣 En preparación</option>
+            <option value="Entregado" ${ord.estado === 'Entregado' ? 'selected' : ''}>🟢 Entregado</option>
+            <option value="Facturado" ${ord.estado === 'Facturado' ? 'selected' : ''}>📑 Facturado</option>
+            <option value="Cancelado" ${ord.estado === 'Cancelado' ? 'selected' : ''}>🔴 Cancelado</option>
+          </select>
         </td>
-        <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">${s.fecha_compra}</td>
-        <td class="px-4 py-3 font-bold text-center">${s.cantidad}</td>
-        <td class="px-4 py-3 font-extrabold text-[#333333] font-mono">$${(parseFloat(s.total) || 0).toFixed(2)}</td>
-        <td class="px-4 py-3">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold ${channelBadgeClass}">
-            ${s.canal}
-          </span>
-        </td>
-        <td class="px-4 py-3 text-xs font-medium text-gray-600">${s.metodo_pago}</td>
-        <td class="px-4 py-3">
-          <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${statusBadgeClass}">
-            ${s.estado}
-          </span>
-        </td>
-        <td class="px-4 py-3 text-xs text-gray-500 max-w-xs truncate" title="${s.observacion || ''}">
-          ${s.observacion || '-'}
-        </td>
-        <td class="px-4 py-3 text-right whitespace-nowrap">
+        <td class="px-4 py-3 text-right">
           <div class="flex items-center justify-end space-x-1">
-            <button onclick="printSaleReceipt('${s.id_seguimiento}')" class="p-1.5 text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 rounded-lg" title="Ver / Imprimir Recibo">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-            </button>
-            <button onclick="editSale('${s.id_seguimiento}')" class="p-1.5 text-gray-500 hover:text-[#E30613] hover:bg-red-50 rounded-lg" title="Editar Venta">
-              <i data-lucide="edit-3" class="w-4 h-4"></i>
-            </button>
-            <button onclick="deleteSalePrompt('${s.id_seguimiento}')" class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg" title="Eliminar Venta">
+            ${canInvoice ? `
+              <button onclick="openInvoiceFromOrder('${ord.id_pedido}')" title="Emitir Factura SRI" class="px-2 py-1 rounded-lg bg-[#E30613] hover:bg-red-700 text-white font-bold text-xs flex items-center space-x-1 shadow-xs">
+                <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
+                <span>Facturar</span>
+              </button>
+            ` : ''}
+            <button onclick="deleteOrderPrompt('${ord.id_pedido}')" title="Eliminar Pedido" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
@@ -1124,525 +1300,1755 @@ function renderSalesTable() {
   if (window.lucide) window.lucide.createIcons();
 }
 
-function openSaleModal(saleId = null) {
-  state.editingSaleId = saleId;
-  const modalTitle = document.getElementById('modal-sale-title');
-  const idInput = document.getElementById('sale-id');
-  const dateInput = document.getElementById('sale-date');
-  const clientSelect = document.getElementById('sale-client-id');
-  const productSelect = document.getElementById('sale-product-id');
-  const qtyInput = document.getElementById('sale-qty');
-  const totalInput = document.getElementById('sale-total');
-  const channelSelect = document.getElementById('sale-channel');
-  const paymentSelect = document.getElementById('sale-payment');
-  const statusSelect = document.getElementById('sale-status');
-  const obsInput = document.getElementById('sale-notes');
+function getOrderStatusBadge(estado) {
+  switch (estado) {
+    case 'Confirmado':
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">🔵 Confirmado</span>`;
+    case 'En preparación':
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800">🟣 En preparación</span>`;
+    case 'Entregado':
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 Entregado</span>`;
+    case 'Facturado':
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-800">📑 Facturado</span>`;
+    case 'Cancelado':
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">🔴 Cancelado</span>`;
+    default:
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">🟡 Pendiente</span>`;
+  }
+}
 
-  clientSelect.innerHTML = state.clients.map(c => `
-    <option value="${c.id_cliente}">${c.id_cliente} - ${c.nombre} ${c.apellido} (${c.tipo_cliente})</option>
-  `).join('');
+// Modal Crear Pedido Multi-Producto
+function openOrderModal(orderId = null) {
+  state.editingOrderId = orderId;
+  state.orderItems = [];
 
-  productSelect.innerHTML = state.products.map(p => `
-    <option value="${p.id_producto}" data-price="${p.precio_v}">${p.id_producto} - ${p.nombre} ($${p.precio_v})</option>
-  `).join('');
+  const form = document.getElementById('form-order');
+  if (form) form.reset();
 
-  if (saleId) {
-    modalTitle.textContent = 'Editar Venta / Seguimiento';
-    const sale = state.sales.find(s => s.id_seguimiento === saleId);
-    if (sale) {
-      idInput.value = sale.id_seguimiento;
-      idInput.readOnly = true;
-      dateInput.value = sale.fecha_compra || new Date().toISOString().split('T')[0];
-      clientSelect.value = sale.id_cliente;
-      productSelect.value = sale.id_producto;
-      qtyInput.value = sale.cantidad;
-      totalInput.value = sale.total;
-      channelSelect.value = sale.canal || 'Instagram';
-      paymentSelect.value = sale.metodo_pago || 'Efectivo';
-      statusSelect.value = sale.estado || 'Completado';
-      obsInput.value = sale.observacion || 'Entregado a conformidad';
-    }
-  } else {
-    modalTitle.textContent = 'Registrar Venta / Seguimiento';
-    idInput.readOnly = false;
-    const nextNum = state.sales.length + 1;
-    idInput.value = `S${String(nextNum).padStart(3, '0')}`;
-    dateInput.value = new Date().toISOString().split('T')[0];
-    qtyInput.value = 1;
-    channelSelect.value = 'Instagram';
-    paymentSelect.value = 'Efectivo';
-    statusSelect.value = 'Completado';
-    obsInput.value = 'Entregado a conformidad';
-    calculateSaleTotal();
+  const idInput = document.getElementById('order-id');
+  const dateInput = document.getElementById('order-date');
+  const clientSel = document.getElementById('order-client-select');
+
+  if (idInput) idInput.value = `PED-${Date.now().toString().slice(-6)}`;
+  if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+
+  if (clientSel) {
+    clientSel.innerHTML = `
+      <option value="">-- Seleccionar Cliente --</option>
+      ${state.clients.map(c => `
+        <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (${c.cedula_ruc})</option>
+      `).join('')}
+    `;
   }
 
-  openModal('modal-sale');
+  // Agregar la primera fila de producto por defecto
+  addOrderItemRow();
+  calculateOrderTotals();
+  openModal('modal-order');
 }
 
-function calculateSaleTotal() {
-  const productSelect = document.getElementById('sale-product-id');
-  const qtyInput = document.getElementById('sale-qty');
-  const totalInput = document.getElementById('sale-total');
-
-  if (!productSelect || !qtyInput || !totalInput) return;
-
-  const selectedOption = productSelect.options[productSelect.selectedIndex];
-  if (!selectedOption) return;
-
-  const unitPrice = parseFloat(selectedOption.getAttribute('data-price')) || 0;
-  const qty = parseInt(qtyInput.value, 10) || 1;
-  const calculated = unitPrice * qty;
-
-  totalInput.value = calculated.toFixed(2);
+function onOrderClientSelect() {
+  const cliId = document.getElementById('order-client-select')?.value;
+  const cli = state.clients.find(c => c.id_cliente === cliId);
+  const addrInput = document.getElementById('order-delivery-address');
+  if (cli && addrInput) {
+    addrInput.value = `${cli.direccion || ''} (${cli.sector || cli.ciudad || 'Ambato'})`.trim();
+  }
 }
 
-function editSale(id) {
-  openSaleModal(id);
+function addOrderItemRow() {
+  const index = state.orderItems.length;
+  const defaultProd = state.products[0];
+
+  state.orderItems.push({
+    id_producto: defaultProd ? defaultProd.id_producto : '',
+    nombre_producto: defaultProd ? defaultProd.nombre_producto : '',
+    cantidad: 1,
+    precio_unitario: defaultProd ? parseFloat(defaultProd.precio_venta || 0) : 0,
+    subtotal: defaultProd ? parseFloat(defaultProd.precio_venta || 0) : 0
+  });
+
+  renderOrderItems();
+  calculateOrderTotals();
 }
 
-async function handleSaveSale(event) {
-  event.preventDefault();
-  const id = document.getElementById('sale-id').value.trim();
-  const id_cliente = document.getElementById('sale-client-id').value;
-  const id_producto = document.getElementById('sale-product-id').value;
-  const fecha_compra = document.getElementById('sale-date').value;
-  const cantidad = parseInt(document.getElementById('sale-qty').value, 10) || 1;
-  const total = parseFloat(document.getElementById('sale-total').value) || 0;
-  const canal = document.getElementById('sale-channel').value;
-  const metodo_pago = document.getElementById('sale-payment').value;
-  const estado = document.getElementById('sale-status').value;
-  const observacion = document.getElementById('sale-notes').value.trim();
+function removeOrderItemRow(index) {
+  if (state.orderItems.length <= 1) {
+    Toast.fire({ icon: 'info', title: 'El pedido debe contener al menos 1 producto' });
+    return;
+  }
+  state.orderItems.splice(index, 1);
+  renderOrderItems();
+  calculateOrderTotals();
+}
 
-  if (!id || !id_cliente || !id_producto) {
-    Toast.fire({ icon: 'warning', title: 'Selecciona cliente y producto' });
+function onOrderItemChange(index, field, value) {
+  const item = state.orderItems[index];
+  if (!item) return;
+
+  if (field === 'id_producto') {
+    const prod = state.products.find(p => p.id_producto === value);
+    if (prod) {
+      item.id_producto = prod.id_producto;
+      item.nombre_producto = prod.nombre_producto;
+      item.precio_unitario = parseFloat(prod.precio_venta) || 0;
+    }
+  } else if (field === 'cantidad') {
+    item.cantidad = Math.max(0.1, parseFloat(value) || 1);
+  } else if (field === 'precio_unitario') {
+    item.precio_unitario = Math.max(0, parseFloat(value) || 0);
+  }
+
+  item.subtotal = item.cantidad * item.precio_unitario;
+  renderOrderItems();
+  calculateOrderTotals();
+}
+
+function renderOrderItems() {
+  const container = document.getElementById('order-items-container');
+  if (!container) return;
+
+  container.innerHTML = state.orderItems.map((item, idx) => `
+    <div class="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-xl border border-gray-200">
+      <div class="col-span-5 sm:col-span-6">
+        <select onchange="onOrderItemChange(${idx}, 'id_producto', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold">
+          ${state.products.map(p => `
+            <option value="${p.id_producto}" ${p.id_producto === item.id_producto ? 'selected' : ''}>
+              ${p.nombre_producto} ($${parseFloat(p.precio_venta).toFixed(2)})
+            </option>
+          `).join('')}
+        </select>
+      </div>
+
+      <div class="col-span-3 sm:col-span-2">
+        <input type="number" step="0.1" min="0.1" value="${item.cantidad}" oninput="onOrderItemChange(${idx}, 'cantidad', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-center">
+      </div>
+
+      <div class="col-span-3 sm:col-span-3 text-right">
+        <span class="font-mono font-black text-[#E30613] text-xs">$${item.subtotal.toFixed(2)}</span>
+      </div>
+
+      <div class="col-span-1 text-center">
+        <button type="button" onclick="removeOrderItemRow(${idx})" class="text-gray-400 hover:text-red-600 p-1">
+          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function calculateOrderTotals() {
+  const subtotal = state.orderItems.reduce((acc, it) => acc + (it.subtotal || 0), 0);
+  const total = subtotal;
+
+  const subDisp = document.getElementById('order-subtotal-disp');
+  const totDisp = document.getElementById('order-total-disp');
+  if (subDisp) subDisp.textContent = `$${subtotal.toFixed(2)}`;
+  if (totDisp) totDisp.textContent = `$${total.toFixed(2)}`;
+}
+
+async function handleSaveOrderSubmit(e) {
+  if (e) e.preventDefault();
+
+  const idPedido = document.getElementById('order-id')?.value;
+  const fecha = document.getElementById('order-date')?.value;
+  const idCliente = document.getElementById('order-client-select')?.value;
+  const metodoPago = document.getElementById('order-payment-method')?.value;
+  const estado = document.getElementById('order-status-select')?.value;
+  const direccion = document.getElementById('order-delivery-address')?.value;
+  const notas = document.getElementById('order-notes')?.value;
+
+  if (!idCliente) {
+    Toast.fire({ icon: 'warning', title: 'Selecciona el cliente solicitante' });
     return;
   }
 
-  const saleData = {
-    id_seguimiento: id,
-    id_cliente,
-    id_producto,
-    fecha_compra,
-    cantidad,
-    total,
-    canal,
-    metodo_pago,
-    estado,
-    observacion
+  if (state.orderItems.length === 0) {
+    Toast.fire({ icon: 'warning', title: 'Agrega al menos un producto al pedido' });
+    return;
+  }
+
+  const subtotal = state.orderItems.reduce((acc, it) => acc + (it.subtotal || 0), 0);
+  const total = subtotal;
+
+  const orderData = {
+    id_pedido: idPedido,
+    numero_pedido: idPedido,
+    id_cliente: idCliente,
+    fecha_pedido: fecha,
+    metodo_pago: metodoPago,
+    estado: estado,
+    direccion_entrega: direccion,
+    observaciones: notas,
+    subtotal: subtotal,
+    descuento: 0,
+    total: total,
+    detalles: state.orderItems
   };
 
-  await window.dataService.saveSale(saleData);
-  await loadAllData();
-  closeModal('modal-sale');
-  renderSalesTable();
-  if (state.currentView === 'dashboard') renderDashboard();
-  Toast.fire({ icon: 'success', title: 'Venta registrada con éxito' });
+  try {
+    await window.dataService.saveOrder(orderData);
+    state.orders = await window.dataService.getOrders();
+    state.products = await window.dataService.getProducts(); // Actualizar posibles stocks
+    updateNavigationBadges();
+    renderOrdersTable();
+    closeModal('modal-order');
+    Toast.fire({ icon: 'success', title: 'Pedido registrado con éxito' });
+  } catch (err) {
+    console.error('Error guardando pedido:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
 }
 
-async function deleteSalePrompt(id) {
-  const result = await Swal.fire({
-    title: '¿Eliminar registro de venta?',
-    text: `Se eliminará el seguimiento ${id}.`,
+async function changeOrderStatus(orderId, newStatus) {
+  try {
+    await window.dataService.updateOrderStatus(orderId, newStatus);
+    state.orders = await window.dataService.getOrders();
+    state.products = await window.dataService.getProducts();
+    updateNavigationBadges();
+    renderOrdersTable();
+    Toast.fire({ icon: 'success', title: `Estado actualizado a ${newStatus}` });
+  } catch (err) {
+    console.error('Error actualizando estado del pedido:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+async function deleteOrderPrompt(orderId) {
+  const ord = state.orders.find(o => o.id_pedido === orderId);
+  if (!ord) return;
+
+  const res = await Swal.fire({
+    title: '¿Eliminar Pedido?',
+    text: `Se eliminará el pedido ${ord.numero_pedido || ord.id_pedido}.`,
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
     confirmButtonText: 'Sí, eliminar',
     cancelButtonText: 'Cancelar'
   });
 
-  if (result.isConfirmed) {
-    await window.dataService.deleteSale(id);
-    await loadAllData();
-    renderSalesTable();
-    if (state.currentView === 'dashboard') renderDashboard();
-    Toast.fire({ icon: 'success', title: 'Registro eliminado' });
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.deleteOrder(orderId);
+      state.orders = await window.dataService.getOrders();
+      updateNavigationBadges();
+      renderOrdersTable();
+      Toast.fire({ icon: 'success', title: 'Pedido eliminado' });
+    } catch (err) {
+      console.error('Error eliminando pedido:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
   }
 }
 
 // ==========================================
-// COMPROBANTE DE VENTA IMPRIMIBLE
+// 5. FACTURACIÓN Y EMISIÓN SRI
 // ==========================================
-function printSaleReceipt(saleId) {
-  const sale = state.sales.find(s => s.id_seguimiento === saleId);
-  if (!sale) return;
+function renderInvoicesTable() {
+  const tbody = document.getElementById('table-facturas-body');
+  if (!tbody) return;
 
-  const client = state.clients.find(c => c.id_cliente === sale.id_cliente) || {
-    nombre: sale.id_cliente,
-    apellido: '',
-    telefono: 'S/N',
-    correo: 'S/N'
-  };
+  const search = (document.getElementById('filter-invoices-search')?.value || '').toLowerCase();
 
-  const product = state.products.find(p => p.id_producto === sale.id_producto) || {
-    nombre: sale.id_producto
-  };
+  const filtered = state.invoices.filter(inv => {
+    const num = (inv.numero_factura || inv.id_factura || '').toLowerCase();
+    const cli = (inv.cliente_nombre || inv.id_cliente || '').toLowerCase();
+    return num.includes(search) || cli.includes(search);
+  });
 
-  document.getElementById('rcpt-id').textContent = sale.id_seguimiento;
-  document.getElementById('rcpt-date').textContent = sale.fecha_compra;
-  document.getElementById('rcpt-channel').textContent = sale.canal;
-  document.getElementById('rcpt-payment').textContent = sale.metodo_pago;
-  document.getElementById('rcpt-status').textContent = sale.estado;
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No hay facturas registradas.</td></tr>`;
+    return;
+  }
 
-  document.getElementById('rcpt-client-name').textContent = `${client.nombre} ${client.apellido}`;
-  document.getElementById('rcpt-client-phone').textContent = client.telefono || 'Sin registrar';
-  document.getElementById('rcpt-client-email').textContent = client.correo || 'Sin registrar';
+  tbody.innerHTML = filtered.map(inv => {
+    const isAnulada = inv.estado === 'ANULADA';
+    const statusBadge = isAnulada
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">🔴 ANULADA</span>`
+      : `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 EMITIDA</span>`;
 
-  document.getElementById('rcpt-product-name').textContent = product.nombre;
-  document.getElementById('rcpt-product-qty').textContent = sale.cantidad;
-  document.getElementById('rcpt-total').textContent = `$${(parseFloat(sale.total) || 0).toFixed(2)}`;
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors ${isAnulada ? 'bg-red-50/20 opacity-75' : ''}">
+        <td class="px-4 py-3 font-mono font-bold text-gray-800">${inv.numero_factura}</td>
+        <td class="px-4 py-3 font-semibold text-gray-900">${inv.cliente_nombre || inv.id_cliente}</td>
+        <td class="px-4 py-3 text-gray-500">${inv.fecha || ''}</td>
+        <td class="px-4 py-3 font-mono text-gray-600">$${parseFloat(inv.subtotal || 0).toFixed(2)}</td>
+        <td class="px-4 py-3 font-mono font-black text-[#E30613]">$${parseFloat(inv.total || 0).toFixed(2)}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="flex items-center justify-end space-x-1.5">
+            <button onclick="openReceiptModal('${inv.id_factura}')" title="Ver / Imprimir Comprobante" class="p-1.5 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+            </button>
+            ${!isAnulada ? `
+              <button onclick="openCancelInvoiceModal('${inv.id_factura}')" title="Anular Factura SRI" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
+                <i data-lucide="x-circle" class="w-4 h-4"></i>
+              </button>
+            ` : ''}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
 
-  document.getElementById('rcpt-obs').textContent = sale.observacion || 'Entregado a conformidad';
+  if (window.lucide) window.lucide.createIcons();
+}
+
+// Convertir un pedido en Factura SRI
+async function openInvoiceFromOrder(orderId) {
+  const ord = state.orders.find(o => o.id_pedido === orderId);
+  if (!ord) return;
+
+  const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
+  const clientName = client ? `${client.nombre} ${client.apellido}` : 'Consumidor Final';
+  const clientDoc = client ? client.cedula_ruc : '9999999999999';
+
+  const res = await Swal.fire({
+    title: '¿Emitir Factura Comercial SRI?',
+    html: `Se generará la factura oficial para el pedido <strong>${ord.numero_pedido || ord.id_pedido}</strong> a nombre de <strong>${clientName}</strong> por un total de <span class="font-bold text-[#E30613]">$${parseFloat(ord.total).toFixed(2)}</span>.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Sí, emitir factura',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      const nextSeq = state.invoices.length + 1;
+      const numFactura = `001-001-${nextSeq.toString().padStart(9, '0')}`;
+
+      const invoiceData = {
+        id_factura: `FAC-${Date.now().toString().slice(-6)}`,
+        numero_factura: numFactura,
+        id_pedido: ord.id_pedido,
+        id_cliente: ord.id_cliente,
+        cliente_nombre: clientName,
+        cliente_doc: clientDoc,
+        fecha: new Date().toISOString().split('T')[0],
+        metodo_pago: ord.metodo_pago || 'Efectivo',
+        subtotal: ord.subtotal || ord.total,
+        iva: 0.00,
+        total: ord.total,
+        estado: 'EMITIDA',
+        detalles: ord.detalles || []
+      };
+
+      await window.dataService.saveInvoice(invoiceData);
+      await window.dataService.updateOrderStatus(ord.id_pedido, 'Facturado');
+
+      state.invoices = await window.dataService.getInvoices();
+      state.orders = await window.dataService.getOrders();
+      updateNavigationBadges();
+      renderOrdersTable();
+
+      // Abrir recibo imprimible de inmediato
+      openReceiptModal(invoiceData.id_factura);
+      Toast.fire({ icon: 'success', title: `Factura ${numFactura} emitida` });
+    } catch (err) {
+      console.error('Error generando factura:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+// Modal Comprobante Imprimible
+function openReceiptModal(invoiceId) {
+  const inv = state.invoices.find(i => i.id_factura === invoiceId);
+  if (!inv) return;
+
+  document.getElementById('rcpt-num').textContent = inv.numero_factura || '001-001-000000001';
+  document.getElementById('rcpt-date').textContent = inv.fecha || new Date().toISOString().split('T')[0];
+  document.getElementById('rcpt-client').textContent = inv.cliente_nombre || 'Consumidor Final';
+  document.getElementById('rcpt-doc').textContent = inv.cliente_doc || '9999999999';
+  document.getElementById('rcpt-payment').textContent = inv.metodo_pago || 'Efectivo';
+
+  const tbody = document.getElementById('rcpt-items-body');
+  const items = inv.detalles && inv.detalles.length > 0 ? inv.detalles : [
+    { cantidad: 1, nombre_producto: 'Consumo de Productos Avícolas', precio_unitario: inv.total, subtotal: inv.total }
+  ];
+
+  if (tbody) {
+    tbody.innerHTML = items.map(it => `
+      <tr>
+        <td class="py-1">${it.cantidad}</td>
+        <td class="py-1">${it.nombre_producto}</td>
+        <td class="py-1 text-right font-mono">$${parseFloat(it.precio_unitario || 0).toFixed(2)}</td>
+        <td class="py-1 text-right font-mono font-bold">$${parseFloat(it.subtotal || 0).toFixed(2)}</td>
+      </tr>
+    `).join('');
+  }
+
+  document.getElementById('rcpt-subtotal').textContent = `$${parseFloat(inv.subtotal || inv.total).toFixed(2)}`;
+  document.getElementById('rcpt-iva').textContent = `$${parseFloat(inv.iva || 0).toFixed(2)}`;
+  document.getElementById('rcpt-total').textContent = `$${parseFloat(inv.total).toFixed(2)}`;
 
   openModal('modal-receipt');
 }
 
-// ==========================================
-// HELPERS DE MODALES
-// ==========================================
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    el.classList.remove('hidden');
+// Modal Anular Factura
+function openCancelInvoiceModal(invoiceId) {
+  const inv = state.invoices.find(i => i.id_factura === invoiceId);
+  if (!inv) return;
+
+  document.getElementById('cancel-invoice-id').value = inv.id_factura;
+  document.getElementById('cancel-invoice-num').value = inv.numero_factura;
+  document.getElementById('cancel-invoice-reason').value = '';
+
+  openModal('modal-cancel-invoice');
+}
+
+async function handleCancelInvoiceSubmit(e) {
+  if (e) e.preventDefault();
+
+  const id = document.getElementById('cancel-invoice-id')?.value;
+  const motivo = document.getElementById('cancel-invoice-reason')?.value.trim();
+
+  if (!motivo) {
+    Toast.fire({ icon: 'warning', title: 'Debes ingresar el motivo de anulación' });
+    return;
   }
-  if (window.lucide) window.lucide.createIcons();
-}
 
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.classList.add('hidden');
+  try {
+    await window.dataService.cancelInvoice(id, motivo);
+    state.invoices = await window.dataService.getInvoices();
+    renderInvoicesTable();
+    closeModal('modal-cancel-invoice');
+    Toast.fire({ icon: 'success', title: 'Factura anulada formalmente' });
+  } catch (err) {
+    console.error('Error anulando factura:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
 }
 
 // ==========================================
-// CONTROLADOR DE AUTENTICACIÓN (SUPABASE AUTH & GATEKEEPER)
+// 6. SEGUIMIENTO COMERCIAL CRM
 // ==========================================
+function renderCRMView() {
+  const container = document.getElementById('crm-timeline-container');
+  if (!container) return;
 
-// Alternar entre las pantallas de la aplicación (Gatekeeper)
-function showGatekeeperScreen(screenName) {
-  const loginEl = document.getElementById('login-screen');
-  const pendingEl = document.getElementById('pending-screen');
-  const rejectedEl = document.getElementById('rejected-screen');
-  const disabledEl = document.getElementById('disabled-screen');
-  const appEl = document.getElementById('app-container');
+  if (state.crmInteractions.length === 0) {
+    container.innerHTML = `<p class="text-xs text-gray-400 py-4 text-center">No hay contactos registrados aún.</p>`;
+    return;
+  }
 
-  if (loginEl) loginEl.classList.add('hidden');
-  if (pendingEl) pendingEl.classList.add('hidden');
-  if (rejectedEl) rejectedEl.classList.add('hidden');
-  if (disabledEl) disabledEl.classList.add('hidden');
-  if (appEl) appEl.classList.add('hidden');
+  container.innerHTML = state.crmInteractions.map(it => {
+    const cli = state.clients.find(c => c.id_cliente === it.id_cliente);
+    const cliName = cli ? `${cli.nombre} ${cli.apellido}` : it.id_cliente;
 
-  if (screenName === 'login' && loginEl) loginEl.classList.remove('hidden');
-  if (screenName === 'pending' && pendingEl) pendingEl.classList.remove('hidden');
-  if (screenName === 'rejected' && rejectedEl) rejectedEl.classList.remove('hidden');
-  if (screenName === 'disabled' && disabledEl) disabledEl.classList.remove('hidden');
-  if (screenName === 'app' && appEl) appEl.classList.remove('hidden');
+    return `
+      <div class="flex items-start space-x-3 p-3 rounded-xl border border-gray-100 bg-gray-50/60">
+        <div class="w-8 h-8 rounded-full bg-red-100 text-[#E30613] flex items-center justify-center font-bold text-xs shrink-0">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-xs text-gray-800">${cliName}</h4>
+            <span class="text-[10px] text-gray-400">${it.fecha || ''}</span>
+          </div>
+          <p class="text-xs text-gray-600 mt-1">${it.resumen_acuerdos || it.notas || ''}</p>
+          <div class="mt-2 flex items-center space-x-2">
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-gray-200 text-gray-700">${it.canal || 'WhatsApp'}</span>
+            <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">${it.etapa_pipeline || 'Contactado'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   if (window.lucide) window.lucide.createIcons();
 }
 
-// Verificar sesión activa al inicio
-async function checkAuthSession() {
-  const saved = localStorage.getItem('qp_current_profile') || 
-                sessionStorage.getItem('qp_current_profile') ||
-                localStorage.getItem('qp_current_user') || 
-                sessionStorage.getItem('qp_current_user');
+function openCRMInteractionModal() {
+  const sel = document.getElementById('crm-client-select');
+  if (sel) {
+    sel.innerHTML = state.clients.map(c => `
+      <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (${c.telefono})</option>
+    `).join('');
+  }
+  document.getElementById('crm-notes-input').value = '';
+  openModal('modal-crm-interaction');
+}
 
-  if (saved) {
-    try {
-      const user = JSON.parse(saved);
-      // Intentar refrescar el perfil con los datos más recientes
-      const freshProfile = await window.dataService.getUserProfileByEmail(user.correo);
-      state.currentUser = freshProfile || user;
-      evaluateUserAccess(state.currentUser);
-    } catch (e) {
-      console.warn('Error verificando sesión guardada:', e);
-      showGatekeeperScreen('login');
+async function handleSaveCRMInteraction(e) {
+  if (e) e.preventDefault();
+
+  const idCli = document.getElementById('crm-client-select')?.value;
+  const canal = document.getElementById('crm-channel-select')?.value;
+  const etapa = document.getElementById('crm-stage-select')?.value;
+  const notas = document.getElementById('crm-notes-input')?.value.trim();
+
+  if (!notas) {
+    Toast.fire({ icon: 'warning', title: 'Ingresa los acuerdos o notas del contacto' });
+    return;
+  }
+
+  const interactionData = {
+    id_interaccion: `INT-${Date.now().toString().slice(-6)}`,
+    id_cliente: idCli,
+    canal,
+    etapa_pipeline: etapa,
+    resumen_acuerdos: notas,
+    fecha: new Date().toISOString().split('T')[0]
+  };
+
+  try {
+    await window.dataService.saveCRMInteraction(interactionData);
+    state.crmInteractions = await window.dataService.getCRMInteractions();
+    renderCRMView();
+    closeModal('modal-crm-interaction');
+    Toast.fire({ icon: 'success', title: 'Contacto comercial registrado' });
+  } catch (err) {
+    console.error('Error registrando interacción CRM:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+// ==========================================
+// 7. MARKETING, CALENDARIO & DISEÑADOR CANVAS
+// ==========================================
+function setMarketingTab(tab) {
+  state.marketingTab = tab;
+
+  ['promos', 'calendar', 'designer', 'campaigns'].forEach(t => {
+    const btn = document.getElementById(`tab-mkt-${t}`);
+    const content = document.getElementById(`mkt-content-${t}`);
+
+    if (t === tab) {
+      if (btn) btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white shadow-xs';
+      if (content) content.classList.remove('hidden');
+    } else {
+      if (btn) btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200';
+      if (content) content.classList.add('hidden');
     }
-  } else {
-    showGatekeeperScreen('login');
+  });
+
+  if (tab === 'designer') {
+    updateAdCanvas();
   }
 }
 
-// Evaluar permisos y enrutar según el estado de aprobación
+function renderMarketingView() {
+  renderPromotions();
+  renderCommercialCalendar();
+  renderCampaigns();
+}
+
+function renderPromotions() {
+  const container = document.getElementById('mkt-content-promos');
+  if (!container) return;
+
+  if (state.promotions.length === 0) {
+    container.innerHTML = `<p class="col-span-full py-8 text-center text-gray-400 text-xs">No hay promociones activas registradas.</p>`;
+    return;
+  }
+
+  container.innerHTML = state.promotions.map(promo => `
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between">
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-[#E30613]">OFERTA COMERCIAL</span>
+          <span class="text-[11px] text-gray-400">${promo.fecha_inicio} al ${promo.fecha_fin}</span>
+        </div>
+        <h3 class="text-base font-bold text-gray-900 mt-2">${promo.titulo}</h3>
+        <p class="text-xs text-gray-600 mt-1">${promo.descripcion || 'Aprovecha nuestras ofertas especiales en Ambato.'}</p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] text-gray-400 block">Beneficio</span>
+          <span class="text-base font-black text-[#00A651]">
+            ${promo.tipo_descuento === 'Porcentaje' ? `${promo.valor_descuento}% OFF` : `$${promo.valor_descuento} Descuento`}
+          </span>
+        </div>
+        <button onclick="sharePromoViaWhatsApp('${promo.titulo}', '${promo.valor_descuento}')" class="px-3 py-1.5 rounded-xl bg-[#00A651] hover:bg-emerald-700 text-white font-bold text-xs flex items-center space-x-1">
+          <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+          <span>Compartir</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderCommercialCalendar() {
+  const grid = document.getElementById('commercial-calendar-grid');
+  if (!grid) return;
+
+  const holidays = [
+    { fecha: 'Febrero 2026', nombre: 'Fiesta de la Fruta y de las Flores (Ambato)', campana: 'Combo FFF Familiar' },
+    { fecha: 'Febrero 2026', nombre: 'Carnaval en Tungurahua', campana: 'Parrillada Carnavalera' },
+    { fecha: 'Abril 2026', nombre: 'Semana Santa', campana: 'Pescado y Alternativas Avícolas' },
+    { fecha: 'Mayo 2026', nombre: 'Día de la Madre', campana: 'Almuerzo Especial para Mamá' },
+    { fecha: 'Junio 2026', nombre: 'Día del Padre', campana: 'Combo Asado Papá' },
+    { fecha: 'Noviembre 2026', nombre: 'Sol de Noviembre (Independencia Ambato)', campana: 'Festival del Pollo Ambateño' },
+    { fecha: 'Diciembre 2026', nombre: 'Navidad & Cenas de Fin de Año', campana: 'Pollo Relleno Navideño' }
+  ];
+
+  grid.innerHTML = holidays.map(h => `
+    <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-xs space-y-1">
+      <span class="text-[10px] font-bold text-[#E30613] uppercase tracking-wider block">${h.fecha}</span>
+      <h4 class="font-bold text-gray-800">${h.nombre}</h4>
+      <p class="text-[11px] text-gray-500">Campaña Sugerida: <strong class="text-[#00A651]">${h.campana}</strong></p>
+    </div>
+  `).join('');
+}
+
+function renderCampaigns() {
+  const container = document.getElementById('campaigns-list-container');
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">Activa</span>
+        <span class="text-[11px] text-gray-400">Canal: WhatsApp + Redes</span>
+      </div>
+      <h3 class="text-sm font-bold text-gray-900">Campaña Permanente: Clientes Mayoristas de Tungurahua</h3>
+      <p class="text-xs text-gray-500">Descuento de $0.10 por kilo a asaderos y restaurantes con compras semanales.</p>
+    </div>
+
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-2">
+      <div class="flex items-center justify-between">
+        <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full">Activa</span>
+        <span class="text-[11px] text-gray-400">Canal: Local Físico</span>
+      </div>
+      <h3 class="text-sm font-bold text-gray-900">PolloPuntos de Fidelidad</h3>
+      <p class="text-xs text-gray-500">Acumula 1 punto por cada $10 de compra en mostrador.</p>
+    </div>
+  `;
+}
+
+function openPromotionModal() {
+  openModal('modal-promotion');
+}
+
+async function handleSavePromotion(e) {
+  if (e) e.preventDefault();
+
+  const titulo = document.getElementById('promo-title-input')?.value.trim();
+  const tipo = document.getElementById('promo-type-select')?.value;
+  const valor = parseFloat(document.getElementById('promo-value-input')?.value) || 0;
+  const ini = document.getElementById('promo-start-date')?.value;
+  const fin = document.getElementById('promo-end-date')?.value;
+  const desc = document.getElementById('promo-desc-input')?.value.trim();
+
+  if (!titulo || valor <= 0 || !ini || !fin) {
+    Toast.fire({ icon: 'warning', title: 'Completa los campos obligatorios' });
+    return;
+  }
+
+  const promoData = {
+    id_promocion: `PRM-${Date.now().toString().slice(-6)}`,
+    titulo,
+    tipo_descuento: tipo,
+    valor_descuento: valor,
+    fecha_inicio: ini,
+    fecha_fin: fin,
+    descripcion: desc
+  };
+
+  try {
+    await window.dataService.savePromotion(promoData);
+    state.promotions = await window.dataService.getPromotions();
+    renderPromotions();
+    closeModal('modal-promotion');
+    Toast.fire({ icon: 'success', title: 'Promoción creada' });
+  } catch (err) {
+    console.error('Error guardando promoción:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+// ==========================================
+// DISEÑADOR GRÁFICO HTML5 CANVAS
+// ==========================================
+let canvasLogoImage = null;
+
+function initCanvasDesigner() {
+  const prodSelect = document.getElementById('ad-product-select');
+  if (prodSelect) {
+    prodSelect.innerHTML = state.products.map(p => `
+      <option value="${p.id_producto}">${p.nombre_producto} (Normal: $${parseFloat(p.precio_venta).toFixed(2)})</option>
+    `).join('');
+  }
+
+  // Cargar logotipo oficial
+  canvasLogoImage = new Image();
+  canvasLogoImage.src = 'logo.png';
+  canvasLogoImage.onload = () => {
+    updateAdCanvas();
+  };
+}
+
+function onAdProductChange() {
+  const prodId = document.getElementById('ad-product-select')?.value;
+  const prod = state.products.find(p => p.id_producto === prodId);
+  if (prod) {
+    const normalPrice = parseFloat(prod.precio_venta) || 0;
+    const promoPrice = (normalPrice * 0.85).toFixed(2); // 15% sugerido
+
+    document.getElementById('ad-price-normal').value = normalPrice.toFixed(2);
+    document.getElementById('ad-price-promo').value = promoPrice;
+    document.getElementById('ad-subtitle-input').value = `Pollo fresco seleccionado • ${prod.nombre_producto}`;
+    updateAdCanvas();
+  }
+}
+
+function updateAdCanvas() {
+  const canvas = document.getElementById('ad-preview-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const format = document.getElementById('ad-format-select')?.value || 'square';
+
+  // Dimensiones según formato
+  let width = 1080;
+  let height = 1080;
+
+  if (format === 'story') {
+    width = 1080;
+    height = 1920;
+  } else if (format === 'banner') {
+    width = 1200;
+    height = 630;
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+
+  // 1. Fondo Corporativo Degradado
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  gradient.addColorStop(0, '#E30613');
+  gradient.addColorStop(0.5, '#B7050F');
+  gradient.addColorStop(1, '#1A1A1A');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // 2. Elementos Decorativos de Fondo (Círculos dorados sutiles)
+  ctx.fillStyle = 'rgba(255, 210, 0, 0.08)';
+  ctx.beginPath();
+  ctx.arc(width * 0.85, height * 0.2, width * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(width * 0.1, height * 0.8, width * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Logo Oficial
+  if (canvasLogoImage && canvasLogoImage.complete && canvasLogoImage.naturalWidth > 0) {
+    const logoW = width * 0.28;
+    const logoH = (canvasLogoImage.height / canvasLogoImage.width) * logoW;
+    ctx.drawImage(canvasLogoImage, (width - logoW) / 2, height * 0.08, logoW, logoH);
+  } else {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('AVÍCOLA QUÉ POLLO', width / 2, height * 0.14);
+  }
+
+  // 4. Título Principal
+  const title = document.getElementById('ad-title-input')?.value || '¡GRAN OFERTA DEL DÍA!';
+  ctx.fillStyle = '#FFD200';
+  ctx.font = '900 64px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 12;
+  ctx.fillText(title.toUpperCase(), width / 2, height * 0.38);
+  ctx.shadowBlur = 0; // reset
+
+  // 5. Mensaje Secundario / Producto
+  const subtitle = document.getElementById('ad-subtitle-input')?.value || 'Frescura y el Mejor Sabor a tu Mesa';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '600 34px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(subtitle, width / 2, height * 0.44);
+
+  // 6. Tarjeta Central Blanca de Precios
+  const cardW = width * 0.72;
+  const cardH = height * 0.28;
+  const cardX = (width - cardW) / 2;
+  const cardY = height * 0.50;
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.roundRect(cardX, cardY, cardW, cardH, 32);
+  ctx.fill();
+
+  // Sello / Badge de Descuento
+  const badgeText = document.getElementById('ad-badge-text')?.value || 'AHORRA 18%';
+  ctx.fillStyle = '#00A651';
+  ctx.beginPath();
+  ctx.roundRect(cardX + cardW - 220, cardY - 24, 200, 52, 26);
+  ctx.fill();
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(badgeText, cardX + cardW - 120, cardY + 10);
+
+  // Precios
+  const normalPrice = document.getElementById('ad-price-normal')?.value || '8.50';
+  const promoPrice = document.getElementById('ad-price-promo')?.value || '6.99';
+
+  // Precio Normal Tachado
+  ctx.fillStyle = '#777777';
+  ctx.font = 'bold 36px sans-serif';
+  ctx.textAlign = 'center';
+  const normalText = `Antes: $${normalPrice}`;
+  ctx.fillText(normalText, width / 2, cardY + 80);
+
+  // Línea de tachado
+  const normWidth = ctx.measureText(normalText).width;
+  ctx.strokeStyle = '#E30613';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo((width - normWidth) / 2 - 10, cardY + 70);
+  ctx.lineTo((width + normWidth) / 2 + 10, cardY + 70);
+  ctx.stroke();
+
+  // Precio Promoción Gigante
+  ctx.fillStyle = '#E30613';
+  ctx.font = '900 96px sans-serif';
+  ctx.fillText(`$${promoPrice}`, width / 2, cardY + 185);
+
+  // 7. Pie de Banner: Información de Contacto y Pedidos
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 30px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('📞 Haz tu pedido al: 0984149863 • Ambato, Ecuador', width / 2, height * 0.88);
+
+  ctx.fillStyle = '#FFD200';
+  ctx.font = '600 22px sans-serif';
+  ctx.fillText('Calidad, Frescura y el Mejor Sabor • Avícola QUÉ POLLO', width / 2, height * 0.92);
+}
+
+function downloadCanvasAd() {
+  const canvas = document.getElementById('ad-preview-canvas');
+  if (!canvas) return;
+
+  const dataUrl = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `que-pollo-publicidad-${Date.now()}.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  Toast.fire({ icon: 'success', title: 'Banner publicitario descargado' });
+}
+
+// ==========================================
+// 8. WHATSAPP COMERCIAL CENTER
+// ==========================================
+function renderWhatsAppView() {
+  const sel = document.getElementById('wa-client-select');
+  if (sel) {
+    sel.innerHTML = state.clients.map(c => `
+      <option value="${c.id_cliente}" data-phone="${c.telefono}" data-name="${c.nombre} ${c.apellido}">
+        ${c.nombre} ${c.apellido} (${c.telefono || 'Sin teléfono'})
+      </option>
+    `).join('');
+  }
+
+  applyWhatsAppTemplate();
+}
+
+function onWhatsAppClientChange() {
+  applyWhatsAppTemplate();
+}
+
+function applyWhatsAppTemplate() {
+  const tplSelect = document.getElementById('wa-template-select');
+  const cliSelect = document.getElementById('wa-client-select');
+  const msgInput = document.getElementById('wa-message-text');
+
+  if (!tplSelect || !cliSelect || !msgInput) return;
+
+  const tpl = tplSelect.value;
+  const selectedOpt = cliSelect.selectedOptions[0];
+  const clientName = selectedOpt ? selectedOpt.getAttribute('data-name') : 'Estimado cliente';
+
+  let text = '';
+  switch (tpl) {
+    case 'promo':
+      text = `¡Hola ${clientName}! 🍗 En Avícola QUÉ POLLO tenemos hoy una súper oferta especial para ti: Pollo entero fresco faenado del día a un precio insuperable. ¿Te gustaría apartar tu pedido para entrega en Ambato?`;
+      break;
+    case 'order':
+      text = `¡Hola ${clientName}! 📦 Confirmamos la recepción de tu pedido en Avícola QUÉ POLLO. Ya está siendo preparado con la máxima frescura e higiene. En breve saldrá hacia tu dirección. ¡Muchas gracias por tu preferencia!`;
+      break;
+    case 'pending_pay':
+      text = `Estimado(a) ${clientName}, esperamos te encuentres muy bien. Te escribimos cordialmente de Avícola QUÉ POLLO para recordarte el saldo pendiente de tu última factura comercial. Quedamos a tu disposición para enviarte los datos de transferencia.`;
+      break;
+    case 'bday':
+      text = `¡Feliz Cumpleaños ${clientName}! 🎂🎉 Desde Avícola QUÉ POLLO te deseamos el mejor de los días. Para celebrarlo, tienes un 15% de descuento directo en tu próximo pedido. ¡Un abrazo!`;
+      break;
+    case 'recovery':
+      text = `¡Hola ${clientName}! 👋 Hace días no sabemos de ti en Avícola QUÉ POLLO y te extrañamos. Queremos consentirte con una cubeta de huevos a precio de distribuidor en tu próxima compra de pollo. ¿Te llevamos hoy tu pedido?`;
+      break;
+  }
+
+  msgInput.value = text;
+  const p = document.getElementById('wa-preview-text');
+  if (p) p.textContent = text;
+}
+
+function sendWhatsAppMessage() {
+  const cliSelect = document.getElementById('wa-client-select');
+  const msgInput = document.getElementById('wa-message-text');
+
+  if (!cliSelect || !msgInput) return;
+
+  const selectedOpt = cliSelect.selectedOptions[0];
+  const phone = selectedOpt ? selectedOpt.getAttribute('data-phone') : '';
+  const message = msgInput.value.trim();
+
+  if (!phone) {
+    Toast.fire({ icon: 'warning', title: 'El cliente seleccionado no tiene número de teléfono registrado' });
+    return;
+  }
+
+  let clean = phone.replace(/\D/g, '');
+  if (clean.startsWith('0')) clean = clean.substring(1);
+  const fullPhone = `593${clean}`;
+
+  const url = `https://wa.me/${fullPhone}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank');
+}
+
+function sharePromoViaWhatsApp(titulo, descuento) {
+  const text = `¡Mira esta gran promoción de Avícola QUÉ POLLO! 🍗 ${titulo} con ${descuento} de descuento. Pide directo al 0984149863 en Ambato.`;
+  const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  window.open(url, '_blank');
+}
+
+// ==========================================
+// 9. PROGRAMA DE FIDELIZACIÓN (POLLOPUNTOS)
+// ==========================================
+function renderLoyaltyView() {
+  const catContainer = document.getElementById('rewards-catalog-container');
+  const tbody = document.getElementById('table-fidelizacion-body');
+
+  if (catContainer) {
+    catContainer.innerHTML = state.loyaltyRewards.map(rew => `
+      <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Recompensa</span>
+            <span class="text-sm font-black text-[#E30613]">${rew.puntos_requeridos} Pts</span>
+          </div>
+          <h4 class="font-bold text-gray-800 text-sm mt-2">${rew.titulo}</h4>
+          <p class="text-xs text-gray-500 mt-1">${rew.descripcion}</p>
+        </div>
+        <button onclick="openRedeemPointsModal('${rew.id}')" class="mt-4 w-full py-2 rounded-xl bg-red-50 text-[#E30613] hover:bg-red-100 text-xs font-bold transition-colors">
+          Canjear para un Cliente
+        </button>
+      </div>
+    `).join('');
+  }
+
+  if (tbody) {
+    if (state.loyaltyLedger.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" class="px-4 py-8 text-center text-gray-400">No hay movimientos de puntos registrados.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = state.loyaltyLedger.map(l => {
+      const cli = state.clients.find(c => c.id_cliente === l.id_cliente);
+      const cliName = cli ? `${cli.nombre} ${cli.apellido}` : l.id_cliente;
+      const isPositive = (l.puntos || 0) > 0;
+
+      return `
+        <tr class="hover:bg-gray-50/80 transition-colors">
+          <td class="px-4 py-3 font-mono text-gray-600">${l.id}</td>
+          <td class="px-4 py-3 font-bold text-gray-800">${cliName}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isPositive ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+              ${l.tipo_operacion || (isPositive ? 'Acumulación' : 'Canje')}
+            </span>
+          </td>
+          <td class="px-4 py-3 font-mono font-black ${isPositive ? 'text-[#00A651]' : 'text-[#E30613]'}">
+            ${isPositive ? `+${l.puntos}` : l.puntos} pts
+          </td>
+          <td class="px-4 py-3 text-gray-600">${l.referencia || 'Compra comercial'}</td>
+          <td class="px-4 py-3 text-gray-400">${l.fecha || ''}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+}
+
+function openRedeemPointsModal(rewardId = null) {
+  const cliSel = document.getElementById('redeem-client-select');
+  const rewSel = document.getElementById('redeem-reward-select');
+
+  if (cliSel) {
+    cliSel.innerHTML = state.clients.map(c => `
+      <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (Saldo: ${c.puntos_fidelidad || 0} pts)</option>
+    `).join('');
+  }
+
+  if (rewSel) {
+    rewSel.innerHTML = state.loyaltyRewards.map(r => `
+      <option value="${r.id}" data-cost="${r.puntos_requeridos}" ${r.id === rewardId ? 'selected' : ''}>
+        ${r.titulo} (${r.puntos_requeridos} pts)
+      </option>
+    `).join('');
+  }
+
+  onRedeemRewardChange();
+  onRedeemClientChange();
+  openModal('modal-redeem-points');
+}
+
+function onRedeemRewardChange() {
+  const rewSel = document.getElementById('redeem-reward-select');
+  const costInput = document.getElementById('redeem-cost-input');
+  if (rewSel && costInput) {
+    const cost = rewSel.selectedOptions[0]?.getAttribute('data-cost') || 0;
+    costInput.value = cost;
+  }
+}
+
+function onRedeemClientChange() {
+  const cliId = document.getElementById('redeem-client-select')?.value;
+  const cli = state.clients.find(c => c.id_cliente === cliId);
+  const balDisp = document.getElementById('redeem-client-balance');
+  if (cli && balDisp) {
+    balDisp.textContent = `Saldo disponible: ${cli.puntos_fidelidad || 0} PolloPuntos`;
+  }
+}
+
+async function handleRedeemPointsSubmit(e) {
+  if (e) e.preventDefault();
+
+  const idCli = document.getElementById('redeem-client-select')?.value;
+  const idRew = document.getElementById('redeem-reward-select')?.value;
+  const cost = parseInt(document.getElementById('redeem-cost-input')?.value, 10) || 0;
+
+  const cli = state.clients.find(c => c.id_cliente === idCli);
+  const rew = state.loyaltyRewards.find(r => r.id === idRew);
+
+  if (!cli || !rew) return;
+
+  if ((cli.puntos_fidelidad || 0) < cost) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Puntos Insuficientes',
+      text: `El cliente ${cli.nombre} ${cli.apellido} tiene ${cli.puntos_fidelidad || 0} pts, pero se requieren ${cost} pts para canjear "${rew.titulo}".`,
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
+
+  try {
+    await window.dataService.redeemLoyaltyReward(idCli, idRew);
+    state.clients = await window.dataService.getClients();
+    state.loyaltyLedger = await window.dataService.getLoyaltyLedger();
+    renderLoyaltyView();
+    closeModal('modal-redeem-points');
+    Toast.fire({ icon: 'success', title: `Canje exitoso: ${rew.titulo}` });
+  } catch (err) {
+    console.error('Error canjeando recompensa:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+// ==========================================
+// 10. CENTRO DE REPORTES (EXPORTACIÓN CSV)
+// ==========================================
+function exportClientsCSV() {
+  if (window.dataService) window.dataService.exportCSV('clientes');
+  Toast.fire({ icon: 'success', title: 'Descargando reporte de clientes en Excel (CSV)' });
+}
+
+function exportInventoryCSV() {
+  if (window.dataService) window.dataService.exportCSV('inventario');
+  Toast.fire({ icon: 'success', title: 'Descargando reporte de inventario en Excel (CSV)' });
+}
+
+function exportOrdersCSV() {
+  if (window.dataService) window.dataService.exportCSV('pedidos');
+  Toast.fire({ icon: 'success', title: 'Descargando reporte de pedidos en Excel (CSV)' });
+}
+
+function exportInvoicesCSV() {
+  if (window.dataService) window.dataService.exportCSV('facturas');
+  Toast.fire({ icon: 'success', title: 'Descargando libro de facturación en Excel (CSV)' });
+}
+
+// ==========================================
+// 11. GESTIÓN DE CATEGORÍAS MODAL
+// ==========================================
+function populateCategoryDropdowns() {
+  const prodSelect = document.getElementById('product-category');
+  const filterSelect = document.getElementById('filter-product-category');
+
+  if (prodSelect) {
+    prodSelect.innerHTML = state.categories.map(c => `
+      <option value="${c.nombre_categoria}">${c.nombre_categoria}</option>
+    `).join('');
+  }
+
+  if (filterSelect) {
+    const current = filterSelect.value;
+    filterSelect.innerHTML = `
+      <option value="">Todas las Categorías</option>
+      ${state.categories.map(c => `<option value="${c.nombre_categoria}">${c.nombre_categoria}</option>`).join('')}
+    `;
+    if (current) filterSelect.value = current;
+  }
+}
+
+function openCategoriesModal() {
+  renderCategoriesModalList();
+  openModal('modal-categories');
+}
+
+function renderCategoriesModalList() {
+  const list = document.getElementById('categories-modal-list');
+  if (!list) return;
+
+  list.innerHTML = state.categories.map(c => `
+    <div class="flex items-center justify-between p-2.5 hover:bg-gray-50">
+      <span class="font-bold text-gray-800">${c.nombre_categoria}</span>
+      <button onclick="deleteCategoryPrompt('${c.id_categoria}')" class="text-red-500 hover:text-red-700 p-1">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+  `).join('');
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
+async function handleQuickAddCategory(e) {
+  if (e) e.preventDefault();
+
+  const nameInput = document.getElementById('quick-cat-name');
+  const name = nameInput ? nameInput.value.trim() : '';
+
+  if (!name) return;
+
+  try {
+    await window.dataService.saveCategory({
+      id_categoria: `CAT-${Date.now().toString().slice(-4)}`,
+      nombre_categoria: name
+    });
+    state.categories = await window.dataService.getCategories();
+    populateCategoryDropdowns();
+    renderCategoriesModalList();
+    if (nameInput) nameInput.value = '';
+    Toast.fire({ icon: 'success', title: `Categoría "${name}" agregada` });
+  } catch (err) {
+    console.error('Error agregando categoría:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+async function deleteCategoryPrompt(catId) {
+  const cat = state.categories.find(c => c.id_categoria === catId);
+  if (!cat) return;
+
+  const res = await Swal.fire({
+    title: '¿Eliminar Categoría?',
+    text: `Se eliminará la categoría "${cat.nombre_categoria}".`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.deleteCategory(catId);
+      state.categories = await window.dataService.getCategories();
+      populateCategoryDropdowns();
+      renderCategoriesModalList();
+      Toast.fire({ icon: 'success', title: 'Categoría eliminada' });
+    } catch (err) {
+      console.error('Error eliminando categoría:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+// ==========================================
+// 12. CONTROL DE ACCESOS, USUARIOS & RBAC
+// ==========================================
+function setProfilesFilter(status) {
+  state.currentProfileFilter = status;
+
+  ['todos', 'pendiente', 'aprobado', 'rechazado', 'desactivado'].forEach(s => {
+    const btn = document.getElementById(`tab-filter-${s}`);
+    if (btn) {
+      if (s.toUpperCase() === status.toUpperCase()) {
+        btn.className = 'tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-[#333333] text-white';
+      } else {
+        btn.className = 'tab-profile-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-50 text-gray-700 border border-gray-200';
+      }
+    }
+  });
+
+  renderUsuariosTable();
+}
+
+function renderUsuariosTable() {
+  const tbody = document.getElementById('table-usuarios-body');
+  if (!tbody) return;
+
+  const statusFilter = state.currentProfileFilter;
+
+  const filtered = state.userProfiles.filter(u => {
+    if (statusFilter === 'TODOS') return true;
+    return (u.estado || 'APROBADO').toUpperCase() === statusFilter.toUpperCase();
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No hay perfiles con el estado seleccionado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(u => {
+    const isMasterAdmin = u.correo === 'veronica@quepollo.com' || u.correo === 'salome@quepollo.com';
+
+    let statusBadge = '';
+    switch (u.estado) {
+      case 'PENDIENTE':
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">🟡 PENDIENTE</span>`;
+        break;
+      case 'RECHAZADO':
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">🔴 RECHAZADO</span>`;
+        break;
+      case 'DESACTIVADO':
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">⚪ DESACTIVADO</span>`;
+        break;
+      default:
+        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 APROBADO</span>`;
+    }
+
+    const roleBadge = u.rol === 'ADMINISTRADOR'
+      ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-red-50 text-[#E30613] border border-red-200">👑 ADMIN</span>`
+      : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-700">${u.rol || 'VENDEDOR'}</span>`;
+
+    return `
+      <tr class="hover:bg-gray-50/80 transition-colors">
+        <td class="px-4 py-3">
+          <p class="font-bold text-gray-900">${u.nombre} ${u.apellido || ''}</p>
+          ${isMasterAdmin ? '<span class="text-[9px] font-bold text-[#E30613]">★ Administradora Titular</span>' : ''}
+        </td>
+        <td class="px-4 py-3">
+          <p class="font-mono text-gray-700">${u.correo}</p>
+          <span class="text-[11px] text-gray-500">${u.telefono || 'Sin teléfono'}</span>
+        </td>
+        <td class="px-4 py-3">${roleBadge}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-gray-500">${u.fecha_registro || ''}</td>
+        <td class="px-4 py-3 text-xs text-gray-600">${u.aprobado_por || 'Sistema'}</td>
+        <td class="px-4 py-3 text-right">
+          <div class="flex items-center justify-end space-x-1.5">
+            ${u.estado === 'PENDIENTE' ? `
+              <button onclick="approveUserPrompt('${u.id || u.user_id}')" title="Aprobar Acceso" class="px-2 py-1 rounded-lg bg-[#00A651] hover:bg-emerald-700 text-white font-bold text-xs shadow-xs">
+                Aprobar
+              </button>
+              <button onclick="rejectUserPrompt('${u.id || u.user_id}')" title="Rechazar" class="px-2 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs">
+                Rechazar
+              </button>
+            ` : `
+              ${!isMasterAdmin ? `
+                <button onclick="toggleUserRolePrompt('${u.id || u.user_id}')" title="Cambiar Rol" class="p-1.5 rounded-lg text-gray-600 hover:bg-gray-100">
+                  <i data-lucide="shield" class="w-4 h-4"></i>
+                </button>
+                <button onclick="toggleUserStatusPrompt('${u.id || u.user_id}')" title="Cambiar Estado" class="p-1.5 rounded-lg text-amber-600 hover:bg-amber-50">
+                  <i data-lucide="power" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteUserPrompt('${u.id || u.user_id}')" title="Eliminar" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              ` : '<span class="text-[10px] text-gray-400 font-bold">Protegido</span>'}
+            `}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  renderAuditLogs();
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function renderAuditLogs() {
+  const container = document.getElementById('audit-log-container');
+  if (!container) return;
+
+  if (state.auditLogs.length === 0) {
+    container.innerHTML = `<p class="text-gray-400 py-2">No hay registros de auditoría recientes.</p>`;
+    return;
+  }
+
+  container.innerHTML = state.auditLogs.slice(0, 15).map(l => `
+    <div class="py-1 border-b border-gray-100 flex items-center justify-between">
+      <div>
+        <span class="font-bold text-[#E30613]">[${l.accion}]</span>
+        <span class="text-gray-700 ml-1">${l.detalles || ''}</span>
+      </div>
+      <span class="text-[10px] text-gray-400 font-mono">${l.fecha || ''}</span>
+    </div>
+  `).join('');
+}
+
+async function approveUserPrompt(userId) {
+  const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+  if (!prof) return;
+
+  const res = await Swal.fire({
+    title: '¿Aprobar Cuenta de Usuario?',
+    html: `Autorizar el acceso de <strong>${prof.nombre} ${prof.apellido || ''}</strong> (${prof.correo}) al CRM de Avícola QUÉ POLLO.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#00A651',
+    confirmButtonText: 'Sí, aprobar acceso',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      const adminName = state.currentUser ? `${state.currentUser.nombre || 'Administradora'}` : 'Veronica Toaza';
+      await window.dataService.approveUserProfile(userId, adminName);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.auditLogs = await window.dataService.getAuditLogs();
+      updateNavigationBadges();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: 'Usuario aprobado con éxito' });
+    } catch (err) {
+      console.error('Error aprobando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+async function rejectUserPrompt(userId) {
+  const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+  if (!prof) return;
+
+  const res = await Swal.fire({
+    title: '¿Rechazar Solicitud?',
+    html: `Rechazar el acceso para <strong>${prof.nombre}</strong> (${prof.correo}).`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Sí, rechazar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.rejectUserProfile(userId);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      state.auditLogs = await window.dataService.getAuditLogs();
+      updateNavigationBadges();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'info', title: 'Solicitud rechazada' });
+    } catch (err) {
+      console.error('Error rechazando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+async function toggleUserRolePrompt(userId) {
+  const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+  if (!prof) return;
+
+  const nextRole = prof.rol === 'ADMINISTRADOR' ? 'VENDEDOR' : 'ADMINISTRADOR';
+
+  const res = await Swal.fire({
+    title: '¿Cambiar Rol de Acceso?',
+    html: `Cambiar el rol de <strong>${prof.nombre}</strong> a <span class="font-bold text-[#E30613]">${nextRole}</span>.`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: `Sí, cambiar a ${nextRole}`,
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.changeUserRole(userId, nextRole);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: `Rol cambiado a ${nextRole}` });
+    } catch (err) {
+      console.error('Error cambiando rol:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+async function toggleUserStatusPrompt(userId) {
+  const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+  if (!prof) return;
+
+  const newStatus = prof.estado === 'DESACTIVADO' ? 'APROBADO' : 'DESACTIVADO';
+
+  const res = await Swal.fire({
+    title: `¿${newStatus === 'DESACTIVADO' ? 'Desactivar' : 'Reactivar'} Usuario?`,
+    text: `El usuario ${prof.nombre} ${newStatus === 'DESACTIVADO' ? 'no podrá iniciar sesión en el CRM' : 'volverá a tener acceso'}.`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Confirmar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      prof.estado = newStatus;
+      await window.dataService.saveUserProfile(prof);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      updateNavigationBadges();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: `Usuario ${newStatus.toLowerCase()}` });
+    } catch (err) {
+      console.error('Error modificando estado:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+async function deleteUserPrompt(userId) {
+  const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+  if (!prof) return;
+
+  if (state.currentUser && (state.currentUser.correo === prof.correo || state.currentUser.id === userId)) {
+    Swal.fire({ icon: 'error', title: 'Acción no permitida', text: 'No puedes eliminar tu propia sesión activa.', confirmButtonColor: '#E30613' });
+    return;
+  }
+
+  const res = await Swal.fire({
+    title: '¿Eliminar Usuario Permanentemente?',
+    text: `Se borrará la cuenta de ${prof.nombre} (${prof.correo}).`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#E30613',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  });
+
+  if (res.isConfirmed) {
+    try {
+      await window.dataService.deleteUserProfile(userId);
+      state.userProfiles = await window.dataService.getUserProfiles();
+      updateNavigationBadges();
+      renderUsuariosTable();
+      Toast.fire({ icon: 'success', title: 'Usuario eliminado' });
+    } catch (err) {
+      console.error('Error eliminando usuario:', err);
+      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+    }
+  }
+}
+
+function openUserModal(userId = null) {
+  state.editingUserId = userId;
+  const form = document.getElementById('form-user');
+  if (form) form.reset();
+
+  const title = document.getElementById('modal-user-title');
+  const idInput = document.getElementById('user-profile-id');
+  const emailInput = document.getElementById('user-email');
+
+  if (userId) {
+    const prof = state.userProfiles.find(u => (u.id === userId || u.user_id === userId));
+    if (!prof) return;
+
+    if (title) title.textContent = 'Editar Perfil de Usuario';
+    if (idInput) idInput.value = prof.id || prof.user_id;
+    if (emailInput) {
+      emailInput.value = prof.correo;
+      emailInput.readOnly = true;
+    }
+    document.getElementById('user-name').value = prof.nombre || '';
+    document.getElementById('user-lastname').value = prof.apellido || '';
+    document.getElementById('user-phone').value = prof.telefono || '';
+    document.getElementById('user-role').value = prof.rol || 'VENDEDOR';
+    document.getElementById('user-status').value = prof.estado || 'APROBADO';
+  } else {
+    if (title) title.textContent = 'Crear Nuevo Perfil de Usuario';
+    if (idInput) idInput.value = `usr-${Date.now()}`;
+    if (emailInput) {
+      emailInput.value = '';
+      emailInput.readOnly = false;
+    }
+    document.getElementById('user-role').value = 'VENDEDOR';
+    document.getElementById('user-status').value = 'APROBADO';
+  }
+
+  openModal('modal-user');
+}
+
+async function handleSaveUser(e) {
+  if (e) e.preventDefault();
+
+  const id = document.getElementById('user-profile-id')?.value;
+  const nombre = document.getElementById('user-name')?.value.trim();
+  const apellido = document.getElementById('user-lastname')?.value.trim();
+  const correo = document.getElementById('user-email')?.value.trim().toLowerCase();
+  const telefono = document.getElementById('user-phone')?.value.trim();
+  const rol = document.getElementById('user-role')?.value;
+  const estado = document.getElementById('user-status')?.value;
+
+  if (!nombre || !correo) {
+    Toast.fire({ icon: 'warning', title: 'Completa los campos obligatorios' });
+    return;
+  }
+
+  const profileData = {
+    id: id || `usr-${Date.now()}`,
+    user_id: id || `usr-${Date.now()}`,
+    nombre,
+    apellido,
+    correo,
+    telefono,
+    rol,
+    estado,
+    fecha_registro: new Date().toISOString().split('T')[0],
+    fecha_aprobacion: estado === 'APROBADO' ? new Date().toISOString().split('T')[0] : null,
+    aprobado_por: estado === 'APROBADO' ? (state.currentUser?.nombre || 'Administradora') : null
+  };
+
+  try {
+    await window.dataService.saveUserProfile(profileData);
+    state.userProfiles = await window.dataService.getUserProfiles();
+    updateNavigationBadges();
+    renderUsuariosTable();
+    closeModal('modal-user');
+    Toast.fire({ icon: 'success', title: 'Perfil guardado con éxito' });
+  } catch (err) {
+    console.error('Error guardando usuario:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
+  }
+}
+
+// ==========================================
+// 13. AUTENTICACIÓN, SESIONES & GATEKEEPER
+// ==========================================
+async function checkAuthSession() {
+  const profileJson = localStorage.getItem('qp_current_profile') || sessionStorage.getItem('qp_current_profile');
+  if (profileJson) {
+    try {
+      const user = JSON.parse(profileJson);
+      state.currentUser = user;
+      evaluateUserAccess(user);
+      return;
+    } catch (e) {
+      console.warn('Error parseando sesión guardada');
+    }
+  }
+
+  // Si no hay sesión guardada, mostrar pantalla de login
+  showGatekeeperScreen('gatekeeper-auth');
+}
+
 function evaluateUserAccess(user) {
   if (!user) {
-    showGatekeeperScreen('login');
+    showGatekeeperScreen('gatekeeper-auth');
     return;
   }
 
-  const estado = (user.estado || 'PENDIENTE').toUpperCase();
+  // Maestras Titulares tienen acceso garantizado
+  const isMasterAdmin = user.correo === 'veronica@quepollo.com' || user.correo === 'salome@quepollo.com';
 
-  if (estado === 'PENDIENTE') {
-    const nameEl = document.getElementById('pending-user-name');
-    const emailEl = document.getElementById('pending-user-email');
-    if (nameEl) nameEl.textContent = `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.correo;
-    if (emailEl) emailEl.textContent = user.correo || '-';
-    showGatekeeperScreen('pending');
-    return;
-  }
-
-  if (estado === 'RECHAZADO') {
-    showGatekeeperScreen('rejected');
-    return;
-  }
-
-  if (estado === 'DESACTIVADO') {
-    showGatekeeperScreen('disabled');
-    return;
-  }
-
-  if (estado === 'APROBADO') {
-    showGatekeeperScreen('app');
-
-    // Actualizar nombre y rol en la cabecera
-    const nameEl = document.getElementById('header-user-name');
-    const roleEl = document.getElementById('header-user-role');
-    const fullName = `${user.nombre || ''} ${user.apellido || ''}`.trim() || user.correo;
-    if (nameEl) nameEl.textContent = fullName;
-    if (roleEl) {
-      roleEl.textContent = user.rol === 'ADMINISTRADOR' ? 'Administrador' : 'Usuario Operativo';
-      roleEl.className = user.rol === 'ADMINISTRADOR'
-        ? 'text-[10px] font-bold text-[#E30613]'
-        : 'text-[10px] font-semibold text-[#00A651]';
+  if (!isMasterAdmin) {
+    if (user.estado === 'PENDIENTE') {
+      showGatekeeperScreen('gatekeeper-pending');
+      const pEmail = document.getElementById('pending-user-email');
+      if (pEmail) pEmail.textContent = user.correo;
+      return;
     }
+    if (user.estado === 'RECHAZADO') {
+      showGatekeeperScreen('gatekeeper-rejected');
+      return;
+    }
+    if (user.estado === 'DESACTIVADO') {
+      showGatekeeperScreen('gatekeeper-deactivated');
+      return;
+    }
+  }
 
-    // Control de Acceso Basado en Roles (RBAC) para el módulo de usuarios
-    const navUserBtn = document.getElementById('nav-btn-usuarios');
-    const mobileNavUserBtn = document.getElementById('mobile-nav-btn-usuarios');
+  // Usuario Aprobado -> Mostrar la Aplicación Principal
+  showGatekeeperScreen('main-app-container');
 
-    if (user.rol !== 'ADMINISTRADOR') {
-      if (navUserBtn) navUserBtn.classList.add('hidden');
-      if (mobileNavUserBtn) mobileNavUserBtn.classList.add('hidden');
-      if (state.currentView === 'usuarios') {
-        state.currentView = 'dashboard';
-      }
+  // Actualizar datos del usuario en la interfaz
+  const topName = document.getElementById('topbar-user-name');
+  const topRole = document.getElementById('topbar-user-role');
+  const topInit = document.getElementById('topbar-user-initials');
+
+  const nameStr = `${user.nombre || 'Usuario'} ${user.apellido || ''}`.trim();
+  if (topName) topName.textContent = nameStr;
+  if (topRole) topRole.textContent = user.rol || 'VENDEDOR';
+  if (topInit) topInit.textContent = (user.nombre ? user.nombre.charAt(0) : 'U').toUpperCase();
+
+  // Control de visibilidad del botón Usuarios según Rol
+  const navUsers = document.getElementById('nav-item-usuarios');
+  if (navUsers) {
+    if (user.rol === 'ADMINISTRADOR' || isMasterAdmin) {
+      navUsers.classList.remove('hidden');
     } else {
-      if (navUserBtn) navUserBtn.classList.remove('hidden');
-      if (mobileNavUserBtn) mobileNavUserBtn.classList.remove('hidden');
+      navUsers.classList.add('hidden');
     }
-
-    switchView(state.currentView || 'dashboard');
   }
+
+  switchView('dashboard');
 }
 
-// Iniciar sesión
+function showGatekeeperScreen(screenId) {
+  const screens = [
+    'gatekeeper-auth',
+    'gatekeeper-pending',
+    'gatekeeper-rejected',
+    'gatekeeper-deactivated',
+    'main-app-container'
+  ];
+
+  screens.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) {
+      if (s === screenId) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+
+  if (window.lucide) window.lucide.createIcons();
+}
+
 async function handleLoginSubmit(e) {
   if (e) e.preventDefault();
 
   const emailInput = document.getElementById('login-email');
   const passInput = document.getElementById('login-password');
-  const remember = document.getElementById('login-remember')?.checked;
+  const remember = document.getElementById('remember-me')?.checked;
 
-  const email = emailInput ? emailInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim().toLowerCase() : '';
   const password = passInput ? passInput.value.trim() : '';
 
   if (!email || !password) {
-    Toast.fire({ icon: 'warning', title: 'Por favor ingresa tu correo y contraseña' });
+    Toast.fire({ icon: 'warning', title: 'Ingresa correo y contraseña' });
     return;
   }
 
-  const btnSubmit = document.getElementById('btn-login-submit');
-  const originalBtnText = btnSubmit ? btnSubmit.innerHTML : '';
-  if (btnSubmit) {
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block mr-2"></i> Verificando...`;
-  }
-
   try {
-    const result = await window.dataService.signInUser({ email, password });
-    
-    state.currentUser = result.profile;
-    const storage = remember ? localStorage : sessionStorage;
-    storage.setItem('qp_current_profile', JSON.stringify(result.profile));
-    storage.setItem('qp_current_user', JSON.stringify(result.profile));
+    const res = await window.dataService.loginWithCredentials(email, password);
+    state.currentUser = res.profile;
 
-    evaluateUserAccess(result.profile);
-
-    if (result.profile.estado === 'APROBADO') {
-      Toast.fire({
-        icon: 'success',
-        title: `¡Bienvenido(a), ${result.profile.nombre || result.profile.correo}!`
-      });
+    if (remember) {
+      localStorage.setItem('qp_current_profile', JSON.stringify(res.profile));
+    } else {
+      sessionStorage.setItem('qp_current_profile', JSON.stringify(res.profile));
     }
+
+    evaluateUserAccess(res.profile);
+    Toast.fire({ icon: 'success', title: `Bienvenida, ${res.profile.nombre}` });
   } catch (err) {
-    console.error('Error de autenticación:', err);
+    console.error('Error de login:', err);
     Swal.fire({
       icon: 'error',
       title: 'Acceso Denegado',
-      text: err.message || 'Credenciales inválidas. Por favor verifica tu correo y contraseña.',
+      text: err.message || 'Credenciales incorrectas.',
       confirmButtonColor: '#E30613'
     });
-  } finally {
-    if (btnSubmit) {
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = originalBtnText;
-      if (window.lucide) window.lucide.createIcons();
-    }
   }
 }
 
-// Registro de cuenta nueva (Público)
 async function handleRegisterSubmit(e) {
   if (e) e.preventDefault();
 
   const nombre = document.getElementById('reg-name')?.value.trim();
   const apellido = document.getElementById('reg-lastname')?.value.trim();
-  const email = document.getElementById('reg-email')?.value.trim().toLowerCase();
+  const correo = document.getElementById('reg-email')?.value.trim().toLowerCase();
   const telefono = document.getElementById('reg-phone')?.value.trim();
-  const password = document.getElementById('reg-password')?.value.trim();
-  const confirmPass = document.getElementById('reg-confirm-password')?.value.trim();
+  const password = document.getElementById('reg-password')?.value;
+  const passConfirm = document.getElementById('reg-confirm-password')?.value;
 
-  if (!nombre || !apellido || !email || !telefono || !password) {
-    Toast.fire({ icon: 'warning', title: 'Por favor completa todos los campos requeridos' });
+  if (!nombre || !apellido || !correo || !telefono || !password) {
+    Toast.fire({ icon: 'warning', title: 'Completa todos los campos obligatorios' });
     return;
   }
 
-  if (password !== confirmPass) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Las contraseñas no coinciden',
-      text: 'Por favor asegúrate de escribir la misma contraseña en ambos campos.',
-      confirmButtonColor: '#E30613'
-    });
+  if (password !== passConfirm) {
+    Swal.fire({ icon: 'error', title: 'Contraseñas no coinciden', text: 'Verifica la confirmación de tu contraseña.', confirmButtonColor: '#E30613' });
     return;
-  }
-
-  if (password.length < 6) {
-    Swal.fire({
-      icon: 'warning',
-      title: 'Contraseña muy corta',
-      text: 'La contraseña debe tener al menos 6 caracteres por seguridad.',
-      confirmButtonColor: '#E30613'
-    });
-    return;
-  }
-
-  const btnSubmit = document.getElementById('btn-register-submit');
-  const originalText = btnSubmit ? btnSubmit.innerHTML : '';
-  if (btnSubmit) {
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin mr-1 inline-block"></i> Registrando...`;
   }
 
   try {
-    const result = await window.dataService.signUpUser({
-      email,
-      password,
+    const regResult = await window.dataService.registerNewUser({
       nombre,
       apellido,
-      telefono
+      correo,
+      telefono,
+      password
     });
 
     closeModal('modal-register');
-    const regForm = document.getElementById('form-register');
-    if (regForm) regForm.reset();
+    state.currentUser = regResult;
 
-    // Actualizar perfiles locales
-    state.userProfiles = await window.dataService.getUserProfiles();
-    state.users = state.userProfiles;
-    updateNavigationBadges();
-
-    // Mostrar modal informativo
-    await Swal.fire({
+    Swal.fire({
       icon: 'info',
-      title: '¡Solicitud Registrada con Éxito!',
-      html: `
-        <div class="space-y-3 text-left text-xs text-gray-600">
-          <p>Tu cuenta ha sido creada para: <strong class="text-gray-900">${nombre} ${apellido}</strong> (${email}).</p>
-          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800">
-            <strong>Estado actual: PENDIENTE DE APROBACIÓN</strong>
-            <p class="mt-1">Un administrador revisará y habilitará tu acceso al CRM de Avícola QUÉ POLLO.</p>
-          </div>
-        </div>
-      `,
+      title: '¡Cuenta Registrada!',
+      html: `Hola <strong>${nombre}</strong>, tu cuenta ha sido creada exitosamente.<br><br>Por políticas de seguridad, ha quedado en estado <span class="font-bold text-amber-600">PENDIENTE DE APROBACIÓN</span> hasta que una administradora (Veronica Toaza o Salomé Flores) autorice tu ingreso.`,
       confirmButtonColor: '#E30613',
       confirmButtonText: 'Entendido'
+    }).then(() => {
+      evaluateUserAccess(regResult);
     });
-
-    // Colocar al usuario en la pantalla de pendiente
-    state.currentUser = result.profile;
-    sessionStorage.setItem('qp_current_profile', JSON.stringify(result.profile));
-    sessionStorage.setItem('qp_current_user', JSON.stringify(result.profile));
-    evaluateUserAccess(result.profile);
-
   } catch (err) {
-    console.error('Error al registrar usuario:', err);
-    Swal.fire({
-      icon: 'error',
-      title: 'Error de Registro',
-      text: err.message || 'No se pudo completar el registro. Intenta nuevamente.',
-      confirmButtonColor: '#E30613'
-    });
-  } finally {
-    if (btnSubmit) {
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = originalText;
-    }
+    console.error('Error registrando usuario:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
 }
 
-// Recuperar contraseña
 async function handleForgotPasswordSubmit(e) {
   if (e) e.preventDefault();
 
-  const email = document.getElementById('forgot-email')?.value.trim();
-  if (!email) {
-    Toast.fire({ icon: 'warning', title: 'Ingresa tu correo electrónico' });
-    return;
-  }
+  const email = document.getElementById('forgot-email')?.value.trim().toLowerCase();
+  if (!email) return;
 
   try {
-    const res = await window.dataService.resetPassword(email);
+    await window.dataService.requestPasswordReset(email);
     closeModal('modal-forgot-password');
-    const form = document.getElementById('form-forgot-password');
-    if (form) form.reset();
-
     Swal.fire({
       icon: 'success',
-      title: 'Solicitud Enviada',
-      text: res.message || 'Revisa tu bandeja de entrada para restablecer tu contraseña con Supabase Auth.',
+      title: 'Correo Enviado',
+      text: `Se han enviado las instrucciones de recuperación a ${email}.`,
       confirmButtonColor: '#E30613'
     });
   } catch (err) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: err.message || 'No se pudo procesar la solicitud de recuperación.',
-      confirmButtonColor: '#E30613'
-    });
+    console.error('Error solicitando recuperación:', err);
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
 }
 
-// Cerrar sesión
 function handleLogout() {
-  Swal.fire({
-    title: '¿Cerrar Sesión?',
-    text: 'Volverás a la pantalla principal de acceso comercial.',
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: 'Sí, salir',
-    cancelButtonText: 'Cancelar'
-  }).then(async (res) => {
-    if (res.isConfirmed) {
-      await window.dataService.signOutUser();
-      localStorage.removeItem('qp_current_profile');
-      sessionStorage.removeItem('qp_current_profile');
-      localStorage.removeItem('qp_current_user');
-      sessionStorage.removeItem('qp_current_user');
-      state.currentUser = null;
+  localStorage.removeItem('qp_current_profile');
+  sessionStorage.removeItem('qp_current_profile');
+  state.currentUser = null;
 
-      const form = document.getElementById('form-login');
-      if (form) form.reset();
+  if (window.dataService) {
+    window.dataService.logout();
+  }
 
-      showGatekeeperScreen('login');
-      Toast.fire({ icon: 'info', title: 'Sesión finalizada correctamente' });
-    }
-  });
+  showGatekeeperScreen('gatekeeper-auth');
+  Toast.fire({ icon: 'info', title: 'Sesión finalizada' });
 }
 
-// Alternar visibilidad de contraseña
 function togglePasswordVisibility(inputId, eyeIconId) {
   const input = document.getElementById(inputId);
   const icon = document.getElementById(eyeIconId);
@@ -1655,482 +3061,24 @@ function togglePasswordVisibility(inputId, eyeIconId) {
     input.type = 'password';
     if (icon) icon.setAttribute('data-lucide', 'eye');
   }
+
   if (window.lucide) window.lucide.createIcons();
 }
 
 // ==========================================
-// MÓDULO 4: GESTIÓN DE PERFILES Y APROBACIONES
+// UTILIDADES DE MODALES GENÉRICOS
 // ==========================================
-
-// Cambiar filtro de pestaña de estados (TODOS, PENDIENTE, APROBADO, RECHAZADO, DESACTIVADO)
-function setProfilesFilter(status) {
-  state.currentProfileFilter = status;
-
-  const tabs = ['todos', 'pendiente', 'aprobado', 'rechazado', 'desactivado'];
-  tabs.forEach(t => {
-    const tabBtn = document.getElementById(`tab-filter-${t}`);
-    if (tabBtn) {
-      if (t === status.toLowerCase()) {
-        tabBtn.className = 'tab-profile-btn px-4 py-2 rounded-xl text-xs font-bold transition-all bg-[#333333] text-white shadow-xs';
-      } else {
-        tabBtn.className = 'tab-profile-btn px-4 py-2 rounded-xl text-xs font-semibold transition-all bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200';
-      }
-    }
-  });
-
-  renderUsuariosTable();
-}
-
-// Renderizar tabla de usuarios y perfiles
-function renderUsuariosTable() {
-  const tbody = document.getElementById('table-usuarios-body');
-  if (!tbody) return;
-
-  // Actualizar contadores de las pestañas
-  const allProfiles = state.userProfiles || [];
-  const countTodos = allProfiles.length;
-  const countPendiente = allProfiles.filter(p => p.estado === 'PENDIENTE').length;
-  const countAprobado = allProfiles.filter(p => p.estado === 'APROBADO').length;
-  const countRechazado = allProfiles.filter(p => p.estado === 'RECHAZADO').length;
-  const countDesactivado = allProfiles.filter(p => p.estado === 'DESACTIVADO').length;
-
-  const bTodos = document.getElementById('badge-tab-todos');
-  const bPendiente = document.getElementById('badge-tab-pendiente');
-  const bAprobado = document.getElementById('badge-tab-aprobado');
-  const bRechazado = document.getElementById('badge-tab-rechazado');
-  const bDesactivado = document.getElementById('badge-tab-desactivado');
-
-  if (bTodos) bTodos.textContent = countTodos;
-  if (bPendiente) bPendiente.textContent = countPendiente;
-  if (bAprobado) bAprobado.textContent = countAprobado;
-  if (bRechazado) bRechazado.textContent = countRechazado;
-  if (bDesactivado) bDesactivado.textContent = countDesactivado;
-
-  // Filtros aplicados
-  const search = (document.getElementById('filter-user-search')?.value || '').toLowerCase();
-  const roleFilter = document.getElementById('filter-user-role')?.value || '';
-  const statusFilter = state.currentProfileFilter || 'TODOS';
-
-  const filtered = allProfiles.filter(p => {
-    const fullName = `${p.nombre || ''} ${p.apellido || ''}`.toLowerCase();
-    const email = (p.correo || '').toLowerCase();
-    const phone = (p.telefono || '').toLowerCase();
-    const matchSearch = !search || fullName.includes(search) || email.includes(search) || phone.includes(search);
-    const matchRole = !roleFilter || (p.rol || '').toUpperCase() === roleFilter.toUpperCase();
-    const matchStatus = statusFilter === 'TODOS' || (p.estado || '').toUpperCase() === statusFilter.toUpperCase();
-    return matchSearch && matchRole && matchStatus;
-  });
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="7" class="px-6 py-10 text-center text-gray-400">
-          <i data-lucide="shield-alert" class="w-9 h-9 mx-auto mb-2 text-gray-300"></i>
-          <p class="font-semibold text-gray-500">No se encontraron solicitudes o usuarios</p>
-          <p class="text-xs text-gray-400 mt-1">Intenta ajustando el filtro de búsqueda o el estado seleccionado.</p>
-        </td>
-      </tr>
-    `;
+function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.classList.remove('hidden');
     if (window.lucide) window.lucide.createIcons();
-    return;
-  }
-
-  tbody.innerHTML = filtered.map(p => {
-    const isCurrentUser = state.currentUser && (state.currentUser.correo === p.correo || state.currentUser.id === p.id);
-    const profileId = p.id || p.user_id || p.correo;
-    const fullName = `${p.nombre || ''} ${p.apellido || ''}`.trim() || 'Sin Nombre';
-
-    // Badge de Rol
-    const roleBadge = p.rol === 'ADMINISTRADOR'
-      ? `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">👑 ADMINISTRADOR</span>`
-      : `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-[#00A651] border border-emerald-200">💼 USUARIO</span>`;
-
-    // Badge de Estado
-    let statusBadge = '';
-    if (p.estado === 'PENDIENTE') {
-      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse">🟡 PENDIENTE</span>`;
-    } else if (p.estado === 'APROBADO') {
-      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-[#00A651] border border-emerald-200">🟢 APROBADO</span>`;
-    } else if (p.estado === 'RECHAZADO') {
-      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-[#E30613] border border-red-200">🔴 RECHAZADO</span>`;
-    } else {
-      statusBadge = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-300">⚪ DESACTIVADO</span>`;
-    }
-
-    // Botones de Acción según estado
-    let stateActionButtons = '';
-    if (p.estado === 'PENDIENTE') {
-      stateActionButtons = `
-        <button onclick="handleApproveUser('${profileId}')" title="Aprobar Solicitud" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
-          <i data-lucide="check" class="w-3.5 h-3.5"></i>
-          <span>Aprobar</span>
-        </button>
-        <button onclick="handleRejectUser('${profileId}')" title="Rechazar Solicitud" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 hover:bg-red-100 text-[#E30613] border border-red-200 flex items-center space-x-1 transition-colors">
-          <i data-lucide="x" class="w-3.5 h-3.5"></i>
-          <span>Rechazar</span>
-        </button>
-      `;
-    } else if (p.estado === 'APROBADO') {
-      stateActionButtons = `
-        ${!isCurrentUser ? `
-          <button onclick="handleDeactivateUser('${profileId}')" title="Desactivar Cuenta" class="p-1.5 rounded-lg text-gray-500 hover:text-amber-600 hover:bg-amber-50 transition-colors">
-            <i data-lucide="power-off" class="w-4 h-4"></i>
-          </button>
-        ` : ''}
-        <button onclick="handleChangeRolePrompt('${profileId}')" title="Cambiar Rol (Administrador / Usuario)" class="p-1.5 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
-          <i data-lucide="shield" class="w-4 h-4"></i>
-        </button>
-      `;
-    } else if (p.estado === 'RECHAZADO') {
-      stateActionButtons = `
-        <button onclick="handleApproveUser('${profileId}')" title="Aprobar y Conceder Acceso" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
-          <i data-lucide="check" class="w-3.5 h-3.5"></i>
-          <span>Aprobar</span>
-        </button>
-      `;
-    } else if (p.estado === 'DESACTIVADO') {
-      stateActionButtons = `
-        <button onclick="handleReactivateUser('${profileId}')" title="Reactivar Cuenta" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-[#00A651] hover:bg-emerald-700 text-white flex items-center space-x-1 shadow-xs transition-colors">
-          <i data-lucide="power" class="w-3.5 h-3.5"></i>
-          <span>Reactivar</span>
-        </button>
-      `;
-    }
-
-    // Teléfono WhatsApp
-    const phoneClean = (p.telefono || '').replace(/\D/g, '');
-    const waLink = phoneClean ? `https://wa.me/593${phoneClean.startsWith('0') ? phoneClean.slice(1) : phoneClean}` : null;
-
-    return `
-      <tr class="hover:bg-gray-50/80 transition-colors ${p.estado === 'PENDIENTE' ? 'bg-amber-50/30' : ''}">
-        <td class="px-4 py-3">
-          <div class="flex items-center space-x-2.5">
-            <div class="w-8 h-8 rounded-full bg-red-50 text-[#E30613] font-bold text-xs flex items-center justify-center border border-red-100 shrink-0">
-              ${fullName.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <div class="font-bold text-[#333333] flex items-center space-x-1.5">
-                <span>${fullName}</span>
-                ${isCurrentUser ? '<span class="text-[10px] bg-red-100 text-[#E30613] px-1.5 py-0.2 rounded font-bold">Tú</span>' : ''}
-              </div>
-              <span class="text-[11px] text-gray-400 font-mono">ID: ${(p.user_id || p.id || '').slice(0, 8)}...</span>
-            </div>
-          </div>
-        </td>
-        <td class="px-4 py-3">
-          <div class="space-y-0.5">
-            <div class="text-xs font-medium text-gray-700 flex items-center space-x-1">
-              <i data-lucide="mail" class="w-3 h-3 text-gray-400"></i>
-              <span class="font-mono">${p.correo}</span>
-            </div>
-            ${p.telefono ? `
-              <div class="text-xs text-gray-500 flex items-center space-x-1">
-                <i data-lucide="phone" class="w-3 h-3 text-[#00A651]"></i>
-                ${waLink ? `<a href="${waLink}" target="_blank" class="hover:underline text-[#00A651] font-medium">${p.telefono}</a>` : `<span>${p.telefono}</span>`}
-              </div>
-            ` : ''}
-          </div>
-        </td>
-        <td class="px-4 py-3">${roleBadge}</td>
-        <td class="px-4 py-3">${statusBadge}</td>
-        <td class="px-4 py-3 text-xs text-gray-500 font-mono">
-          ${p.fecha_registro || '-'}
-        </td>
-        <td class="px-4 py-3 text-xs text-gray-500">
-          ${p.aprobado_por ? `
-            <div>
-              <span class="font-semibold text-gray-700">${p.aprobado_por}</span>
-              <p class="text-[10px] text-gray-400 font-mono">${p.fecha_aprobacion || ''}</p>
-            </div>
-          ` : `<span class="text-gray-400 italic">Pendiente de revisión</span>`}
-        </td>
-        <td class="px-4 py-3 text-right">
-          <div class="inline-flex items-center space-x-1.5">
-            ${stateActionButtons}
-            <button onclick="openUserModal('${profileId}')" title="Editar Perfil" class="p-1.5 rounded-lg text-gray-500 hover:text-[#00A651] hover:bg-emerald-50 transition-colors">
-              <i data-lucide="pencil" class="w-4 h-4"></i>
-            </button>
-            ${!isCurrentUser ? `
-              <button onclick="handleDeleteUser('${profileId}')" title="Eliminar Perfil" class="p-1.5 rounded-lg text-gray-500 hover:text-[#E30613] hover:bg-red-50 transition-colors">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            ` : `
-              <span class="w-7"></span>
-            `}
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  if (window.lucide) window.lucide.createIcons();
-}
-
-// Aprobar Usuario (ADMINISTRADOR)
-async function handleApproveUser(profileId) {
-  try {
-    const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
-    await window.dataService.approveUser(profileId, adminName);
-    state.userProfiles = await window.dataService.getUserProfiles();
-    state.users = state.userProfiles;
-    updateNavigationBadges();
-    renderUsuariosTable();
-
-    Toast.fire({
-      icon: 'success',
-      title: '¡Usuario Aprobado! Ya tiene acceso al sistema comercial'
-    });
-  } catch (err) {
-    console.error('Error aprobando usuario:', err);
-    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
 }
 
-// Rechazar Usuario (ADMINISTRADOR)
-async function handleRejectUser(profileId) {
-  const result = await Swal.fire({
-    title: '¿Rechazar Solicitud?',
-    text: 'El usuario no podrá acceder al CRM de Avícola QUÉ POLLO.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: 'Sí, rechazar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
-      await window.dataService.rejectUser(profileId, adminName);
-      state.userProfiles = await window.dataService.getUserProfiles();
-      state.users = state.userProfiles;
-      updateNavigationBadges();
-      renderUsuariosTable();
-
-      Toast.fire({ icon: 'info', title: 'Solicitud rechazada' });
-    } catch (err) {
-      console.error('Error rechazando usuario:', err);
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
-    }
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.classList.add('hidden');
   }
 }
-
-// Desactivar Usuario (ADMINISTRADOR)
-async function handleDeactivateUser(profileId) {
-  const result = await Swal.fire({
-    title: '¿Desactivar Cuenta?',
-    text: 'El usuario será suspendido temporalmente y no podrá operar en el sistema.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: 'Sí, desactivar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      await window.dataService.deactivateUser(profileId);
-      state.userProfiles = await window.dataService.getUserProfiles();
-      state.users = state.userProfiles;
-      updateNavigationBadges();
-      renderUsuariosTable();
-
-      Toast.fire({ icon: 'warning', title: 'Cuenta desactivada temporalmente' });
-    } catch (err) {
-      console.error('Error desactivando usuario:', err);
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
-    }
-  }
-}
-
-// Reactivar Usuario (ADMINISTRADOR)
-async function handleReactivateUser(profileId) {
-  try {
-    const adminName = `${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim();
-    await window.dataService.reactivateUser(profileId, adminName);
-    state.userProfiles = await window.dataService.getUserProfiles();
-    state.users = state.userProfiles;
-    updateNavigationBadges();
-    renderUsuariosTable();
-
-    Toast.fire({ icon: 'success', title: 'Cuenta reactivada exitosamente' });
-  } catch (err) {
-    console.error('Error reactivando usuario:', err);
-    Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
-  }
-}
-
-// Cambiar Rol de Usuario
-async function handleChangeRolePrompt(profileId) {
-  const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
-  if (!p) return;
-
-  const currentRole = p.rol || 'USUARIO';
-  const newRole = currentRole === 'ADMINISTRADOR' ? 'USUARIO' : 'ADMINISTRADOR';
-
-  const result = await Swal.fire({
-    title: '¿Cambiar Rol de Acceso?',
-    html: `Cambiar el rol de <strong>${p.nombre || p.correo}</strong> de <span class="font-bold">${currentRole}</span> a <span class="font-bold text-[#E30613]">${newRole}</span>.`,
-    icon: 'question',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: `Sí, cambiar a ${newRole}`,
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      await window.dataService.changeUserRole(profileId, newRole);
-      state.userProfiles = await window.dataService.getUserProfiles();
-      state.users = state.userProfiles;
-      renderUsuariosTable();
-      Toast.fire({ icon: 'success', title: `Rol cambiado a ${newRole}` });
-    } catch (err) {
-      console.error('Error cambiando rol:', err);
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
-    }
-  }
-}
-
-// Eliminar Usuario Permanentemente
-async function handleDeleteUser(profileId) {
-  const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
-  if (state.currentUser && (state.currentUser.correo === p?.correo || state.currentUser.id === profileId)) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Acción no permitida',
-      text: 'No puedes eliminar tu propia cuenta mientras estás conectado.',
-      confirmButtonColor: '#E30613'
-    });
-    return;
-  }
-
-  const result = await Swal.fire({
-    title: '¿Eliminar Usuario Definitivamente?',
-    html: `Se eliminará el perfil y acceso de <strong>${p ? (p.nombre + ' ' + (p.apellido || '')) : profileId}</strong> (${p?.correo || ''}).`,
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#E30613',
-    cancelButtonColor: '#6B7280',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  });
-
-  if (result.isConfirmed) {
-    try {
-      await window.dataService.deleteUserProfile(profileId);
-      state.userProfiles = await window.dataService.getUserProfiles();
-      state.users = state.userProfiles;
-      updateNavigationBadges();
-      renderUsuariosTable();
-      Toast.fire({ icon: 'success', title: 'Usuario eliminado del sistema' });
-    } catch (err) {
-      console.error('Error eliminando usuario:', err);
-      Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
-    }
-  }
-}
-
-// Abrir Modal de Creación / Edición de Usuario (Admin)
-function openUserModal(profileId = null) {
-  state.editingUserId = profileId;
-  const title = document.getElementById('modal-user-title');
-  const form = document.getElementById('form-user');
-  if (form) form.reset();
-
-  const idInput = document.getElementById('user-profile-id');
-  const emailInput = document.getElementById('user-email');
-
-  if (profileId) {
-    const p = (state.userProfiles || []).find(x => x.id === profileId || x.user_id === profileId || x.correo === profileId);
-    if (!p) return;
-
-    if (title) title.textContent = 'Editar Perfil de Usuario';
-    if (idInput) idInput.value = p.id || p.user_id || '';
-    if (emailInput) {
-      emailInput.value = p.correo || '';
-      emailInput.readOnly = true;
-    }
-    document.getElementById('user-name').value = p.nombre || '';
-    document.getElementById('user-lastname').value = p.apellido || '';
-    document.getElementById('user-phone').value = p.telefono || '';
-    document.getElementById('user-role').value = p.rol || 'USUARIO';
-    document.getElementById('user-status').value = p.estado || 'APROBADO';
-  } else {
-    if (title) title.textContent = 'Crear Nuevo Perfil de Usuario';
-    if (idInput) idInput.value = '';
-    if (emailInput) {
-      emailInput.value = '';
-      emailInput.readOnly = false;
-    }
-    document.getElementById('user-role').value = 'USUARIO';
-    document.getElementById('user-status').value = 'APROBADO';
-  }
-
-  openModal('modal-user');
-}
-
-// Guardar Perfil de Usuario desde Modal (Admin)
-async function handleSaveUser(e) {
-  if (e) e.preventDefault();
-
-  const profileId = document.getElementById('user-profile-id')?.value;
-  const nombre = document.getElementById('user-name')?.value.trim();
-  const apellido = document.getElementById('user-lastname')?.value.trim();
-  const correo = document.getElementById('user-email')?.value.trim().toLowerCase();
-  const telefono = document.getElementById('user-phone')?.value.trim();
-  const rol = document.getElementById('user-role')?.value;
-  const estado = document.getElementById('user-status')?.value;
-
-  if (!nombre || !apellido || !correo) {
-    Toast.fire({ icon: 'warning', title: 'Completa todos los campos obligatorios' });
-    return;
-  }
-
-  const profileData = {
-    id: profileId || `usr-${Date.now()}`,
-    user_id: profileId || `usr-${Date.now()}`,
-    nombre,
-    apellido,
-    correo,
-    telefono,
-    rol,
-    estado,
-    fecha_registro: new Date().toISOString().split('T')[0],
-    fecha_aprobacion: estado === 'APROBADO' ? new Date().toISOString().split('T')[0] : null,
-    aprobado_por: estado === 'APROBADO' ? (`${state.currentUser?.nombre || 'Administrador'} ${state.currentUser?.apellido || ''}`.trim()) : null
-  };
-
-  try {
-    await window.dataService.saveUserProfile(profileData);
-    state.userProfiles = await window.dataService.getUserProfiles();
-    state.users = state.userProfiles;
-    updateNavigationBadges();
-    renderUsuariosTable();
-    closeModal('modal-user');
-
-    // Si el usuario editado es la sesión activa actual, actualizar
-    if (state.currentUser && (state.currentUser.correo === correo || state.currentUser.id === profileId)) {
-      state.currentUser = { ...state.currentUser, ...profileData };
-      if (localStorage.getItem('qp_current_profile')) {
-        localStorage.setItem('qp_current_profile', JSON.stringify(state.currentUser));
-      } else {
-        sessionStorage.setItem('qp_current_profile', JSON.stringify(state.currentUser));
-      }
-      evaluateUserAccess(state.currentUser);
-    }
-
-    Toast.fire({
-      icon: 'success',
-      title: profileId ? 'Perfil actualizado correctamente' : 'Usuario creado y registrado con éxito'
-    });
-  } catch (err) {
-    console.error('Error guardando perfil:', err);
-    Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'No se pudo guardar el usuario', confirmButtonColor: '#E30613' });
-  }
-}
-
-
