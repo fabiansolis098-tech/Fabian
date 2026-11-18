@@ -2576,14 +2576,32 @@ function populateCategoryDropdowns() {
   const filterSelect = document.getElementById('filter-product-category');
   const orderCatSelect = document.getElementById('order-cat-filter');
 
-  const cats = state.categories && state.categories.length > 0 ? state.categories : [];
+  // Si state.categories no tiene elementos, cargamos la lista fija de categorías de inmediato
+  if (!state.categories || state.categories.length === 0) {
+    state.categories = [
+      { id_categoria: 'CAT001', nombre_categoria: 'Pollo', subcategorias: ['Entero', 'Despresado', 'Pechuga', 'Alitas', 'Piernas', 'Trozado'] },
+      { id_categoria: 'CAT002', nombre_categoria: 'Cerdo', subcategorias: ['Chuletas', 'Costillas', 'Lomo', 'Pierna'] },
+      { id_categoria: 'CAT003', nombre_categoria: 'Res', subcategorias: ['Lomo Fino', 'Molida', 'Pulpa'] },
+      { id_categoria: 'CAT004', nombre_categoria: 'Embutidos', subcategorias: ['Salchichas', 'Chorizos', 'Jamones'] },
+      { id_categoria: 'CAT005', nombre_categoria: 'Menudencias', subcategorias: ['Hígados', 'Mollejas', 'Patas'] },
+      { id_categoria: 'CAT006', nombre_categoria: 'Huevos', subcategorias: ['Cubeta AA 30u', 'Selección Granja'] },
+      { id_categoria: 'CAT007', nombre_categoria: 'Otros', subcategorias: ['Aliños', 'Condimentos', 'Carbón'] }
+    ];
+    localStorage.setItem('qp_categorias', JSON.stringify(state.categories));
+  }
+
+  const cats = state.categories;
 
   if (prodSelect) {
     const currentProdCat = prodSelect.value;
     prodSelect.innerHTML = cats.map(c => `
       <option value="${c.nombre_categoria}">${c.nombre_categoria}</option>
     `).join('');
-    if (currentProdCat) prodSelect.value = currentProdCat;
+    if (currentProdCat && cats.some(c => c.nombre_categoria === currentProdCat)) {
+      prodSelect.value = currentProdCat;
+    } else if (cats.length > 0) {
+      prodSelect.value = cats[0].nombre_categoria;
+    }
     onProductCategoryChange();
   }
 
@@ -2617,6 +2635,20 @@ function onProductCategoryChange() {
   let subcats = ['General'];
   if (catObj && Array.isArray(catObj.subcategorias) && catObj.subcategorias.length > 0) {
     subcats = catObj.subcategorias;
+  } else if (selectedCatName === 'Pollo') {
+    subcats = ['Entero', 'Despresado', 'Pechuga', 'Alitas', 'Piernas', 'Trozado'];
+  } else if (selectedCatName === 'Cerdo') {
+    subcats = ['Chuletas', 'Costillas', 'Lomo', 'Pierna'];
+  } else if (selectedCatName === 'Res') {
+    subcats = ['Lomo Fino', 'Molida', 'Pulpa'];
+  } else if (selectedCatName === 'Embutidos') {
+    subcats = ['Salchichas', 'Chorizos', 'Jamones'];
+  } else if (selectedCatName === 'Menudencias') {
+    subcats = ['Hígados', 'Mollejas', 'Patas'];
+  } else if (selectedCatName === 'Huevos') {
+    subcats = ['Cubeta AA 30u', 'Selección Granja'];
+  } else if (selectedCatName === 'Otros') {
+    subcats = ['Aliños', 'Condimentos', 'Carbón', 'Empaques'];
   }
 
   subcatSelect.innerHTML = subcats.map(s => `
