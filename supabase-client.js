@@ -10,14 +10,13 @@
 
 const INITIAL_SEED = {
   categorias: [
-    { id_categoria: 'CAT001', nombre_categoria: 'Pollo', descripcion: 'Pollo fresco entero y porciones tradicionales', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT002', nombre_categoria: 'Cerdo', descripcion: 'Cortes seleccionados de carne de cerdo', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT003', nombre_categoria: 'Res', descripcion: 'Cortes de carne vacuna de primera calidad', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT004', nombre_categoria: 'Embutidos', descripcion: 'Salchichas, chorizos y jamones artesanales', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT005', nombre_categoria: 'Menudencias', descripcion: 'Hígados, mollejas y patas frescas', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT006', nombre_categoria: 'Otros', descripcion: 'Aderezos, condimentos y productos complementarios', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT007', nombre_categoria: 'Despresado', descripcion: 'Pechugas, piernas, muslos y alitas seleccionadas', fecha_creacion: '2026-09-09', estado: 'Activo' },
-    { id_categoria: 'CAT008', nombre_categoria: 'Huevos', descripcion: 'Cubetas de huevos frescos tipo AA y seleccionados', fecha_creacion: '2026-09-09', estado: 'Activo' }
+    { id_categoria: 'CAT001', nombre_categoria: 'Pollo', descripcion: 'Pollo fresco entero, presas y porciones tradicionales', subcategorias: ['Entero', 'Despresado', 'Pechuga', 'Alitas', 'Piernas', 'Trozado'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT002', nombre_categoria: 'Cerdo', descripcion: 'Cortes seleccionados de carne de cerdo de primera calidad', subcategorias: ['Chuletas', 'Costillas', 'Lomo', 'Pierna', 'Tocino'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT003', nombre_categoria: 'Res', descripcion: 'Cortes de carne vacuna de primera calidad y molida', subcategorias: ['Lomo Fino', 'Bife', 'Pulpa', 'Molida', 'Hueso'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT004', nombre_categoria: 'Embutidos', descripcion: 'Salchichas parrilleras, chorizos y jamones artesanales', subcategorias: ['Salchichas', 'Chorizos', 'Jamones', 'Mortadela'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT005', nombre_categoria: 'Menudencias', descripcion: 'Hígados, mollejas, patas y corazones frescos', subcategorias: ['Hígados', 'Mollejas', 'Patas', 'Cuellos', 'Corazones'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT006', nombre_categoria: 'Huevos', descripcion: 'Cubetas de huevos frescos tipo AA y seleccionados de granja', subcategorias: ['Cubeta AA 30u', 'Cubeta Especial', 'Selección Granja'], fecha_creacion: '2026-09-09', estado: 'Activo' },
+    { id_categoria: 'CAT007', nombre_categoria: 'Otros', descripcion: 'Aliños, aderezos, condimentos y productos complementarios', subcategorias: ['Aliños', 'Condimentos', 'Carbón', 'Empaques'], fecha_creacion: '2026-09-09', estado: 'Activo' }
   ],
   clientes: [
     {
@@ -107,12 +106,50 @@ const INITIAL_SEED = {
       provincia: 'Tungurahua',
       ciudad: 'Ambato',
       sector: 'Huachi Chico',
-      direccion: 'Av. Atahualpa y Av. Los Chasquis',
+      direccion: 'Av. Atahualpa y Av. Los Chasquis #22',
       red_social: 'TikTok',
       fecha_registro: '2026-09-11',
       tipo_cliente: 'Nuevo',
       estado_cliente: 'Activo',
       puntos_fidelidad: 85,
+      consentimiento_comunicacion: true
+    },
+    {
+      id_cliente: 'C006',
+      nombre: 'Asadero Los Álamos',
+      apellido: '(Restaurante)',
+      tipo_identificacion: 'RUC Jurídico',
+      cedula_ruc: '1891789456001',
+      telefono: '032824567',
+      correo: 'pedidos@losalamos.ec',
+      provincia: 'Tungurahua',
+      ciudad: 'Ambato',
+      sector: 'Centro',
+      direccion: 'Av. Cevallos y Martínez #512',
+      red_social: 'WhatsApp',
+      fecha_registro: '2026-09-15',
+      tipo_cliente: 'Mayorista',
+      estado_cliente: 'Activo',
+      puntos_fidelidad: 820,
+      consentimiento_comunicacion: true
+    },
+    {
+      id_cliente: 'C007',
+      nombre: 'Picantería El Buen Gusto',
+      apellido: '(Restaurante)',
+      tipo_identificacion: 'RUC Jurídico',
+      cedula_ruc: '1890234567001',
+      telefono: '0995544332',
+      correo: 'buengusto@pinllo.ec',
+      provincia: 'Tungurahua',
+      ciudad: 'Ambato',
+      sector: 'Pinllo',
+      direccion: 'Plaza Central de Pinllo #18',
+      red_social: 'WhatsApp',
+      fecha_registro: '2026-09-16',
+      tipo_cliente: 'Mayorista',
+      estado_cliente: 'Activo',
+      puntos_fidelidad: 640,
       consentimiento_comunicacion: true
     }
   ],
@@ -120,13 +157,18 @@ const INITIAL_SEED = {
     {
       id_producto: 'P001',
       nombre: 'Pollo entero seleccionado',
-      descripcion: 'Pollo fresco entero con menudencias de primera calidad',
+      nombre_producto: 'Pollo entero seleccionado',
+      descripcion: 'Pollo fresco faenado del día con menudencias de primera calidad',
       id_categoria: 'CAT001',
       categoria: 'Pollo',
+      subcategoria: 'Entero',
       imagen_url: '',
       precio_v: 8.50,
+      precio_venta: 8.50,
       precio_c: 5.80,
+      precio_costo: 5.80,
       stock_disponible: 150.00,
+      stock: 150.00,
       stock_minimo: 30.00,
       unidad_medida: 'Unidad',
       estado: 'Activo'
@@ -134,71 +176,191 @@ const INITIAL_SEED = {
     {
       id_producto: 'P002',
       nombre: 'Pechuga especial x kg',
-      descripcion: 'Pechuga deshuesada, fresca y sin piel',
-      id_categoria: 'CAT007',
-      categoria: 'Despresado',
+      nombre_producto: 'Pechuga especial x kg',
+      descripcion: 'Pechuga deshuesada, fresca, sin piel ni grasa',
+      id_categoria: 'CAT001',
+      categoria: 'Pollo',
+      subcategoria: 'Pechuga',
       imagen_url: '',
       precio_v: 4.75,
+      precio_venta: 4.75,
       precio_c: 3.20,
+      precio_costo: 3.20,
       stock_disponible: 85.00,
+      stock: 85.00,
       stock_minimo: 20.00,
-      unidad_medida: 'kg',
+      unidad_medida: 'Kilogramo',
       estado: 'Activo'
     },
     {
       id_producto: 'P003',
       nombre: 'Alitas marinadas BBQ (12 u)',
+      nombre_producto: 'Alitas marinadas BBQ (12 u)',
       descripcion: 'Alitas de pollo sazonadas artesanalmente con salsa barbacoa',
       id_categoria: 'CAT001',
       categoria: 'Pollo',
+      subcategoria: 'Alitas',
       imagen_url: '',
       precio_v: 7.00,
+      precio_venta: 7.00,
       precio_c: 4.50,
+      precio_costo: 4.50,
       stock_disponible: 60.00,
+      stock: 60.00,
       stock_minimo: 15.00,
       unidad_medida: 'Paquete',
       estado: 'Activo'
     },
     {
       id_producto: 'P004',
-      nombre: 'Menudencias seleccionadas',
-      descripcion: 'Porción higiénicamente lavada de hígados y mollejas',
-      id_categoria: 'CAT005',
-      categoria: 'Menudencias',
+      nombre: 'Pierna con pernil x kg',
+      nombre_producto: 'Pierna con pernil x kg',
+      descripcion: 'Presas frescas de pierna y pernil con corte limpio',
+      id_categoria: 'CAT001',
+      categoria: 'Pollo',
+      subcategoria: 'Piernas',
       imagen_url: '',
-      precio_v: 2.50,
-      precio_c: 1.20,
-      stock_disponible: 45.00,
-      stock_minimo: 10.00,
-      unidad_medida: 'kg',
+      precio_v: 3.80,
+      precio_venta: 3.80,
+      precio_c: 2.50,
+      precio_costo: 2.50,
+      stock_disponible: 90.00,
+      stock: 90.00,
+      stock_minimo: 20.00,
+      unidad_medida: 'Kilogramo',
       estado: 'Activo'
     },
     {
       id_producto: 'P005',
+      nombre: 'Menudencias seleccionadas',
+      nombre_producto: 'Menudencias seleccionadas',
+      descripcion: 'Porción higiénicamente lavada de hígados y mollejas',
+      id_categoria: 'CAT005',
+      categoria: 'Menudencias',
+      subcategoria: 'Hígados',
+      imagen_url: '',
+      precio_v: 2.50,
+      precio_venta: 2.50,
+      precio_c: 1.20,
+      precio_costo: 1.20,
+      stock_disponible: 45.00,
+      stock: 45.00,
+      stock_minimo: 10.00,
+      unidad_medida: 'Kilogramo',
+      estado: 'Activo'
+    },
+    {
+      id_producto: 'P006',
+      nombre: 'Chuletas de cerdo frescas x kg',
+      nombre_producto: 'Chuletas de cerdo frescas x kg',
+      descripcion: 'Chuletas de cerdo con corte parrillero de primera',
+      id_categoria: 'CAT002',
+      categoria: 'Cerdo',
+      subcategoria: 'Chuletas',
+      imagen_url: '',
+      precio_v: 5.50,
+      precio_venta: 5.50,
+      precio_c: 3.80,
+      precio_costo: 3.80,
+      stock_disponible: 70.00,
+      stock: 70.00,
+      stock_minimo: 15.00,
+      unidad_medida: 'Kilogramo',
+      estado: 'Activo'
+    },
+    {
+      id_producto: 'P007',
+      nombre: 'Costilla ahumada artesanal x kg',
+      nombre_producto: 'Costilla ahumada artesanal x kg',
+      descripcion: 'Costilla con ahumado natural de leña de manzano',
+      id_categoria: 'CAT002',
+      categoria: 'Cerdo',
+      subcategoria: 'Costillas',
+      imagen_url: '',
+      precio_v: 6.80,
+      precio_venta: 6.80,
+      precio_c: 4.50,
+      precio_costo: 4.50,
+      stock_disponible: 45.00,
+      stock: 45.00,
+      stock_minimo: 10.00,
+      unidad_medida: 'Kilogramo',
+      estado: 'Activo'
+    },
+    {
+      id_producto: 'P008',
+      nombre: 'Carne molida especial de res x kg',
+      nombre_producto: 'Carne molida especial de res x kg',
+      descripcion: 'Molida premium 90/10 de pulpa de res fresca',
+      id_categoria: 'CAT003',
+      categoria: 'Res',
+      subcategoria: 'Molida',
+      imagen_url: '',
+      precio_v: 5.90,
+      precio_venta: 5.90,
+      precio_c: 4.10,
+      precio_costo: 4.10,
+      stock_disponible: 55.00,
+      stock: 55.00,
+      stock_minimo: 15.00,
+      unidad_medida: 'Kilogramo',
+      estado: 'Activo'
+    },
+    {
+      id_producto: 'P009',
+      nombre: 'Salchicha de Pollo artesanal',
+      nombre_producto: 'Salchicha de Pollo artesanal',
+      descripcion: 'Embutido 100% pechuga de pollo bajo en sodio',
+      id_categoria: 'CAT004',
+      categoria: 'Embutidos',
+      subcategoria: 'Salchichas',
+      imagen_url: '',
+      precio_v: 3.80,
+      precio_venta: 3.80,
+      precio_c: 2.40,
+      precio_costo: 2.40,
+      stock_disponible: 50.00,
+      stock: 50.00,
+      stock_minimo: 15.00,
+      unidad_medida: 'Paquete',
+      estado: 'Activo'
+    },
+    {
+      id_producto: 'P010',
       nombre: 'Cubeta de Huevos AA (30 u)',
+      nombre_producto: 'Cubeta de Huevos AA (30 u)',
       descripcion: 'Huevos frescos de granja grado AA, cubeta con 30 unidades',
-      id_categoria: 'CAT008',
+      id_categoria: 'CAT006',
       categoria: 'Huevos',
+      subcategoria: 'Cubeta AA 30u',
       imagen_url: '',
       precio_v: 4.20,
+      precio_venta: 4.20,
       precio_c: 3.10,
+      precio_costo: 3.10,
       stock_disponible: 120.00,
+      stock: 120.00,
       stock_minimo: 25.00,
       unidad_medida: 'Cubeta',
       estado: 'Activo'
     },
     {
-      id_producto: 'P006',
-      nombre: 'Salchicha de Pollo artesanal',
-      descripcion: 'Embutido 100% pechuga de pollo bajo en sodio',
-      id_categoria: 'CAT004',
-      categoria: 'Embutidos',
+      id_producto: 'P011',
+      nombre: 'Aliño Criollo Especial Granja 500g',
+      nombre_producto: 'Aliño Criollo Especial Granja 500g',
+      descripcion: 'Aliño casero con ajo, comino, finas hierbas y sal marina',
+      id_categoria: 'CAT007',
+      categoria: 'Otros',
+      subcategoria: 'Aliños',
       imagen_url: '',
-      precio_v: 3.80,
-      precio_c: 2.40,
-      stock_disponible: 50.00,
+      precio_v: 2.50,
+      precio_venta: 2.50,
+      precio_c: 1.40,
+      precio_costo: 1.40,
+      stock_disponible: 60.00,
+      stock: 60.00,
       stock_minimo: 15.00,
-      unidad_medida: 'Paquete',
+      unidad_medida: 'Unidad',
       estado: 'Activo'
     }
   ],
@@ -498,8 +660,19 @@ class DataService {
 
     keys.forEach(k => {
       const storageKey = `qp_${k}`;
-      if (!localStorage.getItem(storageKey)) {
-        localStorage.setItem(storageKey, JSON.stringify(INITIAL_SEED[k] || []));
+      const existing = localStorage.getItem(storageKey);
+      let isEmpty = false;
+      try {
+        const parsed = existing ? JSON.parse(existing) : null;
+        if (!parsed || (Array.isArray(parsed) && parsed.length === 0)) {
+          isEmpty = true;
+        }
+      } catch {
+        isEmpty = true;
+      }
+
+      if (isEmpty && INITIAL_SEED[k] && INITIAL_SEED[k].length > 0) {
+        localStorage.setItem(storageKey, JSON.stringify(INITIAL_SEED[k]));
       }
     });
 
@@ -513,9 +686,18 @@ class DataService {
   getLocal(key) {
     try {
       const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : [];
+      const parsed = item ? JSON.parse(item) : [];
+      if (Array.isArray(parsed) && parsed.length === 0) {
+        const seedKey = key.replace('qp_', '');
+        if (INITIAL_SEED[seedKey] && INITIAL_SEED[seedKey].length > 0) {
+          this.setLocal(key, INITIAL_SEED[seedKey]);
+          return INITIAL_SEED[seedKey];
+        }
+      }
+      return parsed || [];
     } catch {
-      return [];
+      const seedKey = key.replace('qp_', '');
+      return INITIAL_SEED[seedKey] || [];
     }
   }
 
@@ -563,25 +745,53 @@ class DataService {
   }
 
   // ----------------------------------------------------
-  // 1. CATEGORÍAS
+  // 1. CATEGORÍAS (CENTRALIZADAS CON SUBCATEGORÍAS)
   // ----------------------------------------------------
   async getCategories() {
     if (this.isCloudActive && this.supabase) {
       try {
         const { data, error } = await this.supabase.from('categorias').select('*').order('id_categoria');
         if (!error && data && data.length > 0) {
-          this.setLocal('qp_categorias', data);
-          return data;
+          const formatted = data.map(c => ({
+            ...c,
+            subcategorias: Array.isArray(c.subcategorias) ? c.subcategorias : (typeof c.subcategorias === 'string' && c.subcategorias ? c.subcategorias.split(',').map(s => s.trim()) : (INITIAL_SEED.categorias.find(sc => sc.id_categoria === c.id_categoria)?.subcategorias || ['General']))
+          }));
+          this.setLocal('qp_categorias', formatted);
+          return formatted;
+        } else if (!error && data && data.length === 0) {
+          // Si la tabla en Supabase está vacía, auto-sembrar con las categorías estándar
+          try {
+            const seedToCloud = INITIAL_SEED.categorias.map(c => ({
+              id_categoria: c.id_categoria,
+              nombre_categoria: c.nombre_categoria,
+              descripcion: c.descripcion,
+              fecha_creacion: c.fecha_creacion,
+              estado: c.estado
+            }));
+            await this.supabase.from('categorias').upsert(seedToCloud, { onConflict: 'id_categoria' });
+          } catch (seedErr) {
+            console.warn('Auto-seed categorias en nube:', seedErr);
+          }
+          this.setLocal('qp_categorias', INITIAL_SEED.categorias);
+          return INITIAL_SEED.categorias;
         }
       } catch (e) {
         console.warn('Fallback a local para categorias:', e);
       }
     }
-    return this.getLocal('qp_categorias');
+    const local = this.getLocal('qp_categorias');
+    return (local && local.length > 0) ? local : INITIAL_SEED.categorias;
   }
 
   async saveCategory(catData) {
-    const cats = this.getLocal('qp_categorias');
+    const cats = await this.getCategories();
+    if (!catData.id_categoria) {
+      catData.id_categoria = `CAT-${Date.now().toString().slice(-4)}`;
+    }
+    if (!catData.subcategorias) {
+      catData.subcategorias = ['General'];
+    }
+
     const idx = cats.findIndex(c => c.id_categoria === catData.id_categoria);
     if (idx >= 0) cats[idx] = { ...cats[idx], ...catData };
     else cats.push(catData);
@@ -589,16 +799,34 @@ class DataService {
 
     if (this.isCloudActive && this.supabase) {
       try {
-        await this.supabase.from('categorias').upsert(catData, { onConflict: 'id_categoria' });
+        const toCloud = {
+          id_categoria: catData.id_categoria,
+          nombre_categoria: catData.nombre_categoria,
+          descripcion: catData.descripcion || '',
+          fecha_creacion: catData.fecha_creacion || new Date().toISOString().split('T')[0],
+          estado: catData.estado || 'Activo'
+        };
+        await this.supabase.from('categorias').upsert(toCloud, { onConflict: 'id_categoria' });
       } catch (e) { console.warn('Aviso guardando categoría en nube:', e); }
     }
     return catData;
   }
 
   async deleteCategory(id) {
-    let cats = this.getLocal('qp_categorias');
-    cats = cats.filter(c => c.id_categoria !== id);
-    this.setLocal('qp_categorias', cats);
+    const prods = await this.getProducts();
+    const cats = await this.getCategories();
+    const cat = cats.find(c => c.id_categoria === id);
+    const catName = cat ? cat.nombre_categoria : id;
+
+    // Validación estricta de registros relacionados para no romper integridad
+    const related = prods.filter(p => p.id_categoria === id || (p.categoria && p.categoria.toLowerCase() === catName.toLowerCase()));
+    if (related.length > 0) {
+      const prodNames = related.map(p => p.nombre_producto || p.nombre).slice(0, 3).join(', ');
+      throw new Error(`No se puede eliminar la categoría "${catName}" porque tiene ${related.length} producto(s) asignado(s) (${prodNames}${related.length > 3 ? '...' : ''}). Reasigna o elimina primero esos productos.`);
+    }
+
+    let currentCats = cats.filter(c => c.id_categoria !== id);
+    this.setLocal('qp_categorias', currentCats);
     if (this.isCloudActive && this.supabase) {
       try { await this.supabase.from('categorias').delete().eq('id_categoria', id); } catch (e) {}
     }
@@ -615,14 +843,24 @@ class DataService {
         if (!error && data && data.length > 0) {
           this.setLocal('qp_clientes', data);
           return data;
+        } else if (!error && data && data.length === 0) {
+          // Auto-sembrar clientes en Supabase si la tabla está vacía
+          try {
+            await this.supabase.from('clientes').upsert(INITIAL_SEED.clientes, { onConflict: 'id_cliente' });
+          } catch (seedErr) {
+            console.warn('Auto-seed clientes en nube:', seedErr);
+          }
+          this.setLocal('qp_clientes', INITIAL_SEED.clientes);
+          return INITIAL_SEED.clientes;
         }
       } catch (e) { console.warn('Fallback clientes:', e); }
     }
-    return this.getLocal('qp_clientes');
+    const local = this.getLocal('qp_clientes');
+    return (local && local.length > 0) ? local : INITIAL_SEED.clientes;
   }
 
   async saveClient(clientData) {
-    const clients = this.getLocal('qp_clientes');
+    const clients = await this.getClients();
     const idx = clients.findIndex(c => c.id_cliente === clientData.id_cliente);
     if (idx >= 0) clients[idx] = { ...clients[idx], ...clientData };
     else clients.push(clientData);
@@ -637,7 +875,7 @@ class DataService {
   }
 
   async toggleClientBlock(clientId, nuevoEstado, adminUser = 'Administrador') {
-    const clients = this.getLocal('qp_clientes');
+    const clients = await this.getClients();
     const c = clients.find(x => x.id_cliente === clientId);
     if (!c) throw new Error('Cliente no encontrado');
     c.estado_cliente = nuevoEstado; // 'Activo' o 'Bloqueado'
@@ -647,7 +885,7 @@ class DataService {
   }
 
   async deleteClient(id) {
-    let clients = this.getLocal('qp_clientes');
+    let clients = await this.getClients();
     clients = clients.filter(c => c.id_cliente !== id);
     this.setLocal('qp_clientes', clients);
     if (this.isCloudActive && this.supabase) {
@@ -659,32 +897,103 @@ class DataService {
   // ----------------------------------------------------
   // 3. PRODUCTOS, INVENTARIO Y KARDEX
   // ----------------------------------------------------
+  normalizeProduct(p) {
+    const priceV = parseFloat(p.precio_venta !== undefined ? p.precio_venta : (p.precio_v || 0));
+    const priceC = parseFloat(p.precio_costo !== undefined ? p.precio_costo : (p.precio_c || 0));
+    const stockVal = parseFloat(p.stock !== undefined ? p.stock : (p.stock_disponible !== undefined ? p.stock_disponible : 100));
+    const stockMin = parseFloat(p.stock_minimo !== undefined ? p.stock_minimo : 20);
+    const prodName = p.nombre_producto || p.nombre || 'Producto sin nombre';
+    const cat = p.categoria || 'Pollo';
+    const subcat = p.subcategoria || 'General';
+
+    return {
+      id_producto: p.id_producto,
+      nombre: prodName,
+      nombre_producto: prodName,
+      descripcion: p.descripcion || '',
+      id_categoria: p.id_categoria || 'CAT001',
+      categoria: cat,
+      subcategoria: subcat,
+      imagen_url: p.imagen_url || '',
+      precio_v: priceV,
+      precio_venta: priceV,
+      precio_c: priceC,
+      precio_costo: priceC,
+      stock_disponible: stockVal,
+      stock: stockVal,
+      stock_minimo: stockMin,
+      unidad_medida: p.unidad_medida || 'Unidad',
+      estado: p.estado || 'Activo'
+    };
+  }
+
   async getProducts() {
     if (this.isCloudActive && this.supabase) {
       try {
         const { data, error } = await this.supabase.from('productos').select('*').order('id_producto');
         if (!error && data && data.length > 0) {
-          this.setLocal('qp_productos', data);
-          return data;
+          const normalized = data.map(p => this.normalizeProduct(p));
+          this.setLocal('qp_productos', normalized);
+          return normalized;
+        } else if (!error && data && data.length === 0) {
+          // Auto-sembrar productos en Supabase si la tabla está vacía
+          try {
+            const seedProducts = INITIAL_SEED.productos.map(p => ({
+              id_producto: p.id_producto,
+              nombre: p.nombre_producto || p.nombre,
+              descripcion: p.descripcion,
+              id_categoria: p.id_categoria,
+              categoria: p.categoria,
+              precio_v: p.precio_venta,
+              precio_c: p.precio_costo,
+              stock_disponible: p.stock,
+              stock_minimo: p.stock_minimo,
+              unidad_medida: p.unidad_medida,
+              estado: p.estado
+            }));
+            await this.supabase.from('productos').upsert(seedProducts, { onConflict: 'id_producto' });
+          } catch (seedErr) {
+            console.warn('Auto-seed productos en nube:', seedErr);
+          }
+          const normSeed = INITIAL_SEED.productos.map(p => this.normalizeProduct(p));
+          this.setLocal('qp_productos', normSeed);
+          return normSeed;
         }
       } catch (e) { console.warn('Fallback productos:', e); }
     }
-    return this.getLocal('qp_productos');
+    const local = this.getLocal('qp_productos');
+    const source = (local && local.length > 0) ? local : INITIAL_SEED.productos;
+    return source.map(p => this.normalizeProduct(p));
   }
 
   async saveProduct(prodData) {
-    const prods = this.getLocal('qp_productos');
-    const idx = prods.findIndex(p => p.id_producto === prodData.id_producto);
-    if (idx >= 0) prods[idx] = { ...prods[idx], ...prodData };
-    else prods.push(prodData);
+    const norm = this.normalizeProduct(prodData);
+    const prods = await this.getProducts();
+    const idx = prods.findIndex(p => p.id_producto === norm.id_producto);
+    if (idx >= 0) prods[idx] = norm;
+    else prods.push(norm);
     this.setLocal('qp_productos', prods);
 
     if (this.isCloudActive && this.supabase) {
       try {
-        await this.supabase.from('productos').upsert(prodData, { onConflict: 'id_producto' });
+        const toCloud = {
+          id_producto: norm.id_producto,
+          nombre: norm.nombre_producto,
+          descripcion: norm.descripcion,
+          id_categoria: norm.id_categoria,
+          categoria: norm.categoria,
+          imagen_url: norm.imagen_url,
+          precio_v: norm.precio_venta,
+          precio_c: norm.precio_costo,
+          stock_disponible: norm.stock,
+          stock_minimo: norm.stock_minimo,
+          unidad_medida: norm.unidad_medida,
+          estado: norm.estado
+        };
+        await this.supabase.from('productos').upsert(toCloud, { onConflict: 'id_producto' });
       } catch (e) { console.warn('Aviso guardando producto en nube:', e); }
     }
-    return prodData;
+    return norm;
   }
 
   async adjustProductStock(prodId, deltaQty, motivo, usuarioResponsable = 'Sistema') {

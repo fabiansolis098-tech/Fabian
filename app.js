@@ -1061,17 +1061,31 @@ function openProductModal(prodId = null) {
     if (title) title.textContent = 'Editar Producto';
     if (idInput) idInput.value = prod.id_producto;
 
-    document.getElementById('product-category').value = prod.categoria || '';
-    document.getElementById('product-name').value = prod.nombre_producto || '';
+    const catSelect = document.getElementById('product-category');
+    if (catSelect) {
+      catSelect.value = prod.categoria || 'Pollo';
+      onProductCategoryChange();
+    }
+    const subcatSelect = document.getElementById('product-subcategory');
+    if (subcatSelect && prod.subcategoria) {
+      subcatSelect.value = prod.subcategoria;
+    }
+
+    document.getElementById('product-name').value = prod.nombre_producto || prod.nombre || '';
     document.getElementById('product-desc').value = prod.descripcion || '';
-    document.getElementById('product-price-v').value = prod.precio_venta || '';
-    document.getElementById('product-price-c').value = prod.precio_costo || '';
+    document.getElementById('product-price-v').value = prod.precio_venta || prod.precio_v || '';
+    document.getElementById('product-price-c').value = prod.precio_costo || prod.precio_c || '';
     document.getElementById('product-unit').value = prod.unidad_medida || 'Unidad';
-    document.getElementById('product-stock').value = prod.stock || 0;
+    document.getElementById('product-stock').value = prod.stock !== undefined ? prod.stock : (prod.stock_disponible || 0);
     document.getElementById('product-stock-min').value = prod.stock_minimo || 10;
   } else {
     if (title) title.textContent = 'Registrar Nuevo Producto';
     if (idInput) idInput.value = `PROD-${Date.now().toString().slice(-5)}`;
+    const catSelect = document.getElementById('product-category');
+    if (catSelect) {
+      if (catSelect.options.length > 0) catSelect.selectedIndex = 0;
+      onProductCategoryChange();
+    }
     document.getElementById('product-unit').value = 'Unidad';
     document.getElementById('product-stock').value = 50;
     document.getElementById('product-stock-min').value = 15;
@@ -1089,6 +1103,7 @@ async function handleSaveProduct(e) {
 
   const id = document.getElementById('product-id')?.value;
   const categoria = document.getElementById('product-category')?.value;
+  const subcategoria = document.getElementById('product-subcategory')?.value || 'General';
   const nombre = document.getElementById('product-name')?.value.trim();
   const descripcion = document.getElementById('product-desc')?.value.trim();
   const precioVenta = parseFloat(document.getElementById('product-price-v')?.value) || 0;
@@ -1102,16 +1117,27 @@ async function handleSaveProduct(e) {
     return;
   }
 
+  // Encontrar id_categoria correspondiente
+  const catObj = (state.categories || []).find(c => c.nombre_categoria === categoria);
+  const idCategoria = catObj ? catObj.id_categoria : 'CAT001';
+
   const prodData = {
     id_producto: id,
+    id_categoria: idCategoria,
     categoria,
+    subcategoria,
+    nombre,
     nombre_producto: nombre,
     descripcion,
+    precio_v: precioVenta,
     precio_venta: precioVenta,
+    precio_c: precioCosto,
     precio_costo: precioCosto,
     unidad_medida: unidadMedida,
-    stock,
+    stock_disponible: stock,
+    stock: stock,
     stock_minimo: stockMinimo,
+    estado: 'Activo',
     activo: true
   };
 
@@ -1328,16 +1354,34 @@ function openOrderModal(orderId = null) {
   const idInput = document.getElementById('order-id');
   const dateInput = document.getElementById('order-date');
   const clientSel = document.getElementById('order-client-select');
+  const catFilter = document.getElementById('order-cat-filter');
+  const prodSearch = document.getElementById('order-prod-search');
+  const infoCard = document.getElementById('order-client-info-card');
 
   if (idInput) idInput.value = `PED-${Date.now().toString().slice(-6)}`;
   if (dateInput) dateInput.value = new Date().toISOString().split('T')[0];
+  if (prodSearch) prodSearch.value = '';
+  if (infoCard) infoCard.classList.add('hidden');
 
+  // Llenar selector de clientes con formato completo
   if (clientSel) {
+    const clientsList = state.clients && state.clients.length > 0 ? state.clients : [];
     clientSel.innerHTML = `
-      <option value="">-- Seleccionar Cliente --</option>
-      ${state.clients.map(c => `
-        <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (${c.cedula_ruc})</option>
+      <option value="">-- Seleccionar Cliente Registrado --</option>
+      ${clientsList.map(c => `
+        <option value="${c.id_cliente}">
+          ${c.nombre} ${c.apellido} • CI/RUC: ${c.cedula_ruc || 'N/A'} • (${c.sector || c.ciudad || 'Ambato'}) - Tel: ${c.telefono || 'S/N'}
+        </option>
       `).join('')}
+    `;
+  }
+
+  // Llenar filtro de categorías en el pedido
+  if (catFilter) {
+    const cats = state.categories && state.categories.length > 0 ? state.categories : [];
+    catFilter.innerHTML = `
+      <option value="">Todas las Categorías</option>
+      ${cats.map(c => `<option value="${c.nombre_categoria}">${c.nombre_categoria}</option>`).join('')}
     `;
   }
 
@@ -1351,21 +1395,67 @@ function onOrderClientSelect() {
   const cliId = document.getElementById('order-client-select')?.value;
   const cli = state.clients.find(c => c.id_cliente === cliId);
   const addrInput = document.getElementById('order-delivery-address');
-  if (cli && addrInput) {
-    addrInput.value = `${cli.direccion || ''} (${cli.sector || cli.ciudad || 'Ambato'})`.trim();
+  const infoCard = document.getElementById('order-client-info-card');
+
+  if (cli) {
+    if (addrInput) {
+      addrInput.value = `${cli.direccion || ''} (${cli.sector || cli.ciudad || 'Ambato'})`.trim();
+    }
+    if (infoCard) {
+      infoCard.classList.remove('hidden');
+      const nameEl = document.getElementById('order-card-client-name');
+      const badgeEl = document.getElementById('order-card-client-badge');
+      const phoneEl = document.getElementById('order-card-client-phone');
+      const addrEl = document.getElementById('order-card-client-address');
+      const pointsEl = document.getElementById('order-card-client-points');
+
+      if (nameEl) nameEl.textContent = `${cli.nombre} ${cli.apellido}`;
+      if (badgeEl) badgeEl.textContent = cli.tipo_cliente || 'Frecuente';
+      if (phoneEl) phoneEl.textContent = cli.telefono || 'Sin teléfono';
+      if (addrEl) addrEl.textContent = cli.direccion || `${cli.sector || 'Ambato'}`;
+      if (pointsEl) pointsEl.textContent = `${cli.puntos_fidelidad || 0} pts`;
+    }
+  } else {
+    if (infoCard) infoCard.classList.add('hidden');
+    if (addrInput) addrInput.value = '';
   }
+
+  calculateOrderTotals();
+}
+
+function filterOrderProductOptions() {
+  renderOrderItems();
+}
+
+function getFilteredProductsForOrder() {
+  const cat = document.getElementById('order-cat-filter')?.value || '';
+  const search = (document.getElementById('order-prod-search')?.value || '').toLowerCase().trim();
+
+  let prods = state.products && state.products.length > 0 ? state.products : [];
+
+  if (cat) {
+    prods = prods.filter(p => p.categoria === cat || p.id_categoria === cat);
+  }
+  if (search) {
+    prods = prods.filter(p => 
+      (p.nombre_producto || p.nombre || '').toLowerCase().includes(search) ||
+      (p.id_producto || '').toLowerCase().includes(search) ||
+      (p.subcategoria || '').toLowerCase().includes(search)
+    );
+  }
+  return prods;
 }
 
 function addOrderItemRow() {
-  const index = state.orderItems.length;
-  const defaultProd = state.products[0];
+  const prods = state.products && state.products.length > 0 ? state.products : [];
+  const defaultProd = prods[0];
 
   state.orderItems.push({
     id_producto: defaultProd ? defaultProd.id_producto : '',
-    nombre_producto: defaultProd ? defaultProd.nombre_producto : '',
+    nombre_producto: defaultProd ? (defaultProd.nombre_producto || defaultProd.nombre) : '',
     cantidad: 1,
-    precio_unitario: defaultProd ? parseFloat(defaultProd.precio_venta || 0) : 0,
-    subtotal: defaultProd ? parseFloat(defaultProd.precio_venta || 0) : 0
+    precio_unitario: defaultProd ? parseFloat(defaultProd.precio_venta || defaultProd.precio_v || 0) : 0,
+    subtotal: defaultProd ? parseFloat(defaultProd.precio_venta || defaultProd.precio_v || 0) : 0
   });
 
   renderOrderItems();
@@ -1390,11 +1480,19 @@ function onOrderItemChange(index, field, value) {
     const prod = state.products.find(p => p.id_producto === value);
     if (prod) {
       item.id_producto = prod.id_producto;
-      item.nombre_producto = prod.nombre_producto;
-      item.precio_unitario = parseFloat(prod.precio_venta) || 0;
+      item.nombre_producto = prod.nombre_producto || prod.nombre;
+      item.precio_unitario = parseFloat(prod.precio_venta || prod.precio_v || 0);
     }
   } else if (field === 'cantidad') {
     item.cantidad = Math.max(0.1, parseFloat(value) || 1);
+    // Validación contra el stock disponible
+    const prod = state.products.find(p => p.id_producto === item.id_producto);
+    if (prod && item.cantidad > parseFloat(prod.stock || prod.stock_disponible || 0)) {
+      Toast.fire({
+        icon: 'warning',
+        title: `Stock actual: ${prod.stock} ${prod.unidad_medida}. La cantidad ingresada supera existencias.`
+      });
+    }
   } else if (field === 'precio_unitario') {
     item.precio_unitario = Math.max(0, parseFloat(value) || 0);
   }
@@ -1408,44 +1506,89 @@ function renderOrderItems() {
   const container = document.getElementById('order-items-container');
   if (!container) return;
 
-  container.innerHTML = state.orderItems.map((item, idx) => `
-    <div class="grid grid-cols-12 gap-2 items-center bg-white p-2 rounded-xl border border-gray-200">
-      <div class="col-span-5 sm:col-span-6">
-        <select onchange="onOrderItemChange(${idx}, 'id_producto', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold">
-          ${state.products.map(p => `
-            <option value="${p.id_producto}" ${p.id_producto === item.id_producto ? 'selected' : ''}>
-              ${p.nombre_producto} ($${parseFloat(p.precio_venta).toFixed(2)})
-            </option>
-          `).join('')}
-        </select>
-      </div>
+  const filteredProds = getFilteredProductsForOrder();
+  const allProds = state.products && state.products.length > 0 ? state.products : [];
 
-      <div class="col-span-3 sm:col-span-2">
-        <input type="number" step="0.1" min="0.1" value="${item.cantidad}" oninput="onOrderItemChange(${idx}, 'cantidad', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-center">
+  if (state.orderItems.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-4 text-gray-400 bg-white rounded-xl border border-dashed border-gray-200">
+        No hay productos en el pedido. Haz clic en "+ Agregar Producto".
       </div>
+    `;
+    return;
+  }
 
-      <div class="col-span-3 sm:col-span-3 text-right">
-        <span class="font-mono font-black text-[#E30613] text-xs">$${item.subtotal.toFixed(2)}</span>
-      </div>
+  container.innerHTML = state.orderItems.map((item, idx) => {
+    // Si la lista filtrada no incluye el producto actual de la fila, lo agregamos para que no se pierda la selección
+    let prodOptions = [...filteredProds];
+    if (item.id_producto && !prodOptions.some(p => p.id_producto === item.id_producto)) {
+      const currentSelected = allProds.find(p => p.id_producto === item.id_producto);
+      if (currentSelected) prodOptions.unshift(currentSelected);
+    }
 
-      <div class="col-span-1 text-center">
-        <button type="button" onclick="removeOrderItemRow(${idx})" class="text-gray-400 hover:text-red-600 p-1">
-          <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-        </button>
+    const currentProd = allProds.find(p => p.id_producto === item.id_producto) || {};
+    const stockAvail = parseFloat(currentProd.stock || currentProd.stock_disponible || 0);
+    const isExceeded = item.cantidad > stockAvail;
+
+    return `
+      <div class="grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border ${isExceeded ? 'border-red-300 bg-red-50/30' : 'border-gray-200'}">
+        <div class="col-span-12 sm:col-span-6">
+          <label class="block text-[10px] font-bold text-gray-400 mb-0.5">Producto y Presentación</label>
+          <select onchange="onOrderItemChange(${idx}, 'id_producto', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold bg-white">
+            ${prodOptions.map(p => `
+              <option value="${p.id_producto}" ${p.id_producto === item.id_producto ? 'selected' : ''}>
+                ${p.nombre_producto || p.nombre} • $${parseFloat(p.precio_venta || p.precio_v || 0).toFixed(2)} (${p.unidad_medida || 'u'}) [Stock: ${p.stock || p.stock_disponible || 0}]
+              </option>
+            `).join('')}
+          </select>
+        </div>
+
+        <div class="col-span-4 sm:col-span-2">
+          <label class="block text-[10px] font-bold text-gray-400 mb-0.5 text-center">Cantidad</label>
+          <input type="number" step="0.1" min="0.1" value="${item.cantidad}" oninput="onOrderItemChange(${idx}, 'cantidad', this.value)" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs font-bold text-center bg-white">
+        </div>
+
+        <div class="col-span-3 sm:col-span-2 text-center">
+          <label class="block text-[10px] font-bold text-gray-400 mb-0.5">P. Unitario</label>
+          <span class="font-mono text-gray-600 text-xs">$${parseFloat(item.precio_unitario || 0).toFixed(2)}</span>
+        </div>
+
+        <div class="col-span-3 sm:col-span-1 text-right">
+          <label class="block text-[10px] font-bold text-gray-400 mb-0.5">Subtotal</label>
+          <span class="font-mono font-black text-[#E30613] text-xs">$${parseFloat(item.subtotal || 0).toFixed(2)}</span>
+        </div>
+
+        <div class="col-span-2 sm:col-span-1 text-center pt-2">
+          <button type="button" onclick="removeOrderItemRow(${idx})" title="Eliminar fila" class="text-gray-400 hover:text-red-600 p-1 rounded-lg hover:bg-red-50">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 
   if (window.lucide) window.lucide.createIcons();
 }
 
 function calculateOrderTotals() {
   const subtotal = state.orderItems.reduce((acc, it) => acc + (it.subtotal || 0), 0);
-  const total = subtotal;
+  
+  // Descuento automático comercial (5% si el cliente es Mayorista o tiene más de 300 puntos)
+  let discount = 0;
+  const cliId = document.getElementById('order-client-select')?.value;
+  const cli = state.clients.find(c => c.id_cliente === cliId);
+  if (cli && (cli.tipo_cliente === 'Mayorista' || (cli.puntos_fidelidad || 0) >= 300)) {
+    discount = subtotal * 0.05; // 5% de descuento preferencial
+  }
+
+  const total = Math.max(0, subtotal - discount);
 
   const subDisp = document.getElementById('order-subtotal-disp');
+  const discDisp = document.getElementById('order-discount-disp');
   const totDisp = document.getElementById('order-total-disp');
+
   if (subDisp) subDisp.textContent = `$${subtotal.toFixed(2)}`;
+  if (discDisp) discDisp.textContent = `-$${discount.toFixed(2)}`;
   if (totDisp) totDisp.textContent = `$${total.toFixed(2)}`;
 }
 
@@ -1765,12 +1908,14 @@ function renderCRMView() {
 
 function openCRMInteractionModal() {
   const sel = document.getElementById('crm-client-select');
+  const clientsList = state.clients && state.clients.length > 0 ? state.clients : [];
   if (sel) {
-    sel.innerHTML = state.clients.map(c => `
-      <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (${c.telefono})</option>
+    sel.innerHTML = clientsList.map(c => `
+      <option value="${c.id_cliente}">${c.nombre} ${c.apellido} • (${c.sector || c.ciudad || 'Ambato'}) - Tel: ${c.telefono}</option>
     `).join('');
   }
-  document.getElementById('crm-notes-input').value = '';
+  const notes = document.getElementById('crm-notes-input');
+  if (notes) notes.value = '';
   openModal('modal-crm-interaction');
 }
 
@@ -2148,10 +2293,11 @@ function downloadCanvasAd() {
 // ==========================================
 function renderWhatsAppView() {
   const sel = document.getElementById('wa-client-select');
+  const clientsList = state.clients && state.clients.length > 0 ? state.clients : [];
   if (sel) {
-    sel.innerHTML = state.clients.map(c => `
+    sel.innerHTML = clientsList.map(c => `
       <option value="${c.id_cliente}" data-phone="${c.telefono}" data-name="${c.nombre} ${c.apellido}">
-        ${c.nombre} ${c.apellido} (${c.telefono || 'Sin teléfono'})
+        ${c.nombre} ${c.apellido} • (${c.sector || c.ciudad || 'Ambato'}) - Tel: ${c.telefono || 'Sin teléfono'}
       </option>
     `).join('');
   }
@@ -2383,76 +2529,210 @@ function exportInvoicesCSV() {
 }
 
 // ==========================================
-// 11. GESTIÓN DE CATEGORÍAS MODAL
+// 11. GESTIÓN CENTRALIZADA DE CATEGORÍAS Y SUBCATEGORÍAS
 // ==========================================
 function populateCategoryDropdowns() {
   const prodSelect = document.getElementById('product-category');
   const filterSelect = document.getElementById('filter-product-category');
+  const orderCatSelect = document.getElementById('order-cat-filter');
+
+  const cats = state.categories && state.categories.length > 0 ? state.categories : [];
 
   if (prodSelect) {
-    prodSelect.innerHTML = state.categories.map(c => `
+    const currentProdCat = prodSelect.value;
+    prodSelect.innerHTML = cats.map(c => `
       <option value="${c.nombre_categoria}">${c.nombre_categoria}</option>
     `).join('');
+    if (currentProdCat) prodSelect.value = currentProdCat;
+    onProductCategoryChange();
   }
 
   if (filterSelect) {
     const current = filterSelect.value;
     filterSelect.innerHTML = `
       <option value="">Todas las Categorías</option>
-      ${state.categories.map(c => `<option value="${c.nombre_categoria}">${c.nombre_categoria}</option>`).join('')}
+      ${cats.map(c => `<option value="${c.nombre_categoria}">${c.nombre_categoria}</option>`).join('')}
     `;
     if (current) filterSelect.value = current;
   }
+
+  if (orderCatSelect) {
+    const currentOrderCat = orderCatSelect.value;
+    orderCatSelect.innerHTML = `
+      <option value="">Todas las Categorías</option>
+      ${cats.map(c => `<option value="${c.nombre_categoria}">${c.nombre_categoria}</option>`).join('')}
+    `;
+    if (currentOrderCat) orderCatSelect.value = currentOrderCat;
+  }
+}
+
+function onProductCategoryChange() {
+  const prodCatSelect = document.getElementById('product-category');
+  const subcatSelect = document.getElementById('product-subcategory');
+  if (!prodCatSelect || !subcatSelect) return;
+
+  const selectedCatName = prodCatSelect.value;
+  const catObj = (state.categories || []).find(c => c.nombre_categoria === selectedCatName);
+
+  let subcats = ['General'];
+  if (catObj && Array.isArray(catObj.subcategorias) && catObj.subcategorias.length > 0) {
+    subcats = catObj.subcategorias;
+  }
+
+  subcatSelect.innerHTML = subcats.map(s => `
+    <option value="${s}">${s}</option>
+  `).join('');
 }
 
 function openCategoriesModal() {
+  resetCategoryForm();
   renderCategoriesModalList();
   openModal('modal-categories');
 }
 
 function renderCategoriesModalList() {
   const list = document.getElementById('categories-modal-list');
+  const badge = document.getElementById('categories-count-badge');
   if (!list) return;
 
-  list.innerHTML = state.categories.map(c => `
-    <div class="flex items-center justify-between p-2.5 hover:bg-gray-50">
-      <span class="font-bold text-gray-800">${c.nombre_categoria}</span>
-      <button onclick="deleteCategoryPrompt('${c.id_categoria}')" class="text-red-500 hover:text-red-700 p-1">
-        <i data-lucide="trash-2" class="w-4 h-4"></i>
-      </button>
-    </div>
-  `).join('');
+  const cats = state.categories && state.categories.length > 0 ? state.categories : [];
+  if (badge) badge.textContent = `${cats.length} registradas`;
+
+  if (cats.length === 0) {
+    list.innerHTML = `<div class="p-4 text-center text-gray-400">No hay categorías registradas.</div>`;
+    return;
+  }
+
+  list.innerHTML = cats.map(c => {
+    const prodsCount = (state.products || []).filter(p => p.id_categoria === c.id_categoria || p.categoria === c.nombre_categoria).length;
+    const subcats = Array.isArray(c.subcategorias) ? c.subcategorias : ['General'];
+
+    return `
+      <div class="p-3.5 hover:bg-gray-50 flex items-start justify-between gap-3 transition-colors">
+        <div class="space-y-1">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-gray-800 text-sm">${c.nombre_categoria}</span>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${prodsCount > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+              ${prodsCount} producto(s)
+            </span>
+          </div>
+          <p class="text-xs text-gray-500">${c.descripcion || 'Sin descripción'}</p>
+          <div class="flex flex-wrap gap-1 pt-1">
+            ${subcats.map(s => `
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-red-50 text-[#E30613] border border-red-100">
+                ${s}
+              </span>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-1 shrink-0 pt-1">
+          <button type="button" onclick="editCategory('${c.id_categoria}')" title="Editar Categoría" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg">
+            <i data-lucide="edit-2" class="w-4 h-4"></i>
+          </button>
+          <button type="button" onclick="deleteCategoryPrompt('${c.id_categoria}')" title="Eliminar Categoría" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   if (window.lucide) window.lucide.createIcons();
+}
+
+function editCategory(catId) {
+  const cat = (state.categories || []).find(c => c.id_categoria === catId);
+  if (!cat) return;
+
+  document.getElementById('quick-cat-id').value = cat.id_categoria;
+  document.getElementById('quick-cat-name').value = cat.nombre_categoria;
+  document.getElementById('quick-cat-desc').value = cat.descripcion || '';
+  document.getElementById('quick-cat-subcats').value = (cat.subcategorias || ['General']).join(', ');
+
+  const title = document.getElementById('quick-cat-form-title');
+  const submitText = document.getElementById('quick-cat-submit-text');
+  const cancelBtn = document.getElementById('quick-cat-cancel-btn');
+
+  if (title) title.textContent = `Editar Categoría: ${cat.nombre_categoria}`;
+  if (submitText) submitText.textContent = 'Actualizar Cambios';
+  if (cancelBtn) cancelBtn.classList.remove('hidden');
+}
+
+function resetCategoryForm() {
+  const form = document.getElementById('form-category-quick');
+  if (form) form.reset();
+  const idInput = document.getElementById('quick-cat-id');
+  if (idInput) idInput.value = '';
+
+  const title = document.getElementById('quick-cat-form-title');
+  const submitText = document.getElementById('quick-cat-submit-text');
+  const cancelBtn = document.getElementById('quick-cat-cancel-btn');
+
+  if (title) title.textContent = 'Crear Nueva Categoría';
+  if (submitText) submitText.textContent = 'Guardar Categoría';
+  if (cancelBtn) cancelBtn.classList.add('hidden');
 }
 
 async function handleQuickAddCategory(e) {
   if (e) e.preventDefault();
 
+  const idInput = document.getElementById('quick-cat-id');
   const nameInput = document.getElementById('quick-cat-name');
-  const name = nameInput ? nameInput.value.trim() : '';
+  const descInput = document.getElementById('quick-cat-desc');
+  const subcatsInput = document.getElementById('quick-cat-subcats');
 
-  if (!name) return;
+  const catId = idInput ? idInput.value.trim() : '';
+  const name = nameInput ? nameInput.value.trim() : '';
+  const desc = descInput ? descInput.value.trim() : '';
+  const subcatsRaw = subcatsInput ? subcatsInput.value.trim() : '';
+
+  if (!name) {
+    Toast.fire({ icon: 'warning', title: 'Ingresa el nombre de la categoría' });
+    return;
+  }
+
+  const subcatsList = subcatsRaw
+    ? subcatsRaw.split(',').map(s => s.trim()).filter(Boolean)
+    : ['General'];
 
   try {
-    await window.dataService.saveCategory({
-      id_categoria: `CAT-${Date.now().toString().slice(-4)}`,
-      nombre_categoria: name
-    });
+    const catData = {
+      id_categoria: catId || `CAT-${Date.now().toString().slice(-4)}`,
+      nombre_categoria: name,
+      descripcion: desc,
+      subcategorias: subcatsList,
+      estado: 'Activo'
+    };
+
+    await window.dataService.saveCategory(catData);
     state.categories = await window.dataService.getCategories();
     populateCategoryDropdowns();
     renderCategoriesModalList();
-    if (nameInput) nameInput.value = '';
-    Toast.fire({ icon: 'success', title: `Categoría "${name}" agregada` });
+    resetCategoryForm();
+    Toast.fire({ icon: 'success', title: `Categoría "${name}" guardada exitosamente` });
   } catch (err) {
-    console.error('Error agregando categoría:', err);
+    console.error('Error guardando categoría:', err);
     Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
   }
 }
 
 async function deleteCategoryPrompt(catId) {
-  const cat = state.categories.find(c => c.id_categoria === catId);
+  const cat = (state.categories || []).find(c => c.id_categoria === catId);
   if (!cat) return;
+
+  // Comprobar si hay productos asociados
+  const relatedProds = (state.products || []).filter(p => p.id_categoria === catId || p.categoria === cat.nombre_categoria);
+  if (relatedProds.length > 0) {
+    const listNames = relatedProds.map(p => p.nombre_producto || p.nombre).slice(0, 3).join(', ');
+    Swal.fire({
+      icon: 'warning',
+      title: 'No se puede eliminar',
+      html: `La categoría <strong>"${cat.nombre_categoria}"</strong> tiene <strong>${relatedProds.length} producto(s) asignado(s)</strong>:<br><br><em>${listNames}${relatedProds.length > 3 ? '...' : ''}</em><br><br>Reasigna o elimina los productos antes de borrar la categoría.`,
+      confirmButtonColor: '#E30613'
+    });
+    return;
+  }
 
   const res = await Swal.fire({
     title: '¿Eliminar Categoría?',
@@ -2983,7 +3263,9 @@ async function handleLoginSubmit(e) {
       sessionStorage.setItem('qp_current_profile', JSON.stringify(res.profile));
     }
 
+    await loadAllData();
     evaluateUserAccess(res.profile);
+    renderCurrentView();
     Toast.fire({ icon: 'success', title: `Bienvenida, ${res.profile.nombre}` });
   } catch (err) {
     console.error('Error de login:', err);
