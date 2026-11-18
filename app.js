@@ -118,6 +118,46 @@ async function loadAllData() {
     state.userProfiles = profs || [];
     state.auditLogs = logs || [];
 
+    // Salvaguarda total: si alguna lista principal está vacía, cargar semilla inmediatamente
+    if (state.clients.length === 0) {
+      state.clients = [
+        { id_cliente: 'C001', nombre: 'Carlos', apellido: 'Solis', cedula_ruc: '1804149863', telefono: '0984149863', sector: 'Ficoa', direccion: 'Av. Los Guaytambos #142', tipo_cliente: 'Frecuente', puntos_fidelidad: 140 },
+        { id_cliente: 'C002', nombre: 'Salomé', apellido: 'Flores', cedula_ruc: '1803123456001', telefono: '0991234567', sector: 'Centro', direccion: 'Calle Bolívar #820', tipo_cliente: 'Mayorista', puntos_fidelidad: 475 },
+        { id_cliente: 'C003', nombre: 'Rebeca', apellido: 'Quinapanta', cedula_ruc: '1802987654', telefono: '0987654321', sector: 'Ingahurco', direccion: 'Av. Colombia #45', tipo_cliente: 'Frecuente', puntos_fidelidad: 140 },
+        { id_cliente: 'C004', nombre: 'Domenica', apellido: 'Naranjo', cedula_ruc: '1801798765', telefono: '0979876543', sector: 'Atocha', direccion: 'Av. Rodrigo Pachano #310', tipo_cliente: 'Potencial', puntos_fidelidad: 250 },
+        { id_cliente: 'C005', nombre: 'Daniela', apellido: 'Pico', cedula_ruc: '1803654321', telefono: '0965432109', sector: 'Huachi Chico', direccion: 'Av. Atahualpa #22', tipo_cliente: 'Nuevo', puntos_fidelidad: 85 },
+        { id_cliente: 'C006', nombre: 'Asadero Los Álamos', apellido: '(Restaurante)', cedula_ruc: '1891789456001', telefono: '032824567', sector: 'Centro', direccion: 'Av. Cevallos #512', tipo_cliente: 'Mayorista', puntos_fidelidad: 820 },
+        { id_cliente: 'C007', nombre: 'Picantería El Buen Gusto', apellido: '(Restaurante)', cedula_ruc: '1890234567001', telefono: '0995544332', sector: 'Pinllo', direccion: 'Plaza de Pinllo #18', tipo_cliente: 'Mayorista', puntos_fidelidad: 640 }
+      ];
+      localStorage.setItem('qp_clientes', JSON.stringify(state.clients));
+    }
+
+    if (state.categories.length === 0) {
+      state.categories = [
+        { id_categoria: 'CAT001', nombre_categoria: 'Pollo', subcategorias: ['Entero', 'Despresado', 'Pechuga', 'Alitas', 'Piernas', 'Trozado'] },
+        { id_categoria: 'CAT002', nombre_categoria: 'Cerdo', subcategorias: ['Chuletas', 'Costillas', 'Lomo', 'Pierna'] },
+        { id_categoria: 'CAT003', nombre_categoria: 'Res', subcategorias: ['Lomo Fino', 'Molida', 'Pulpa'] },
+        { id_categoria: 'CAT004', nombre_categoria: 'Embutidos', subcategorias: ['Salchichas', 'Chorizos', 'Jamones'] },
+        { id_categoria: 'CAT005', nombre_categoria: 'Menudencias', subcategorias: ['Hígados', 'Mollejas', 'Patas'] },
+        { id_categoria: 'CAT006', nombre_categoria: 'Huevos', subcategorias: ['Cubeta AA 30u', 'Selección Granja'] },
+        { id_categoria: 'CAT007', nombre_categoria: 'Otros', subcategorias: ['Aliños', 'Condimentos', 'Carbón'] }
+      ];
+      localStorage.setItem('qp_categorias', JSON.stringify(state.categories));
+    }
+
+    if (state.products.length === 0) {
+      state.products = [
+        { id_producto: 'P001', nombre: 'Pollo entero seleccionado', nombre_producto: 'Pollo entero seleccionado', categoria: 'Pollo', subcategoria: 'Entero', precio_v: 8.50, precio_venta: 8.50, precio_c: 5.80, precio_costo: 5.80, stock: 150, stock_disponible: 150, unidad_medida: 'Unidad' },
+        { id_producto: 'P002', nombre: 'Pechuga especial x kg', nombre_producto: 'Pechuga especial x kg', categoria: 'Pollo', subcategoria: 'Pechuga', precio_v: 4.75, precio_venta: 4.75, precio_c: 3.20, precio_costo: 3.20, stock: 85, stock_disponible: 85, unidad_medida: 'Kilogramo' },
+        { id_producto: 'P003', nombre: 'Alitas marinadas BBQ (12 u)', nombre_producto: 'Alitas marinadas BBQ (12 u)', categoria: 'Pollo', subcategoria: 'Alitas', precio_v: 7.00, precio_venta: 7.00, precio_c: 4.50, precio_costo: 4.50, stock: 60, stock_disponible: 60, unidad_medida: 'Paquete' },
+        { id_producto: 'P004', nombre: 'Pierna con pernil x kg', nombre_producto: 'Pierna con pernil x kg', categoria: 'Pollo', subcategoria: 'Piernas', precio_v: 3.80, precio_venta: 3.80, precio_c: 2.50, precio_costo: 2.50, stock: 90, stock_disponible: 90, unidad_medida: 'Kilogramo' },
+        { id_producto: 'P005', nombre: 'Menudencias seleccionadas', nombre_producto: 'Menudencias seleccionadas', categoria: 'Menudencias', subcategoria: 'Hígados', precio_v: 2.50, precio_venta: 2.50, precio_c: 1.20, precio_costo: 1.20, stock: 45, stock_disponible: 45, unidad_medida: 'Kilogramo' },
+        { id_producto: 'P006', nombre: 'Chuletas de cerdo frescas x kg', nombre_producto: 'Chuletas de cerdo frescas x kg', categoria: 'Cerdo', subcategoria: 'Chuletas', precio_v: 5.50, precio_venta: 5.50, precio_c: 3.80, precio_costo: 3.80, stock: 70, stock_disponible: 70, unidad_medida: 'Kilogramo' },
+        { id_producto: 'P007', nombre: 'Cubeta de Huevos AA (30 u)', nombre_producto: 'Cubeta de Huevos AA (30 u)', categoria: 'Huevos', subcategoria: 'Cubeta AA 30u', precio_v: 4.20, precio_venta: 4.20, precio_c: 3.10, precio_costo: 3.10, stock: 120, stock_disponible: 120, unidad_medida: 'Cubeta' }
+      ];
+      localStorage.setItem('qp_productos', JSON.stringify(state.products));
+    }
+
     populateCategoryDropdowns();
     updateNavigationBadges();
   } catch (err) {
