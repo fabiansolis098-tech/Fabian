@@ -2857,7 +2857,7 @@ async function checkAuthSession() {
 
 function evaluateUserAccess(user) {
   if (!user) {
-    showGatekeeperScreen('gatekeeper-auth');
+    showGatekeeperScreen('login-screen');
     return;
   }
 
@@ -2866,23 +2866,23 @@ function evaluateUserAccess(user) {
 
   if (!isMasterAdmin) {
     if (user.estado === 'PENDIENTE') {
-      showGatekeeperScreen('gatekeeper-pending');
+      showGatekeeperScreen('pending-screen');
       const pEmail = document.getElementById('pending-user-email');
       if (pEmail) pEmail.textContent = user.correo;
       return;
     }
     if (user.estado === 'RECHAZADO') {
-      showGatekeeperScreen('gatekeeper-rejected');
+      showGatekeeperScreen('rejected-screen');
       return;
     }
     if (user.estado === 'DESACTIVADO') {
-      showGatekeeperScreen('gatekeeper-deactivated');
+      showGatekeeperScreen('disabled-screen');
       return;
     }
   }
 
   // Usuario Aprobado -> Mostrar la Aplicación Principal
-  showGatekeeperScreen('main-app-container');
+  showGatekeeperScreen('app-container');
 
   // Actualizar datos del usuario en la interfaz
   const topName = document.getElementById('topbar-user-name');
@@ -2908,7 +2908,27 @@ function evaluateUserAccess(user) {
 }
 
 function showGatekeeperScreen(screenId) {
+  const idMap = {
+    'gatekeeper-auth': 'login-screen',
+    'login-screen': 'login-screen',
+    'gatekeeper-pending': 'pending-screen',
+    'pending-screen': 'pending-screen',
+    'gatekeeper-rejected': 'rejected-screen',
+    'rejected-screen': 'rejected-screen',
+    'gatekeeper-deactivated': 'disabled-screen',
+    'disabled-screen': 'disabled-screen',
+    'main-app-container': 'app-container',
+    'app-container': 'app-container'
+  };
+
+  const targetId = idMap[screenId] || screenId;
+
   const screens = [
+    'login-screen',
+    'pending-screen',
+    'rejected-screen',
+    'disabled-screen',
+    'app-container',
     'gatekeeper-auth',
     'gatekeeper-pending',
     'gatekeeper-rejected',
@@ -2919,7 +2939,7 @@ function showGatekeeperScreen(screenId) {
   screens.forEach(s => {
     const el = document.getElementById(s);
     if (el) {
-      if (s === screenId) {
+      if (s === targetId || s === screenId) {
         el.classList.remove('hidden');
       } else {
         el.classList.add('hidden');
