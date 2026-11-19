@@ -1393,50 +1393,78 @@ function renderOrdersTable() {
     const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
     const clientName = client ? `${client.nombre} ${client.apellido}`.toLowerCase() : '';
     const num = (ord.numero_pedido || ord.id_pedido || '').toLowerCase();
+    const currentStatus = (ord.estado || ord.estado_pedido || 'Pendiente');
 
     const matchSearch = num.includes(search) || clientName.includes(search);
-    const matchStatus = statusFilter === 'TODOS' || ord.estado === statusFilter;
+    const matchStatus = statusFilter === 'TODOS' || currentStatus.toLowerCase() === statusFilter.toLowerCase();
 
     return matchSearch && matchStatus;
   });
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No hay pedidos para mostrar.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-gray-400">No hay pedidos para mostrar.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(ord => {
     const client = state.clients.find(c => c.id_cliente === ord.id_cliente);
-    const clientName = client ? `${client.nombre} ${client.apellido}` : ord.id_cliente;
+    const clientName = client ? `${client.nombre} ${client.apellido}` : (ord.id_cliente || 'Consumidor');
     const clientPhone = client ? client.telefono : '';
+    const currentStatus = ord.estado || ord.estado_pedido || 'Pendiente';
+    const canInvoice = currentStatus !== 'Facturado' && currentStatus !== 'Cancelado';
 
-    const statusBadge = getOrderStatusBadge(ord.estado);
-    const canInvoice = ord.estado !== 'Facturado' && ord.estado !== 'Cancelado';
+    const itemsSummary = Array.isArray(ord.items) && ord.items.length > 0
+      ? ord.items.map(it => `${it.cantidad}x ${it.nombre_producto || it.nombre || 'Producto'}`).join(', ')
+      : '1x Pedido Comercial';
 
     return `
       <tr class="hover:bg-gray-50/80 transition-colors">
+        <!-- 1. N° Pedido -->
         <td class="px-4 py-3 font-mono font-bold text-gray-800">${ord.numero_pedido || ord.id_pedido}</td>
+
+        <!-- 2. Cliente -->
         <td class="px-4 py-3">
           <p class="font-bold text-gray-900">${clientName}</p>
           <span class="text-[11px] text-gray-500">${clientPhone || 'Sin teléfono'}</span>
         </td>
-        <td class="px-4 py-3 text-gray-500">${ord.fecha_pedido || ''}</td>
-        <td class="px-4 py-3 font-medium text-gray-700">${ord.metodo_pago || 'Efectivo'}</td>
+
+        <!-- 3. Fecha -->
+        <td class="px-4 py-3 text-gray-500">${ord.fecha_pedido || ord.fecha || ''}</td>
+
+        <!-- 4. Ítems Solicitados -->
+        <td class="px-4 py-3 text-gray-700 max-w-xs truncate" title="${itemsSummary}">
+          <span class="inline-block px-2 py-0.5 rounded-lg bg-gray-50 border border-gray-200 text-[11px] font-medium text-gray-800 max-w-[200px] truncate">
+            ${itemsSummary}
+          </span>
+        </td>
+
+        <!-- 5. Total ($) -->
         <td class="px-4 py-3 font-black text-[#E30613]">$${parseFloat(ord.total || 0).toFixed(2)}</td>
+
+        <!-- 6. Forma de Pago -->
+        <td class="px-4 py-3 font-medium text-gray-700">
+          <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-700">
+            ${ord.forma_pago || ord.metodo_pago || 'Efectivo'}
+          </span>
+        </td>
+
+        <!-- 7. Selector de Estado (Cambio inmediato) -->
         <td class="px-4 py-3">
-          <select onchange="changeOrderStatus('${ord.id_pedido}', this.value)" class="text-xs font-bold rounded-lg border border-gray-200 py-1 px-2">
-            <option value="Pendiente" ${ord.estado === 'Pendiente' ? 'selected' : ''}>🟡 Pendiente</option>
-            <option value="Confirmado" ${ord.estado === 'Confirmado' ? 'selected' : ''}>🔵 Confirmado</option>
-            <option value="En preparación" ${ord.estado === 'En preparación' ? 'selected' : ''}>🟣 En preparación</option>
-            <option value="Entregado" ${ord.estado === 'Entregado' ? 'selected' : ''}>🟢 Entregado</option>
-            <option value="Facturado" ${ord.estado === 'Facturado' ? 'selected' : ''}>📑 Facturado</option>
-            <option value="Cancelado" ${ord.estado === 'Cancelado' ? 'selected' : ''}>🔴 Cancelado</option>
+          <select onchange="changeOrderStatus('${ord.id_pedido}', this.value)" class="text-xs font-bold rounded-lg border border-gray-200 py-1 px-2 bg-white shadow-2xs">
+            <option value="Pendiente" ${currentStatus === 'Pendiente' ? 'selected' : ''}>🟡 Pendiente</option>
+            <option value="Confirmado" ${currentStatus === 'Confirmado' ? 'selected' : ''}>🔵 Confirmado</option>
+            <option value="En preparación" ${currentStatus === 'En preparación' ? 'selected' : ''}>🟣 En preparación</option>
+            <option value="Entregado" ${currentStatus === 'Entregado' ? 'selected' : ''}>🟢 Entregado</option>
+            <option value="Facturado" ${currentStatus === 'Facturado' ? 'selected' : ''}>📑 Facturado</option>
+            <option value="Cancelado" ${currentStatus === 'Cancelado' ? 'selected' : ''}>🔴 Cancelado</option>
           </select>
         </td>
+
+        <!-- 8. Acciones -->
         <td class="px-4 py-3 text-right">
           <div class="flex items-center justify-end space-x-1">
             ${canInvoice ? `
-              <button onclick="openInvoiceFromOrder('${ord.id_pedido}')" title="Emitir Factura SRI" class="px-2 py-1 rounded-lg bg-[#E30613] hover:bg-red-700 text-white font-bold text-xs flex items-center space-x-1 shadow-xs">
+              <button onclick="openInvoiceFromOrder('${ord.id_pedido}')" title="Emitir Factura SRI" class="px-2.5 py-1 rounded-lg bg-[#E30613] hover:bg-red-700 text-white font-bold text-xs flex items-center space-x-1 shadow-xs">
                 <i data-lucide="receipt" class="w-3.5 h-3.5"></i>
                 <span>Facturar</span>
               </button>
@@ -1762,13 +1790,16 @@ async function handleSaveOrderSubmit(e) {
     id_cliente: idCliente,
     fecha_pedido: fecha,
     metodo_pago: metodoPago,
+    forma_pago: metodoPago,
     estado: estado,
+    estado_pedido: estado,
     direccion_entrega: direccion,
     observaciones: notas,
     subtotal: subtotal,
     descuento: 0,
     total: total,
-    detalles: state.orderItems
+    detalles: state.orderItems,
+    items: state.orderItems
   };
 
   try {
@@ -1787,8 +1818,24 @@ async function handleSaveOrderSubmit(e) {
 
 async function changeOrderStatus(orderId, newStatus) {
   try {
+    // 1. Actualización inmediata en el estado local de memoria
+    const localOrd = state.orders.find(o => o.id_pedido === orderId);
+    if (localOrd) {
+      localOrd.estado = newStatus;
+      localOrd.estado_pedido = newStatus;
+    }
+    renderOrdersTable();
+
+    // 2. Persistencia en Base de Datos (DataService + LocalStorage)
     await window.dataService.updateOrderStatus(orderId, newStatus);
-    state.orders = await window.dataService.getOrders();
+    const updatedOrders = await window.dataService.getOrders();
+    if (updatedOrders && updatedOrders.length > 0) {
+      state.orders = updatedOrders.map(o => ({
+        ...o,
+        estado: o.id_pedido === orderId ? newStatus : (o.estado || o.estado_pedido || 'Pendiente'),
+        estado_pedido: o.id_pedido === orderId ? newStatus : (o.estado_pedido || o.estado || 'Pendiente')
+      }));
+    }
     state.products = await window.dataService.getProducts();
     updateNavigationBadges();
     renderOrdersTable();

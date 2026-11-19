@@ -1078,8 +1078,9 @@ class DataService {
     const order = orders.find(o => o.id_pedido === orderId);
     if (!order) throw new Error('Pedido no encontrado');
 
-    const previousStatus = order.estado_pedido;
+    const previousStatus = order.estado_pedido || order.estado;
     order.estado_pedido = newStatus;
+    order.estado = newStatus;
 
     // Control de descuento de inventario seguro:
     // Solo se descuenta si pasa a Confirmado/En preparación/Entregado y NO ha sido descontado aún
