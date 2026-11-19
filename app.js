@@ -46,13 +46,52 @@ let state = {
     { id_producto: 'P006', nombre: 'Chuletas de cerdo frescas x kg', nombre_producto: 'Chuletas de cerdo frescas x kg', categoria: 'Cerdo', subcategoria: 'Chuletas', precio_v: 5.50, precio_venta: 5.50, precio_c: 3.80, precio_costo: 3.80, stock: 70, stock_disponible: 70, unidad_medida: 'Kilogramo' },
     { id_producto: 'P007', nombre: 'Cubeta de Huevos AA (30 u)', nombre_producto: 'Cubeta de Huevos AA (30 u)', categoria: 'Huevos', subcategoria: 'Cubeta AA 30u', precio_v: 4.20, precio_venta: 4.20, precio_c: 3.10, precio_costo: 3.10, stock: 120, stock_disponible: 120, unidad_medida: 'Cubeta' }
   ],
-  orders: [],
-  invoices: [],
+  orders: [
+    {
+      id_pedido: 'PED-0001',
+      numero_pedido: 'PED-0001',
+      id_cliente: 'C001',
+      fecha_pedido: '2026-09-09',
+      estado: 'Entregado',
+      subtotal: 7.00,
+      descuento: 0.00,
+      iva: 0.00,
+      total: 7.00,
+      forma_pago: 'Efectivo',
+      direccion_entrega: 'Av. Los Guaytambos #142, Ficoa',
+      observaciones: 'Entregado a conformidad en la puerta del domicilio',
+      items: [{ id_producto: 'P003', nombre_producto: 'Alitas marinadas BBQ (12 u)', cantidad: 1, precio_unitario: 7.00, subtotal: 7.00 }]
+    }
+  ],
+  invoices: [
+    {
+      id_factura: 'FAC-001',
+      numero_factura: '001-001-0000001',
+      id_cliente: 'C001',
+      id_pedido: 'PED-0001',
+      fecha: '2026-09-09',
+      fecha_emision: '2026-09-09',
+      subtotal: 7.00,
+      iva: 0.00,
+      total: 7.00,
+      forma_pago: 'Efectivo',
+      estado: 'Autorizada SRI',
+      estado_pago: 'Pagada',
+      es_inmutable: true
+    }
+  ],
   crmInteractions: [],
   promotions: [],
   campaigns: [],
-  loyaltyRewards: [],
-  loyaltyLedger: [],
+  loyaltyRewards: [
+    { id: 'REC-001', id_recompensa: 'REC-001', titulo: 'Descuento de $3 en tu próxima compra', nombre_recompensa: 'Descuento de $3 en tu próxima compra', puntos_requeridos: 100, descripcion: 'Cupón aplicable a cualquier producto' },
+    { id: 'REC-002', id_recompensa: 'REC-002', titulo: '1 Cubeta de Huevos AA Gratis (30u)', nombre_recompensa: '1 Cubeta de Huevos AA Gratis (30u)', puntos_requeridos: 200, descripcion: 'Canjeable en mostrador o entrega' },
+    { id: 'REC-003', id_recompensa: 'REC-003', titulo: '1 Pollo Entero Seleccionado Gratis', nombre_recompensa: '1 Pollo Entero Seleccionado Gratis', puntos_requeridos: 350, descripcion: 'Pollo fresco entero faenado del día' },
+    { id: 'REC-004', id_recompensa: 'REC-004', titulo: 'Paquete de Alitas BBQ (12u) Gratis', nombre_recompensa: 'Paquete de Alitas BBQ (12u) Gratis', puntos_requeridos: 280, descripcion: 'Alitas marinadas listas para asar' }
+  ],
+  loyaltyLedger: [
+    { id: 'LED-001', id_cliente: 'C001', puntos: 140, tipo_operacion: 'Acumulación', referencia: 'Compra inicial PED-0001', fecha: '2026-09-09' }
+  ],
   userProfiles: [],
   auditLogs: [],
   
@@ -87,6 +126,7 @@ const Toast = Swal.mixin({
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
   initDateBanner();
+  updateNavigationBadges();
   await loadAllData();
   setupEventListeners();
   checkAuthSession();
@@ -105,42 +145,44 @@ function initDateBanner() {
 
 // Cargar todos los módulos desde DataService (Supabase + LocalStorage)
 async function loadAllData() {
+  updateNavigationBadges();
   try {
     const ds = window.dataService;
     if (!ds) {
       console.warn('DataService no inicializado aún.');
+      updateNavigationBadges();
       return;
     }
 
     const [
       cats, clis, prods, ords, invs, crm, promos, camps, rews, ledger, profs, logs
     ] = await Promise.all([
-      ds.getCategories(),
-      ds.getClients(),
-      ds.getProducts(),
-      ds.getOrders(),
-      ds.getInvoices(),
-      ds.getCRMInteractions(),
-      ds.getPromotions(),
-      ds.getCampaigns(),
-      ds.getLoyaltyRewards(),
-      ds.getLoyaltyLedger(),
-      ds.getUserProfiles(),
-      ds.getAuditLogs()
+      ds.getCategories ? ds.getCategories().catch(() => []) : [],
+      ds.getClients ? ds.getClients().catch(() => []) : [],
+      ds.getProducts ? ds.getProducts().catch(() => []) : [],
+      ds.getOrders ? ds.getOrders().catch(() => []) : [],
+      ds.getInvoices ? ds.getInvoices().catch(() => []) : [],
+      ds.getCRMInteractions ? ds.getCRMInteractions().catch(() => []) : [],
+      ds.getPromotions ? ds.getPromotions().catch(() => []) : [],
+      ds.getCampaigns ? ds.getCampaigns().catch(() => []) : [],
+      (typeof ds.getLoyaltyRewards === 'function' ? ds.getLoyaltyRewards().catch(() => []) : (typeof ds.getRewards === 'function' ? ds.getRewards().catch(() => []) : [])),
+      ds.getLoyaltyLedger ? ds.getLoyaltyLedger().catch(() => []) : [],
+      ds.getUserProfiles ? ds.getUserProfiles().catch(() => []) : [],
+      ds.getAuditLogs ? ds.getAuditLogs().catch(() => []) : []
     ]);
 
-    state.categories = cats || [];
-    state.clients = clis || [];
-    state.products = prods || [];
-    state.orders = ords || [];
-    state.invoices = invs || [];
-    state.crmInteractions = crm || [];
-    state.promotions = promos || [];
-    state.campaigns = camps || [];
-    state.loyaltyRewards = rews || [];
-    state.loyaltyLedger = ledger || [];
-    state.userProfiles = profs || [];
-    state.auditLogs = logs || [];
+    if (cats && cats.length > 0) state.categories = cats;
+    if (clis && clis.length > 0) state.clients = clis;
+    if (prods && prods.length > 0) state.products = prods;
+    if (ords && ords.length > 0) state.orders = ords;
+    if (invs && invs.length > 0) state.invoices = invs;
+    if (crm && crm.length > 0) state.crmInteractions = crm;
+    if (promos && promos.length > 0) state.promotions = promos;
+    if (camps && camps.length > 0) state.campaigns = camps;
+    if (rews && rews.length > 0) state.loyaltyRewards = rews;
+    if (ledger && ledger.length > 0) state.loyaltyLedger = ledger;
+    if (profs && profs.length > 0) state.userProfiles = profs;
+    if (logs && logs.length > 0) state.auditLogs = logs;
 
     // Salvaguarda total: si alguna lista principal está vacía, cargar semilla inmediatamente
     if (state.clients.length === 0) {
@@ -182,10 +224,30 @@ async function loadAllData() {
       localStorage.setItem('qp_productos', JSON.stringify(state.products));
     }
 
+    if (!state.loyaltyRewards || state.loyaltyRewards.length === 0) {
+      state.loyaltyRewards = [
+        { id: 'REC-001', id_recompensa: 'REC-001', titulo: 'Descuento de $3 en tu próxima compra', nombre_recompensa: 'Descuento de $3 en tu próxima compra', puntos_requeridos: 100, descripcion: 'Cupón aplicable a cualquier producto' },
+        { id: 'REC-002', id_recompensa: 'REC-002', titulo: '1 Cubeta de Huevos AA Gratis (30u)', nombre_recompensa: '1 Cubeta de Huevos AA Gratis (30u)', puntos_requeridos: 200, descripcion: 'Canjeable en mostrador o entrega' },
+        { id: 'REC-003', id_recompensa: 'REC-003', titulo: '1 Pollo Entero Seleccionado Gratis', nombre_recompensa: '1 Pollo Entero Seleccionado Gratis', puntos_requeridos: 350, descripcion: 'Pollo fresco entero faenado del día' },
+        { id: 'REC-004', id_recompensa: 'REC-004', titulo: 'Paquete de Alitas BBQ (12u) Gratis', nombre_recompensa: 'Paquete de Alitas BBQ (12u) Gratis', puntos_requeridos: 280, descripcion: 'Alitas marinadas listas para asar' }
+      ];
+      localStorage.setItem('qp_recompensas', JSON.stringify(state.loyaltyRewards));
+    } else {
+      state.loyaltyRewards = state.loyaltyRewards.map(r => ({
+        id: r.id || r.id_recompensa || 'REC-001',
+        id_recompensa: r.id_recompensa || r.id || 'REC-001',
+        titulo: r.titulo || r.nombre_recompensa || 'Recompensa',
+        nombre_recompensa: r.nombre_recompensa || r.titulo || 'Recompensa',
+        puntos_requeridos: parseInt(r.puntos_requeridos, 10) || 100,
+        descripcion: r.descripcion || ''
+      }));
+    }
+
     populateCategoryDropdowns();
     updateNavigationBadges();
   } catch (err) {
     console.error('Error cargando datos del sistema:', err);
+    updateNavigationBadges();
   }
 }
 
@@ -356,6 +418,7 @@ function switchView(viewName) {
   if (window.lucide) {
     window.lucide.createIcons();
   }
+  updateNavigationBadges();
 }
 
 // ==========================================
@@ -2557,6 +2620,23 @@ function openRedeemPointsModal(rewardId = null) {
   const cliSel = document.getElementById('redeem-client-select');
   const rewSel = document.getElementById('redeem-reward-select');
 
+  if (!state.clients || state.clients.length === 0) {
+    state.clients = [
+      { id_cliente: 'C001', nombre: 'Carlos', apellido: 'Solis', cedula_ruc: '1804149863', telefono: '0984149863', sector: 'Ficoa', direccion: 'Av. Los Guaytambos #142', tipo_cliente: 'Frecuente', puntos_fidelidad: 140 },
+      { id_cliente: 'C002', nombre: 'Salomé', apellido: 'Flores', cedula_ruc: '1803123456001', telefono: '0991234567', sector: 'Centro', direccion: 'Calle Bolívar #820', tipo_cliente: 'Mayorista', puntos_fidelidad: 475 },
+      { id_cliente: 'C003', nombre: 'Rebeca', apellido: 'Quinapanta', cedula_ruc: '1802987654', telefono: '0987654321', sector: 'Ingahurco', direccion: 'Av. Colombia #45', tipo_cliente: 'Frecuente', puntos_fidelidad: 140 }
+    ];
+  }
+
+  if (!state.loyaltyRewards || state.loyaltyRewards.length === 0) {
+    state.loyaltyRewards = [
+      { id: 'REC-001', id_recompensa: 'REC-001', titulo: 'Descuento de $3 en tu próxima compra', nombre_recompensa: 'Descuento de $3 en tu próxima compra', puntos_requeridos: 100, descripcion: 'Cupón aplicable a cualquier producto' },
+      { id: 'REC-002', id_recompensa: 'REC-002', titulo: '1 Cubeta de Huevos AA Gratis (30u)', nombre_recompensa: '1 Cubeta de Huevos AA Gratis (30u)', puntos_requeridos: 200, descripcion: 'Canjeable en mostrador o entrega' },
+      { id: 'REC-003', id_recompensa: 'REC-003', titulo: '1 Pollo Entero Seleccionado Gratis', nombre_recompensa: '1 Pollo Entero Seleccionado Gratis', puntos_requeridos: 350, descripcion: 'Pollo fresco entero faenado del día' },
+      { id: 'REC-004', id_recompensa: 'REC-004', titulo: 'Paquete de Alitas BBQ (12u) Gratis', nombre_recompensa: 'Paquete de Alitas BBQ (12u) Gratis', puntos_requeridos: 280, descripcion: 'Alitas marinadas listas para asar' }
+    ];
+  }
+
   if (cliSel) {
     cliSel.innerHTML = state.clients.map(c => `
       <option value="${c.id_cliente}">${c.nombre} ${c.apellido} (Saldo: ${c.puntos_fidelidad || 0} pts)</option>
@@ -2564,11 +2644,16 @@ function openRedeemPointsModal(rewardId = null) {
   }
 
   if (rewSel) {
-    rewSel.innerHTML = state.loyaltyRewards.map(r => `
-      <option value="${r.id}" data-cost="${r.puntos_requeridos}" ${r.id === rewardId ? 'selected' : ''}>
-        ${r.titulo} (${r.puntos_requeridos} pts)
-      </option>
-    `).join('');
+    rewSel.innerHTML = state.loyaltyRewards.map(r => {
+      const rewId = r.id || r.id_recompensa;
+      const title = r.titulo || r.nombre_recompensa;
+      const cost = r.puntos_requeridos || 100;
+      return `
+        <option value="${rewId}" data-cost="${cost}" ${rewId === rewardId ? 'selected' : ''}>
+          ${title} (${cost} pts)
+        </option>
+      `;
+    }).join('');
   }
 
   onRedeemRewardChange();
@@ -2580,7 +2665,7 @@ function onRedeemRewardChange() {
   const rewSel = document.getElementById('redeem-reward-select');
   const costInput = document.getElementById('redeem-cost-input');
   if (rewSel && costInput) {
-    const cost = rewSel.selectedOptions[0]?.getAttribute('data-cost') || 0;
+    const cost = rewSel.selectedOptions[0]?.getAttribute('data-cost') || (state.loyaltyRewards[0]?.puntos_requeridos || 100);
     costInput.value = cost;
   }
 }
@@ -2602,27 +2687,37 @@ async function handleRedeemPointsSubmit(e) {
   const cost = parseInt(document.getElementById('redeem-cost-input')?.value, 10) || 0;
 
   const cli = state.clients.find(c => c.id_cliente === idCli);
-  const rew = state.loyaltyRewards.find(r => r.id === idRew);
+  const rew = state.loyaltyRewards.find(r => (r.id === idRew || r.id_recompensa === idRew));
 
-  if (!cli || !rew) return;
+  if (!cli || !rew) {
+    Toast.fire({ icon: 'warning', title: 'Selecciona cliente y recompensa válidos' });
+    return;
+  }
+
+  const rewTitle = rew.titulo || rew.nombre_recompensa;
 
   if ((cli.puntos_fidelidad || 0) < cost) {
     Swal.fire({
       icon: 'error',
       title: 'Puntos Insuficientes',
-      text: `El cliente ${cli.nombre} ${cli.apellido} tiene ${cli.puntos_fidelidad || 0} pts, pero se requieren ${cost} pts para canjear "${rew.titulo}".`,
+      text: `El cliente ${cli.nombre} ${cli.apellido} tiene ${cli.puntos_fidelidad || 0} pts, pero se requieren ${cost} pts para canjear "${rewTitle}".`,
       confirmButtonColor: '#E30613'
     });
     return;
   }
 
   try {
-    await window.dataService.redeemLoyaltyReward(idCli, idRew);
+    if (typeof window.dataService.redeemLoyaltyReward === 'function') {
+      await window.dataService.redeemLoyaltyReward(idCli, idRew);
+    } else if (typeof window.dataService.redeemLoyaltyPoints === 'function') {
+      await window.dataService.redeemLoyaltyPoints(idCli, idRew);
+    }
     state.clients = await window.dataService.getClients();
     state.loyaltyLedger = await window.dataService.getLoyaltyLedger();
     renderLoyaltyView();
+    updateNavigationBadges();
     closeModal('modal-redeem-points');
-    Toast.fire({ icon: 'success', title: `Canje exitoso: ${rew.titulo}` });
+    Toast.fire({ icon: 'success', title: `Canje exitoso: ${rewTitle}` });
   } catch (err) {
     console.error('Error canjeando recompensa:', err);
     Swal.fire({ icon: 'error', title: 'Error', text: err.message, confirmButtonColor: '#E30613' });
@@ -3421,7 +3516,7 @@ async function handleLoginSubmit(e) {
 
     await loadAllData();
     evaluateUserAccess(res.profile);
-    renderCurrentView();
+    updateNavigationBadges();
     Toast.fire({ icon: 'success', title: `Bienvenida, ${res.profile.nombre}` });
   } catch (err) {
     console.error('Error de login:', err);

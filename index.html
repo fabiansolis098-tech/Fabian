@@ -799,7 +799,7 @@
               </button>
               <button onclick="openDirectInvoiceModal()" class="px-4 py-2 rounded-xl btn-primary text-xs font-bold flex items-center space-x-1.5 shadow-xs">
                 <i data-lucide="plus" class="w-4 h-4"></i>
-                <span>+ Emitir Factura</span>
+                <span>Emitir Factura</span>
               </button>
             </div>
           </div>
@@ -1977,18 +1977,31 @@
       <form id="form-redeem-points" class="mt-4 space-y-3 text-xs" onsubmit="handleRedeemPointsSubmit(event)">
         <div>
           <label class="block font-bold text-gray-700 mb-1">Seleccionar Cliente *</label>
-          <select id="redeem-client-select" required onchange="onRedeemClientChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold"></select>
-          <p id="redeem-client-balance" class="text-[11px] text-[#00A651] font-bold mt-1">Saldo disponible: 0 PolloPuntos</p>
+          <select id="redeem-client-select" required onchange="onRedeemClientChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-bold">
+            <option value="C001" selected>Carlos Solis (Saldo: 140 pts)</option>
+            <option value="C002">Salomé Flores (Saldo: 475 pts)</option>
+            <option value="C003">Rebeca Quinapanta (Saldo: 140 pts)</option>
+            <option value="C004">Domenica Naranjo (Saldo: 250 pts)</option>
+            <option value="C005">Daniela Pico (Saldo: 85 pts)</option>
+            <option value="C006">Asadero Los Álamos (Saldo: 820 pts)</option>
+            <option value="C007">Picantería El Buen Gusto (Saldo: 640 pts)</option>
+          </select>
+          <p id="redeem-client-balance" class="text-[11px] text-[#00A651] font-bold mt-1">Saldo disponible: 140 PolloPuntos</p>
         </div>
 
         <div>
           <label class="block font-bold text-gray-700 mb-1">Seleccionar Recompensa *</label>
-          <select id="redeem-reward-select" required onchange="onRedeemRewardChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold"></select>
+          <select id="redeem-reward-select" required onchange="onRedeemRewardChange()" class="w-full px-3 py-2 rounded-xl border border-gray-200 font-semibold">
+            <option value="REC-001" data-cost="100" selected>Descuento de $3 en tu próxima compra (100 pts)</option>
+            <option value="REC-002" data-cost="200">1 Cubeta de Huevos AA Gratis (30u) (200 pts)</option>
+            <option value="REC-003" data-cost="350">1 Pollo Entero Seleccionado Gratis (350 pts)</option>
+            <option value="REC-004" data-cost="280">Paquete de Alitas BBQ (12u) Gratis (280 pts)</option>
+          </select>
         </div>
 
         <div>
           <label class="block font-bold text-gray-700 mb-1">Puntos Requeridos</label>
-          <input type="number" id="redeem-cost-input" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-[#E30613]">
+          <input type="number" id="redeem-cost-input" value="100" readonly class="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 font-mono font-bold text-[#E30613]">
         </div>
 
         <div class="pt-3 flex items-center justify-end space-x-2 border-t border-gray-100">
@@ -2133,8 +2146,8 @@
   </div>
 
   <!-- Scripts de la Aplicación -->
-  <script src="supabase-client.js?v=5.2"></script>
-  <script src="app.js?v=5.2"></script>
+  <script src="supabase-client.js?v=6.0"></script>
+  <script src="app.js?v=6.0"></script>
 
 </body>
 </html>

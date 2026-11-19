@@ -1336,6 +1336,14 @@ class DataService {
     return this.getLocal('qp_recompensas');
   }
 
+  async getLoyaltyRewards() {
+    return this.getRewards();
+  }
+
+  async redeemLoyaltyReward(clientId, recompensaId, adminUser = 'Administrador') {
+    return this.redeemLoyaltyPoints(clientId, recompensaId, adminUser);
+  }
+
   // ----------------------------------------------------
   // 9. AUDITORÍA Y BITÁCORA DEL SISTEMA
   // ----------------------------------------------------
